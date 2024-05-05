@@ -1,0 +1,48 @@
+使用说明
+1.下载安装docker
+地址：https://www.docker.com/get-started/
+
+2.加载docker镜像
+docker load < xzbs.tar
+
+3.启动容器
+docker run -it --name xzbs -v SDK安装位置:/xzbs xzbs-images:latest
+
+4.进入容器
+如果未进入容器：docker exec -it 容器名称 bash
+
+5.激活python3.10
+conda activate py310
+
+6.运行程序
+进入sdk文件夹
+python run_offline_games.py mkv  
+
+  7.使用编译器在sdk\ai进行开发
+可以使用ssh连接，也可以修改后，在docker中运行
+
+使用相对路径导入： 如果你的项目结构中包含一个文件夹，你可以使用相对路径导入该文件夹中的内容。假设你的项目结构如下所示：
+css
+Copy code
+my_project/
+├── main.py
+└── my_module/
+    ├── __init__.py
+    ├── module1.py
+    └── module2.py
+如果你想在 main.py 中导入 my_module 文件夹中的内容，可以这样做：
+python
+Copy code
+from my_module import module1
+使用绝对路径导入： 如果你的项目结构较复杂，你可以使用绝对路径导入。首先，你需要确保将项目根目录添加到 Python 解释器的搜索路径中。然后，你可以使用绝对路径导入该文件夹中的内容。例如：
+python
+Copy code
+import sys
+sys.path.append('/path/to/your/project')
+
+from my_module import module1
+这里 /path/to/your/project 是你的项目根目录的绝对路径。
+使用包（Package）导入： 如果你的文件夹被认为是一个 Python 包（即包含 __init__.py 文件），你可以将其视为一个包，并使用包导入。例如：
+python
+Copy code
+from my_module import module1

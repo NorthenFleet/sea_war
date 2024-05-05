@@ -1,0 +1,89 @@
+{
+    "red": {
+        "flight": [
+            {
+                "id": 101001,
+                "x": 100,
+                "y": 150,
+                "speed_x": 5,
+                "speed_y": 3,
+                "health": 100,
+                "endurance": 200,
+                "weapons": [
+                    {
+                        "type": "missile",
+                        "count": 4
+                    },
+                    {
+                        "type": "cannon",
+                        "count": 2
+                    }
+                ],
+                "equipment": [
+                    {
+                        "type": "radar",
+                        "count": 1
+                    }
+                ]
+            },
+            {
+                "id": 101002,
+                "x": 150,
+                "y": 150,
+                "speed_x": 5,
+                "speed_y": 3,
+                "health": 100,
+                "endurance": 200,
+                "weapons": [
+                    {
+                        "type": "missile",
+                        "count": 4
+                    },
+                    {
+                        "type": "cannon",
+                        "count": 2
+                    }
+                ],
+                "equipment": [
+                    {
+                        "type": "radar",
+                        "count": 1
+                    }
+                ]
+            }
+        ],
+        "ship": [],
+        "submarine": []
+    },
+    "blue": {
+        "flight": [
+            {
+                "id": 201001,
+                "x": 800,
+                "y": 850,
+                "speed_x": 5,
+                "speed_y": 3,
+                "health": 100,
+                "endurance": 200,
+                "weapons": [
+                    {
+                        "type": "missile",
+                        "count": 4
+                    },
+                    {
+                        "type": "cannon",
+                        "count": 2
+                    }
+                ],
+                "equipment": [
+                    {
+                        "type": "radar",
+                        "count": 1
+                    }
+                ]
+            }
+        ],
+        "ship": [],
+        "submarine": []
+    }
+}

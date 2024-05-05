@@ -1,0 +1,30 @@
+# 使用支持CUDA的PyTorch官方Miniconda镜像
+FROM pytorch/pytorch:1.12.0-cuda11.3-cudnn8-runtime
+
+# 设置工作目录
+WORKDIR /sea_war
+
+# 创建新的 Conda 环境并安装 Python 3.10
+RUN conda create -y -n train python=3.10 && \
+    echo "source activate train" > ~/.bashrc && \
+    conda clean -afy
+
+# 安装 PyTorch（已预装）、Torchvision 和 TorchAudio
+RUN echo "source activate train" >> ~/.bashrc && \
+    /opt/conda/envs/train/bin/pip install --timeout=1000 torch torchvision torchaudio -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 安装 Ray
+RUN /opt/conda/envs/train/bin/pip install --timeout=1000 ray[default] -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 创建 vscode 用户和组
+RUN groupadd -g 501 vscode && \
+    useradd -r -u 501 -g vscode vscode
+
+# 将工作目录的所有权赋予 vscode 用户
+RUN chown -R vscode:vscode /sea_war
+
+# 切换到 vscode 用户
+USER vscode
+
+# 设置容器启动时自动激活 Conda 环境
+CMD ["/bin/bash", "-c", "source activate train && /bin/bash"]

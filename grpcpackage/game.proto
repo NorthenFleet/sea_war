@@ -1,0 +1,42 @@
+// game.proto
+
+syntax = "proto3";
+
+package game;
+
+// The game service definition.
+service GameService {
+  // Sends a command to the game engine and receives a GameState in response.
+  rpc SendCommand(GameCommand) returns (GameState) {}
+
+  // Stream of GameState for continuous updates from the server.
+  rpc GameStateStream(GameStreamRequest) returns (stream GameState) {}
+}
+
+// The request message containing the user's command.
+message GameCommand {
+  enum Command {
+    START = 0;
+    PAUSE = 1;
+    RESTART = 2;
+    END = 3;
+    MOVE_UP = 4;
+    MOVE_DOWN = 5;
+    MOVE_LEFT = 6;
+    MOVE_RIGHT = 7;
+    FIRE = 8;
+  }
+  Command command = 1;
+}
+
+// The response message containing the game state.
+message GameState {
+  int32 score = 1;
+  bool game_over = 2;
+  string additional_info = 3;
+}
+
+// The request message for game state stream.
+message GameStreamRequest {
+  bool subscribe = 1;
+}
