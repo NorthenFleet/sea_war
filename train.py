@@ -30,3 +30,15 @@ def action(self):
         command = pb2.GameCommand(command=pb2.GameCommand.FIRE)
     else:
         print("Invalid command. Please try again.")
+
+
+class Train():
+    def __init__(self) -> None:
+        pass
+
+    def run(self):
+        pass
+
+
+if __name__ == '__main__':
+    Train().run()
