@@ -14,21 +14,15 @@ class Train():
         map = Map(map_path)
         weapon = Weapon(weapons_path)
 
+        # 环境
         self.config = {"scenario": scenario,
                        "map": map,
-                       "weapon": weapon}
-
-        agent_modules = {
-            "agent1": ("agents.ai_agent", "AI_Agent"),
-            "agent2": ("agents.rule_agent", "Rule_Agent")
-        }
-
-        # 游戏逻辑
+                       "weapon": weapon} 
         self.game_env = GameEnv(name, agent_modules)
         self.current_step = None
         self.max_step = 1000
 
-    def run(self):
+        # 训练
         network_config = {
             "network_type": "dqn",
             "input_dim": 10,
@@ -39,6 +33,13 @@ class Train():
         model = configure_network(network_config)
         optimizer = optim.Adam(model.parameters())
 
+        # 智能体
+        agent_modules = {
+             "agent1": ("agents.ai_agent", "AI_Agent", model),
+            "agent2": ("agents.rule_agent", "Rule_Agent", None) 
+        }
+
+    def run(self):
         observation = self.game_env.reset_game(self.config)
         game_over = False
         self.current_step = 0

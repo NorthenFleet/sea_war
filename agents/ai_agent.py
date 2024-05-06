@@ -5,11 +5,8 @@ import torch
 
 
 class AI_Agent(Base_Agent):
-    def __init__(self, name):
+    def __init__(self, name, model=None):
         super().__init__(name)
-        self.network = None
-    
-    def load_model(self, model):
         self.model = model
 
     
