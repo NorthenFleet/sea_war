@@ -3,8 +3,8 @@ import torch.nn as nn
 
 
 class BaseModel(nn.Module):
-    def __init__(self, input_dim, output_dim, hidden_layers=2, hidden_units=128):
-        super(PPO, self).__init__()
+    def __init__(self):
+        super(BaseModel, self).__init__()
 
     def save_model(self, name, episodes):
         file_name = 'models/' + name + '-' + str(episodes) + '.pth'

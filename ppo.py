@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from base_model import BaseModel
 
+
 class BodyNetwork(nn.Module):
     def __init__(self, input_dim, hidden_layers=2, hidden_units=128):
         super(BodyNetwork, self).__init__()
@@ -16,6 +17,7 @@ class BodyNetwork(nn.Module):
     def forward(self, x):
         return self.layers(x)
 
+
 class PolicyNetwork(nn.Module):
     def __init__(self, body_network, output_dim):
         super(PolicyNetwork, self).__init__()
@@ -25,6 +27,7 @@ class PolicyNetwork(nn.Module):
     def forward(self, x):
         features = self.body_network(x)
         return torch.softmax(self.head(features), dim=-1)
+
 
 class ValueNetwork(nn.Module):
     def __init__(self, body_network):
@@ -36,14 +39,17 @@ class ValueNetwork(nn.Module):
         features = self.body_network(x)
         return self.head(features)
 
+
 class PPO(BaseModel):
     def __init__(self, input_dim, output_dim):
         super(PPO, self).__init__()
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+
         config = {
             "input_dim": input_dim,
-            "output_dim": output_dim,
-            "hidden_layers":2,
-            "hidden_units":128}
+            "hidden_layers": 2,
+            "hidden_units": 128}
 
         self.body_network = BodyNetwork(**config)
         self.policy_network = PolicyNetwork(self.body_network, output_dim)
@@ -51,7 +57,7 @@ class PPO(BaseModel):
 
     def forward(self, x):
         return self.policy_network(x), self.value_network(x)
-    
+
 
 if __name__ == '__main__':
     network_config = {
@@ -62,4 +68,3 @@ if __name__ == '__main__':
     ppo = PPO(**network_config)
     ppo.save_model()
     print("保存网络")
-

@@ -9,17 +9,13 @@ class AI_Agent(Base_Agent):
         super().__init__(name)
         self.model = model
 
-    
     def choose_action(self, state, use_epsilon=True):
-            print("我是AI智能体")
-            return random.choice(self.model.output_dim)
-            # if use_epsilon and np.random.rand() <= self.epsilon:
-            #     return random.randrange(self.action_size)
-            # state = torch.FloatTensor(state).unsqueeze(0)
-            # act_values = self.model(state)
-            # return np.argmax(act_values.detach().numpy())
-
-
+        print("我是AI智能体")
+        if use_epsilon and np.random.rand() <= self.epsilon:
+            return random.randrange(self.action_size)
+        state = torch.FloatTensor(state).unsqueeze(0)
+        act_values = self.model(state)
+        return np.argmax(act_values.detach().numpy())
 
     def __str__(self):
         return f"AI_Agent({self.name})"
