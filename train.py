@@ -1,44 +1,59 @@
-import grpc
-from grpcpackage import game_pb2 as pb2
-from grpcpackage import game_pb2_grpc as pb2_grpc
-
-
-def run():
-    channel = grpc.insecure_channel('localhost:50051')
-    stub = pb2_grpc.GameServiceStub(channel)
-
-
-def action(self):
-    user_input = input("Enter a command: ")
-    if user_input == "START":
-        command = pb2.GameCommand(command=pb2.GameCommand.START)
-    elif user_input == "PAUSE":
-        command = pb2.GameCommand(command=pb2.GameCommand.PAUSE)
-    elif user_input == "RESTART":
-        state = pb2.GameCommand(command=pb2.GameCommand.RESTART)
-    elif user_input == "END":
-        command = pb2.GameCommand(command=pb2.GameCommand.END)
-    elif user_input == "MOVE_UP":
-        command = pb2.GameCommand(command=pb2.GameCommand.MOVE_UP)
-    elif user_input == "MOVE_DOWN":
-        command = pb2.GameCommand(command=pb2.GameCommand.MOVE_DOWN)
-    elif user_input == "MOVE_LEFT":
-        command = pb2.GameCommand(command=pb2.GameCommand.MOVE_LEFT)
-    elif user_input == "MOVE_RIGHT":
-        command = pb2.GameCommand(command=pb2.GameCommand.MOVE_RIGHT)
-    elif user_input == "FIRE":
-        command = pb2.GameCommand(command=pb2.GameCommand.FIRE)
-    else:
-        print("Invalid command. Please try again.")
-
+from env import GameEnv
+from init import Map, Weapon, Scenario
+import torch.optim as optim
+from network import *
 
 class Train():
     def __init__(self) -> None:
-        pass
+        name = 'battle_royale'
+        weapons_path = 'data/weapons.json'
+        scenarios_path = 'data/scenario.json'
+        map_path = 'data/map.json'
+
+        scenario = Scenario(scenarios_path, name)
+        map = Map(map_path)
+        weapon = Weapon(weapons_path)
+
+        self.config = {"scenario": scenario,
+                       "map": map,
+                       "weapon": weapon}
+
+        agent_modules = {
+            "agent1": ("agents.ai_agent", "AI_Agent"),
+            "agent2": ("agents.rule_agent", "Rule_Agent")
+        }
+
+        # 游戏逻辑
+        self.game_env = GameEnv(name, agent_modules)
+        self.current_step = None
+        self.max_step = 1000
 
     def run(self):
-        pass
+        network_config = {
+            "network_type": "dqn",
+            "input_dim": 10,
+            "output_dim": 5,
+            "hidden_layers": 3,
+            "hidden_units": [256, 256, 256]
+        }
+        model = configure_network(network_config)
+        optimizer = optim.Adam(model.parameters())
+
+        observation = self.game_env.reset_game(self.config)
+        game_over = False
+        self.current_step = 0
+        while not game_over:
+            actions = {agent_name: agent.choose_action(
+                observation) for agent_name, agent in self.game_env.agents.items()}
+            observations, rewards, game_over, info = self.game_env.update(
+                actions)
+
+            self.current_step += 1
+            if self.current_step > self.max_step:
+                game_over = True
+        print(self.current_step)
 
 
 if __name__ == '__main__':
-    Train().run()
+    train = Train()
+    train.run()
