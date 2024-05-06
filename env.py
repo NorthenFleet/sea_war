@@ -40,7 +40,7 @@ class GameEnv():
         self.current_step = 0
         self.game_over = False
         print("Game starts with the following units:")
-
+        
         return {name: self.observation_space.sample() for name in self.agents}
 
     def update(self, action_dict):
