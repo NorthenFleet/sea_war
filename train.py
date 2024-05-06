@@ -20,7 +20,7 @@ class Train():
         # 环境
         self.input_dim = 10
         self.output_dim = 5
-        self.config = {"scenario": scenario,
+        self.game_config = {"scenario": scenario,
                        "map": map,
                        "weapon": weapon}
         self.current_step = None
@@ -55,7 +55,7 @@ class Train():
         self.game_env = GameEnv(name, agent_modules)
 
     def run(self):
-        observation = self.game_env.reset_game(self.config)
+        observation = self.game_env.reset_game(self.game_config)
         done = False
         self.current_step = 0
         while not done:
