@@ -11,12 +11,12 @@ class GameEnv():
         # 动态导入智能体模块
         # self.agents = {name: getattr(__import__(module), cls)(
         #     name) for name, (module, cls) in agent_modules.items()}
-        
+
         self.agents = {}
-        for name, (module, cls, model) in agent_modules.items():
+        for name, (module, cls, training_config, model) in agent_modules.items():
             agent_class = getattr(__import__(module), cls)
             if model is not None:
-                self.agents[name] = agent_class(name, model)
+                self.agents[name] = agent_class(name, training_config, model)
             else:
                 self.agents[name] = agent_class(name)
 
