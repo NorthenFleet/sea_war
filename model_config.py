@@ -1,37 +1,6 @@
 import torch.nn as nn
-
-class DQN(nn.Module):
-    def __init__(self, layers):
-        super(DQN, self).__init__()
-        self.layers = layers
-
-    def forward(self, x):
-        return self.layers(x)
-
-
-class PPO(nn.Module):
-    def __init__(self, layers):
-        super(PPO, self).__init__()
-        self.layers = layers
-
-    def forward(self, x):
-        return self.layers(x)
-
-class ActorCritic(nn.Module):
-    def __init__(self, layers):
-        super(ActorCritic, self).__init__()
-        self.layers = layers
-
-    def forward(self, x):
-        return self.layers(x)
-
-class DDPG(nn.Module):
-    def __init__(self, layers):
-        super(DDPG, self).__init__()
-        self.layers = layers
-
-    def forward(self, x):
-        return self.layers(x) 
+from ppo import PPO
+from actor_critic import ActorCritic
 
 # def configure_network(config):
 #     input_dim = config.get("input_dim", 4)
@@ -39,13 +8,13 @@ class DDPG(nn.Module):
 #     hidden_layers = config.get("hidden_layers", 2)
 #     hidden_units = config.get("hidden_units", [128, 128])
 
-def configure_network(model_type, input_dim, output_dim, hidden_layers=2, hidden_units=[128, 128]):
+def model_config(model_type, input_dim, output_dim, hidden_layers=2, hidden_units=[128, 128]):
     if model_type == "DQN":
         model = DQN(layers=build_layers(input_dim, output_dim, hidden_layers, hidden_units))
     elif model_type == "PPO":
-        model = PPO(layers=build_layers(input_dim, output_dim, hidden_layers, hidden_units))
+        model = PPO(input_dim, output_dim)
     elif model_type == "ActorCritic":
-        model = ActorCritic(layers=build_layers(input_dim, output_dim, hidden_layers, hidden_units))
+        model = ActorCritic(input_dim, output_dim)
     elif model_type == "DDPG":
         model = DDPG(layers=build_layers(input_dim, output_dim, hidden_layers, hidden_units))
     else:
@@ -74,5 +43,5 @@ if __name__ == "__main__":
         "hidden_units": [256, 256, 256]
     }
 
-    model = configure_network(**network_config)
+    model = model_config(**network_config)
     print(model)

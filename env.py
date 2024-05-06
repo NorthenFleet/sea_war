@@ -9,8 +9,17 @@ class GameEnv():
     def __init__(self, name, agent_modules):
         super(GameEnv, self).__init__()
         # 动态导入智能体模块
-        self.agents = {name: getattr(__import__(module), cls)(
-            name) for name, (module, cls) in agent_modules.items()}
+        # self.agents = {name: getattr(__import__(module), cls)(
+        #     name) for name, (module, cls) in agent_modules.items()}
+        
+        self.agents = {}
+        for name, (module, cls, model) in agent_modules.items():
+            agent_class = getattr(__import__(module), cls)
+            if model is not None:
+                self.agents[name] = agent_class(name, model)
+            else:
+                self.agents[name] = agent_class(name)
+
         self.action_space = spaces.Discrete(2)  # 假设每个智能体的动作空间相同
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(1,), dtype=np.float32)

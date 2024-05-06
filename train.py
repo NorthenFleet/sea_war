@@ -1,7 +1,7 @@
 from env import GameEnv
 from init import Map, Weapon, Scenario
 import torch.optim as optim
-from network import *
+from model_config import *
 
 class Train():
     def __init__(self) -> None:
@@ -18,26 +18,24 @@ class Train():
         self.config = {"scenario": scenario,
                        "map": map,
                        "weapon": weapon} 
-        self.game_env = GameEnv(name, agent_modules)
         self.current_step = None
         self.max_step = 1000
 
         # 训练
         network_config = {
-            "network_type": "dqn",
+            "model_type": "PPO",
             "input_dim": 10,
-            "output_dim": 5,
-            "hidden_layers": 3,
-            "hidden_units": [256, 256, 256]
+            "output_dim": 5
         }
-        model = configure_network(network_config)
-        optimizer = optim.Adam(model.parameters())
+        self.model = model_config(**network_config)
+        self.optimizer = optim.Adam(self.model.parameters())
 
-        # 智能体
+        # 智能体        
         agent_modules = {
-             "agent1": ("agents.ai_agent", "AI_Agent", model),
+            "agent1": ("agents.ai_agent", "AI_Agent", self.model),
             "agent2": ("agents.rule_agent", "Rule_Agent", None) 
         }
+        self.game_env = GameEnv(name, agent_modules)
 
     def run(self):
         observation = self.game_env.reset_game(self.config)

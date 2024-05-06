@@ -18,8 +18,8 @@ class Game():
                        "weapon": weapon}
 
         agent_modules = {
-            "agent1": ("agents.ai_agent", "AI_Agent"),
-            "agent2": ("agents.rule_agent", "Rule_Agent")
+            "agent1": ("agents.ai_agent", "AI_Agent", None),
+            "agent2": ("agents.rule_agent", "Rule_Agent", None)
         }
 
         # 游戏逻辑

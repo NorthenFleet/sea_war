@@ -36,16 +36,10 @@ class ValueNetwork(nn.Module):
         features = self.body_network(x)
         return self.head(features)
 
-class PPO(BaseModel):
-    def __init__(self, input_dim, output_dim):
-        super(PPO, self).__init__()
-        config = {
-            "input_dim": input_dim,
-            "output_dim": output_dim,
-            "hidden_layers":2,
-            "hidden_units":128}
-
-        self.body_network = BodyNetwork(**config)
+class ActorCritic(BaseModel):
+    def __init__(self, input_dim, output_dim, hidden_layers=2, hidden_units=128):
+        super(AC, self).__init__()
+        self.body_network = BodyNetwork(input_dim, hidden_layers, hidden_units)
         self.policy_network = PolicyNetwork(self.body_network, output_dim)
         self.value_network = ValueNetwork(self.body_network)
 
@@ -59,7 +53,7 @@ if __name__ == '__main__':
         "output_dim": 5
     }
 
-    ppo = PPO(**network_config)
-    ppo.save_model()
+    actorcritic = ActorCritic(**network_config)
+    actorcritic.save_model()
     print("保存网络")
 
