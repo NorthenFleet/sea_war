@@ -44,3 +44,13 @@ class PPO(nn.Module):
 
     def forward(self, x):
         return self.policy_network(x), self.value_network(x)
+    
+     def save_model(self, name, episodes):
+            file_name = 'models/' + name + '-' + str(episodes) + '.pth'
+        torch.save(self.model.state_dict(), file_name)
+
+    def load_model(self, name, episodes):
+        file_name = 'models/' + name + '-' + str(episodes) + '.pth'
+        self.model.load_state_dict(torch.load(file_name))
+        self.model.eval()  # Set the model to evaluation mode
+
