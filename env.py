@@ -3,11 +3,11 @@ import gym
 import numpy as np
 
 
-class GameEnv():
+class Env():
     metadata = {'render.modes': ['human']}
 
     def __init__(self, name, agent_modules):
-        super(GameEnv, self).__init__()
+        super(Env, self).__init__()
         # 动态导入智能体模块
         # self.agents = {name: getattr(__import__(module), cls)(
         #     name) for name, (module, cls) in agent_modules.items()}
@@ -40,7 +40,7 @@ class GameEnv():
         self.current_step = 0
         self.game_over = False
         print("Game starts with the following units:")
-        
+
         return {name: self.observation_space.sample() for name in self.agents}
 
     def update(self, action_dict):

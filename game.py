@@ -1,6 +1,7 @@
 from render import Render
-from env import GameEnv
+from env import Env
 from init import Map, Weapon, Scenario
+
 
 class Game():
     def __init__(self) -> None:
@@ -18,12 +19,12 @@ class Game():
                        "weapon": weapon}
 
         agent_modules = {
-            "agent1": ("agents.ai_agent", "AI_Agent", None),
-            "agent2": ("agents.rule_agent", "Rule_Agent", None)
+            "agent1": ("agents.ai_agent", "AI_Agent", None, None),
+            "agent2": ("agents.rule_agent", "Rule_Agent", None, None)
         }
 
         # 游戏逻辑
-        self.game_env = GameEnv(name, agent_modules)
+        self.game_env = Env(name, agent_modules)
         self.current_step = None
         self.render = Render()
         self.max_step = 1000

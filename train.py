@@ -1,4 +1,4 @@
-from env import GameEnv
+from env import Env
 from init import Map, Weapon, Scenario
 import numpy as np
 import torch.optim as optim
@@ -52,7 +52,7 @@ class Train():
             "agent1": ("agents.ai_agent", "AI_Agent", self.training_config, self.model),
             "agent2": ("agents.rule_agent", "Rule_Agent", None, None)
         }
-        self.game_env = GameEnv(name, agent_modules)
+        self.game_env = Env(name, agent_modules)
 
     def run(self):
         observation = self.game_env.reset_game(self.game_config)
