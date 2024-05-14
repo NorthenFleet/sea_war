@@ -12,5 +12,8 @@ class Rule_Agent(Base_Agent):
         print("我是规则智能体")
         return 1
 
+    def add_entity(self, entity):
+        self.entities.append(entity)
+
     def __str__(self):
         return f"Rule_Agent({self.name})"
