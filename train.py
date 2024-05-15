@@ -21,8 +21,8 @@ class Train():
         self.input_dim = 10
         self.output_dim = 5
         self.game_config = {"scenario": scenario,
-                       "map": map,
-                       "weapon": weapon}
+                            "map": map,
+                            "weapon": weapon}
         self.current_step = None
         self.max_step = 1000
 
@@ -55,18 +55,21 @@ class Train():
         self.game_env = Env(name, agent_modules)
 
     def run(self):
-        observation = self.game_env.reset_game(self.game_config)
+        obs = self.game_env.reset_game(self.game_config)
         done = False
         self.current_step = 0
         while not done:
             actions = {agent_name: agent.choose_action(
-                observation, self.use_epsilon) for agent_name, agent in self.game_env.agents.items()}
-            observations, rewards, done, info = self.game_env.update(
+                obs, self.use_epsilon) for agent_name, agent in self.game_env.agents.items()}
+            next_obs, rewards, done, info = self.game_env.update(
                 actions)
-            next_observations = np.reshape(
-                next_observations, [1, self.input_dim])
-            self.replay_buffer.push(observations, actions, rewards,
-                                    next_observations, done)
+            next_obs = np.reshape(
+                next_obs, [1, self.input_dim])
+
+            self.replay_buffer.push(obs, actions, rewards,
+                                    next_obs, done)
+
+            obs = next_obs
 
             self.current_step += 1
             if self.current_step > self.max_step:
