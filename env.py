@@ -1,5 +1,4 @@
 from gym import spaces
-import gym
 import numpy as np
 from gameLogic import GameLogic
 

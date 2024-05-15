@@ -4,76 +4,12 @@ import numpy as np
 import torch.optim as optim
 from replay_bufer import ReplayBuffer
 from model_config import *
+import torch
+import torch.nn as nn
+from gym import spaces
 
 
-class ReplayBuffer:
-    def __init__(self, capacity):
-        self.capacity = capacity
-        self.memory = []
-
-    def push(self, observations, actions, rewards,
-             next_observations, done):
-        self.memory.append((observations, actions, rewards,
-                            next_observations, done))
-        if len(self.memory) > self.capacity:
-            del self.memory[0]
-
-    def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
-
-    def __len__(self):
-        return len(self.memory)
-
-
-class BodyNetwork(nn.Module):
-    def __init__(self, input_dim, hidden_layers=2, hidden_units=128):
-        super(BodyNetwork, self).__init__()
-        layers = []
-        layers.append(nn.Linear(input_dim, hidden_units))
-        layers.append(nn.ReLU())
-        for _ in range(hidden_layers - 1):
-            layers.append(nn.Linear(hidden_units, hidden_units))
-            layers.append(nn.ReLU())
-        self.layers = nn.Sequential(*layers)
-
-    def forward(self, x):
-        return self.layers(x)
-
-
-class PolicyNetwork(nn.Module):
-    def __init__(self, body_network, output_dim):
-        super(PolicyNetwork, self).__init__()
-        self.body_network = body_network
-        self.head = nn.Linear(body_network.layers[-2].out_features, output_dim)
-
-    def forward(self, x):
-        features = self.body_network(x)
-        return torch.softmax(self.head(features), dim=-1)
-
-
-class ValueNetwork(nn.Module):
-    def __init__(self, body_network):
-        super(ValueNetwork, self).__init__()
-        self.body_network = body_network
-        self.head = nn.Linear(body_network.layers[-2].out_features, 1)
-
-    def forward(self, x):
-        features = self.body_network(x)
-        return self.head(features)
-
-
-class ActorCritic(BaseModel):
-    def __init__(self, input_dim, output_dim, hidden_layers=2, hidden_units=128):
-        super(AC, self).__init__()
-        self.body_network = BodyNetwork(input_dim, hidden_layers, hidden_units)
-        self.policy_network = PolicyNetwork(self.body_network, output_dim)
-        self.value_network = ValueNetwork(self.body_network)
-
-    def forward(self, x):
-        return self.policy_network(x), self.value_network(x)
-
-
-class Weapon:
+class Devices:
     def __init__(self, type, count):
         self.type = type
         self.count = count
@@ -275,9 +211,85 @@ class BaseModel(nn.Module):
         self.model.eval()  # Set the model to evaluation mode
 
 
+class ReplayBuffer:
+    def __init__(self, capacity):
+        self.capacity = capacity
+        self.memory = []
+
+    def push(self, observations, actions, rewards,
+             next_observations, done):
+        self.memory.append((observations, actions, rewards,
+                            next_observations, done))
+        if len(self.memory) > self.capacity:
+            del self.memory[0]
+
+    def sample(self, batch_size):
+        return random.sample(self.memory, batch_size)
+
+    def __len__(self):
+        return len(self.memory)
+
+
+class BodyNetwork(nn.Module):
+    def __init__(self, input_dim, hidden_layers=2, hidden_units=128):
+        super(BodyNetwork, self).__init__()
+        layers = []
+        layers.append(nn.Linear(input_dim, hidden_units))
+        layers.append(nn.ReLU())
+        for _ in range(hidden_layers - 1):
+            layers.append(nn.Linear(hidden_units, hidden_units))
+            layers.append(nn.ReLU())
+        self.layers = nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.layers(x)
+
+
+class PolicyNetwork(nn.Module):
+    def __init__(self, body_network, output_dim):
+        super(PolicyNetwork, self).__init__()
+        self.body_network = body_network
+        self.head = nn.Linear(body_network.layers[-2].out_features, output_dim)
+
+    def forward(self, x):
+        features = self.body_network(x)
+        return torch.softmax(self.head(features), dim=-1)
+
+
+class ValueNetwork(nn.Module):
+    def __init__(self, body_network):
+        super(ValueNetwork, self).__init__()
+        self.body_network = body_network
+        self.head = nn.Linear(body_network.layers[-2].out_features, 1)
+
+    def forward(self, x):
+        features = self.body_network(x)
+        return self.head(features)
+
+
+class ActorCritic(BaseModel):
+    def __init__(self, input_dim, output_dim, hidden_layers=2, hidden_units=128):
+        super(AC, self).__init__()
+        self.body_network = BodyNetwork(input_dim, hidden_layers, hidden_units)
+        self.policy_network = PolicyNetwork(self.body_network, output_dim)
+        self.value_network = ValueNetwork(self.body_network)
+
+    def forward(self, x):
+        return self.policy_network(x), self.value_network(x)
+
+
 class Player:
     def __init__(self, name):
         self.name = name
+
+
+class Base_Agent:
+    def __init__(self):
+        pass
+
+    def choose_action(self, observation):
+        # 简单的策略：总是返回 0
+        return 0
 
 
 class AI_Agent(Base_Agent):
@@ -299,12 +311,34 @@ class AI_Agent(Base_Agent):
         return f"AI_Agent({self.name})"
 
 
+class Rule_Agent(Base_Agent):
+    def __init__(self, name, trainning_config=None, model=None):
+        super().__init__()
+        self.name = name
+        self.model = model
+        self.trainning_config = trainning_config
+
+    def choose_action(self, observation, use_epsilon=None):
+        print("我是规则智能体")
+        return 1
+
+    def add_entity(self, entity):
+        self.entities.append(entity)
+
+    def __str__(self):
+        return f"Rule_Agent({self.name})"
+
+
 class Train():
     def __init__(self) -> None:
         name = 'battle_royale'
         weapons_path = 'data/weapons.json'
         scenarios_path = 'data/scenario.json'
         map_path = 'data/map.json'
+
+        # weapons_path = weapons_json
+        # scenarios_path = scenario_json
+        # map_path = map_json
 
         scenario = Scenario(scenarios_path, name)
         map = Map(map_path)
