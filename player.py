@@ -1,7 +1,7 @@
 class Player:
-    def __init__(self, name, agent, player_type, communication):
+    def __init__(self, name, agents, player_type, communication):
         self.name = name
-        self.agent = agent
+        self.agents = agents if isinstance(agents, list) else [agents]
         self.player_type = player_type
         self.communication = communication
         self.input_event_listener = None
@@ -17,4 +17,5 @@ class Player:
             self.input_event_listener(event)
 
     def receive_state_update(self, state):
-        pass  # 处理状态更新
+        for agent in self.agents:
+            agent.choose_action(state)
