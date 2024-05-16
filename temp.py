@@ -7,6 +7,9 @@ from model_config import *
 import torch
 import torch.nn as nn
 from gym import spaces
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 
 class Devices:
@@ -40,23 +43,33 @@ class GameLogic:
         self.entities = {}
         self.current_step = 0
         self.game_over = False
+        logging.info("GameLogic initialized.")
 
     def load_scenario(self, scenario):
         self.scenario = scenario
 
     def create_entity(self, entity_id, entity_type, position, speed, faction, hp, attack_power):
-        self.entities[entity_id] = {
-            "type": entity_type,
-            "position": position,
-            "speed": speed,
-            "faction": faction,
-            "hp": hp,
-            "attack_power": attack_power
-        }
+        try:
+            self.entities[entity_id] = {
+                "type": entity_type,
+                "position": position,
+                "speed": speed,
+                "faction": faction,
+                "hp": hp,
+                "attack_power": attack_power
+            }
+            logging.info(
+                f"Entity {entity_id} created: {self.entities[entity_id]}")
+        except Exception as e:
+            logging.error(f"Error creating entity {entity_id}: {e}")
 
     def delete_entity(self, entity_id):
-        if entity_id in self.entities:
-            del self.entities[entity_id]
+        try:
+            if entity_id in self.entities:
+                logging.info(f"Entity {entity_id} deleted.")
+                del self.entities[entity_id]
+        except Exception as e:
+            logging.error(f"Error deleting entity {entity_id}: {e}")
 
     def local_move(self, entity_id, move_direction, move_distance=None):
         if entity_id not in self.entities:
@@ -279,8 +292,25 @@ class ActorCritic(BaseModel):
 
 
 class Player:
-    def __init__(self, name):
+    def __init__(self, name, agent, player_type, communication):
         self.name = name
+        self.agent = agent
+        self.player_type = player_type
+        self.communication = communication
+        self.input_event_listener = None
+
+    def set_input_event_listener(self, listener):
+        if self.player_type == 'Human':
+            self.input_event_listener = listener
+
+    def handle_input_event(self, event):
+        if self.player_type == 'AI':
+            return
+        if self.input_event_listener:
+            self.input_event_listener(event)
+
+    def receive_state_update(self, state):
+        pass  # 处理状态更新
 
 
 class Base_Agent:
