@@ -3,7 +3,7 @@ from init import Map, Weapon, Scenario
 import numpy as np
 import torch.optim as optim
 from replay_bufer import ReplayBuffer
-from model_config import *
+
 
 
 class Train():
@@ -18,8 +18,6 @@ class Train():
         weapon = Weapon(weapons_path)
 
         # 环境
-        self.input_dim = 10
-        self.output_dim = 5
         self.game_config = {"scenario": scenario,
                             "map": map,
                             "weapon": weapon}
@@ -27,12 +25,6 @@ class Train():
         self.max_step = 1000
 
         # 训练
-        network_config = {
-            "model_type": "PPO",
-            "input_dim": self.input_dim,
-            "output_dim": self.output_dim
-        }
-        self.model = model_config(**network_config)
         self.use_epsilon = True
         self.replay_buffer = ReplayBuffer(capacity=2000)
 
@@ -41,18 +33,18 @@ class Train():
             "epsilon": 1.0,
             "epsilon_min": 0.01,
             "epsilon_decay": 0.995,
-            "learning_rate": 0.001
+            "learning_rate": 0.001,
+            "model": "PPO",
+            "input_dim": 100,
+            "output_dim": 50
         }
-
-        self.optimizer = optim.Adam(
-            self.model.parameters(), lr=self.training_config["learning_rate"])
 
         # 智能体
-        agent_modules = {
-            "agent1": ("agents.ai_agent", "AI_Agent", self.training_config, self.model),
-            "agent2": ("agents.rule_agent", "Rule_Agent", None, None)
+        player_config = {
+            "agent1": ("agents.ai_agent", "AI_Agent", self.training_config),
+            "agent2": ("agents.rule_agent", "Rule_Agent", None)
         }
-        self.game_env = Env(name, agent_modules)
+        self.game_env = Env(name, player_config)
 
     def run(self):
         obs = self.game_env.reset_game(self.game_config)
@@ -63,12 +55,8 @@ class Train():
                 obs, self.use_epsilon) for agent_name, agent in self.game_env.agents.items()}
             next_obs, rewards, done, info = self.game_env.update(
                 actions)
-            next_obs = np.reshape(
-                next_obs, [1, self.input_dim])
-
             self.replay_buffer.push(obs, actions, rewards,
                                     next_obs, done)
-
             obs = next_obs
 
             self.current_step += 1

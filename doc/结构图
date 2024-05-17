@@ -1,0 +1,63 @@
++---------------------+       +---------------------+       +---------------------+
+|   Communication     |       |       Env           |       |     GameLogic       |
++---------------------+       +---------------------+       +---------------------+
+| - env: Environment  |<----->| - game_logic:       |<----->| - scenario          |
+|                     |       |       GameLogic     |       | - map               |
+| + process_player_   |       | - agents: dict      |       | - weapon            |
+|     command()       |       | - action_space      |       | - entities: dict    |
+| + receive_engine_   |       | - observation_space |       | - current_step      |
+|     state_update()  |       | - name: str         |       | - game_over         |
++---------------------+       | - state: Any        |       +---------------------+
+                              | - current_step: int |
+                              | - communication:    |
+                              |       Communication |
+                              +---------------------+
+                                       ^
+                                       |
+                                       |
+                                       |
+                                       v
+                              +---------------------+
+                              |      Player         |
+                              +---------------------+
+                              | - name: str         |
+                              | - agent: Agent      |
+                              | - player_type:      |
+                              |       PlayerType    |
+                              | - communication:    |
+                              |       Communication |
+                              | - input_event_      |
+                              |       listener: func|
+                              +---------------------+
+                              | + set_input_event_  |
+                              |     listener()      |
+                              | + handle_input_     |
+                              |     event()         |
+                              | + receive_state_    |
+                              |     update()        |
+                              +---------------------+
+                                       ^
+                                       |
+                                       |
+                                       |
+                                       v
+                              +---------------------+
+                              |       Agent         |
+                              +---------------------+
+                              | - algorithm:        |
+                              |       Algorithm     |
+                              +---------------------+
+                              | + receive_state_    |
+                              |     update()        |
+                              | + choose_action()   |
+                              +---------------------+
+                                       ^
+                                       |
+                                       |
+                                       |
+                                       v
+                    +---------------------+       +---------------------+
+                    |  RuleBasedAlgorithm |       |  DeepLearningAlgorithm|
+                    +---------------------+       +---------------------+
+                    | + select_action()   |       | + select_action()   |
+                    +---------------------+       +---------------------+

@@ -6,19 +6,19 @@ from gameLogic import GameLogic
 class Env():
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, name, agent_modules):
+    def __init__(self, name, player_config):
         super(Env, self).__init__()
         # 动态导入智能体模块
-        # self.agents = {name: getattr(__import__(module), cls)(
-        #     name) for name, (module, cls) in agent_modules.items()}
+        # self.players = {name: getattr(__import__(module), cls)(
+        #     name) for name, (module, cls) in player_config.items()}
 
-        self.agents = {}
-        for name, (module, cls, training_config, model) in agent_modules.items():
+        self.players = {}
+        for name, (module, cls, training_config) in player_config.items():
             agent_class = getattr(__import__(module), cls)
-            if model is not None:
-                self.agents[name] = agent_class(name, training_config, model)
+            if training_config["model"] is not None:
+                self.players[name] = agent_class(name, training_config)
             else:
-                self.agents[name] = agent_class(name)
+                self.players[name] = agent_class(name)
 
         self.action_space = spaces.Discrete(2)  # 假设每个智能体的动作空间相同
         self.observation_space = spaces.Box(
@@ -41,7 +41,7 @@ class Env():
         self.game_over = False
         print("Game starts with the following units:")
 
-        return {name: self.observation_space.sample() for name in self.agents}
+        return {name: self.observation_space.sample() for name in self.players}
 
     def update(self, action_dict):
         # 解析动作字典，执行动作
@@ -52,6 +52,8 @@ class Env():
 
         # 简单示例：观测值为随机
         observations = {name: self.observation_space.sample()
-                        for name in self.agents}
+                        for name in self.players}
         done = False
+        # np.reshape(
+        #     observations, [1, self.input_dim])
         return observations, rewards, done, {}
