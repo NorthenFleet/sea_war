@@ -6,37 +6,34 @@ from gameLogic import GameLogic
 class Env():
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, name, player_config):
+    def __init__(self, game_config):
         super(Env, self).__init__()
-        # 动态导入智能体模块
-        # self.players = {name: getattr(__import__(module), cls)(
-        #     name) for name, (module, cls) in player_config.items()}
+        self.name = game_config["name"]
+        self.Scenario = game_config["scenario"]
+        self.map = game_config["map"]
+        self.weapon = game_config["weapon"]
+        self.state = game_config["scenario"]
+        self.current_step = None
 
         self.players = {}
-        for name, (module, cls, training_config) in player_config.items():
-            agent_class = getattr(__import__(module), cls)
-            if training_config["model"] is not None:
-                self.players[name] = agent_class(name, training_config)
-            else:
-                self.players[name] = agent_class(name)
+        for color, units in self.scenario_data.items():
+            self.players[color] = {
+                "flight": [],
+                "ship": [],
+                "submarine": []
+            }
+            for unit_type, unit_list in units.items():
+                for unit in unit_list:
+                    self.players[color][unit_type].append(unit)
+
+
 
         self.action_space = spaces.Discrete(2)  # 假设每个智能体的动作空间相同
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(1,), dtype=np.float32)
 
-        self.name = name
-        self.Scenario = None
-        self.map = None
-        self.weapon = None
-        self.state = None
-
-        self.current_step = None
-
-    def reset_game(self, config):
+    def reset_game(self):
         # 重置游戏
-        self.state = config["scenario"]
-        self.map = config["map"]
-        self.weapon = config["weapon"]
         self.current_step = 0
         self.game_over = False
         print("Game starts with the following units:")

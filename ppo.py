@@ -77,5 +77,5 @@ if __name__ == '__main__':
     }
 
     ppo = PPO(**network_config)
-    ppo.save_model()
+    ppo.save_model("ppo", "000")
     print("保存网络")

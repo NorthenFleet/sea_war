@@ -41,7 +41,7 @@ class Train():
 
         # 智能体
         player_config = {
-            "agent1": ("agents.ai_agent", "AI_Agent", self.training_config),
+            "agent1": ("agents.ai_agent", "AI_Agent", self.ai_config),
             "agent2": ("agents.rule_agent", "Rule_Agent", None)
         }
         self.game_env = Env(name, player_config)

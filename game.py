@@ -14,17 +14,21 @@ class Game():
         map = Map(map_path)
         weapon = Weapon(weapons_path)
 
-        self.config = {"scenario": scenario,
+        self.game_config = {
+                       "name":name, 
+                       "scenario": scenario,
                        "map": map,
                        "weapon": weapon}
 
-        agent_modules = {
-            "agent1": ("agents.ai_agent", "AI_Agent", None, None),
-            "agent2": ("agents.rule_agent", "Rule_Agent", None, None)
+        # 智能体
+        player_config = {
+            "agent1": ("agents.ai_agent", "AI_Agent", self.ai_config),
+            "agent2": ("agents.rule_agent", "Rule_Agent", None)
         }
+        self.game_env = Env(name, player_config)
 
         # 游戏逻辑
-        self.game_env = Env(name, agent_modules)
+        self.game_env = Env(name, player_config)
         self.current_step = None
         self.render = Render()
         self.max_step = 1000
