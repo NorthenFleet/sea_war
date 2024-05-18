@@ -8,15 +8,15 @@ from actor_critic import ActorCritic
 #     hidden_layers = config.get("hidden_layers", 2)
 #     hidden_units = config.get("hidden_units", [128, 128])
 
-def model_select(model_type, input_dim, output_dim, hidden_layers=2, hidden_units=[128, 128]):
+
+def model_select(model_type, input_dim, output_dim):
     if model_type == "DQN":
-        model = DQN(layers=build_layers(input_dim, output_dim, hidden_layers, hidden_units))
+        model = DQN(input_dim, output_dim)
     elif model_type == "PPO":
         model = PPO(input_dim, output_dim)
-    elif model_type == "ActorCritic":
-        model = ActorCritic(input_dim, output_dim)
+
     elif model_type == "DDPG":
-        model = DDPG(layers=build_layers(input_dim, output_dim, hidden_layers, hidden_units))
+        model = DDPG(input_dim, output_dim)
     else:
         raise NotImplementedError("Unsupported model type")
 

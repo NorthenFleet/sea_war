@@ -29,8 +29,10 @@ class Game():
 
         # 玩家设置
         player_config = {
-            "red": ("agents.ai_agent", "AI_Agent", "model"),
-            "blue": ("agents.rule_agent", "Rule_Agent")
+            # "red": ("agents.ai_agent", "AI_Agent", "model"),
+            # "blue": ("agents.rule_agent", "Rule_Agent")
+            "red": ("player_AI", "AI_Agent", "model"),
+            "blue": ("rule_agent", "Rule_Agent")
         }
 
         self.players = {}

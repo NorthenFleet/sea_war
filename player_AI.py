@@ -11,9 +11,6 @@ class Player_AI(Player_Base):
 
         self.modle = model_select()(**AI_config["name"])
         
-        for name, (module, cls) in AI_config.items():
-            self.agent = getattr(__import__(module), cls)
-            self.players[name] = agent_class(name, training_config)
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
