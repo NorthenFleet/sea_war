@@ -1,11 +1,11 @@
 import numpy as np
 
 
-class GameLogic:
-    def __init__(self, scenario_config, map_config, weapon_config):
-        self.scenario = scenario_config
-        self.map = map_config
-        self.weapon = weapon_config
+class GameLogic():
+    def __init__(self, scenario, map, weapon):
+        self.scenario = scenario
+        self.map = map
+        self.weapon = weapon
         self.entities = {}
         self.current_step = 0
         self.game_over = False

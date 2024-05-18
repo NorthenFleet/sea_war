@@ -13,6 +13,7 @@ class Game():
         scenario = Scenario(scenarios_path, name)
         map = Map(map_path)
         weapon = Weapon(weapons_path)
+        game_logic = GameLogic(scenario, map, weapon)
 
         # 环境设置
         self.game_config = {
@@ -20,7 +21,7 @@ class Game():
                        "scenario": scenario,
                        "map": map,
                        "weapon": weapon,
-                       "GameLogic": GameLogic()}
+                       "GameLogic": game_logic}
         
         self.game_env = Env(self.game_config)
         self.current_step = None
