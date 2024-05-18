@@ -28,7 +28,7 @@ class Train():
         self.use_epsilon = True
         self.replay_buffer = ReplayBuffer(capacity=2000)
 
-        self.AI_config = {
+        self.training_config = {
             "gamma": 0.95,
             "epsilon": 1.0,
             "epsilon_min": 0.01,

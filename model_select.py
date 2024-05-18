@@ -8,7 +8,7 @@ from actor_critic import ActorCritic
 #     hidden_layers = config.get("hidden_layers", 2)
 #     hidden_units = config.get("hidden_units", [128, 128])
 
-def model_config(model_type, input_dim, output_dim, hidden_layers=2, hidden_units=[128, 128]):
+def model_select(model_type, input_dim, output_dim, hidden_layers=2, hidden_units=[128, 128]):
     if model_type == "DQN":
         model = DQN(layers=build_layers(input_dim, output_dim, hidden_layers, hidden_units))
     elif model_type == "PPO":

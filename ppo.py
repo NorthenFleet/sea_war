@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from base_model import BaseModel
 
 class BodyNetwork(nn.Module):
     def __init__(self, input_dim, hidden_layers=2, hidden_units=128):
@@ -38,7 +37,7 @@ class ValueNetwork(nn.Module):
         features = self.body_network(x)
         return self.head(features)
 
-class PPO(BaseModel):
+class PPO():
     def __init__(self, input_dim, output_dim, lr=0.001):
         super(PPO, self).__init__()
         self.input_dim = input_dim
@@ -77,5 +76,4 @@ if __name__ == '__main__':
     }
 
     ppo = PPO(**network_config)
-    ppo.save_model("ppo", "000")
-    print("保存网络")
+    

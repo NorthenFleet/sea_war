@@ -5,6 +5,7 @@ class HumanPlayer(Base_player):
         super().__init__(name)
         self.current_action = None
         self.default_action = 'idle'
+        self.input_event_listener = None
         self.start_listening()
 
     def start_listening(self):

@@ -5,7 +5,7 @@ class Player_Base:
         self.agents = agents_config if isinstance(
             agents_config, list) else [agents_config]
         self.communication = communication
-        self.input_event_listener = None
+        
 
         # 动态导入智能体模块
         # self.players = {name: getattr(__import__(module), cls)(
@@ -19,4 +19,6 @@ class Player_Base:
             else:
                 self.players[name] = agent_class(name)
 
+    def choose_action(self, state):
+        pass
     

@@ -2,8 +2,6 @@ from render import Render
 from env import Env
 from init import Map, Weapon, Scenario
 from gameLogic import GameLogic
-from player_base 
-
 
 class Game():
     def __init__(self) -> None:
@@ -16,6 +14,7 @@ class Game():
         map = Map(map_path)
         weapon = Weapon(weapons_path)
 
+        # 环境设置
         self.game_config = {
                        "name":name, 
                        "scenario": scenario,
@@ -23,7 +22,7 @@ class Game():
                        "weapon": weapon,
                        "GameLogic": GameLogic()}
 
-        # 智能体
+        # 玩家设置
         player_config = {
             "agent1": ("agents.ai_agent", "AI_Agent", self.ai_config),
             "agent2": ("agents.rule_agent", "Rule_Agent", None)
