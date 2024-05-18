@@ -1,7 +1,8 @@
 import threading
+from communication import Communication
 
 
-class NetworkClient:
+class CommunicationClient:
     def __init__(self, server_host, server_port):
         self.communication = Communication('0.0.0.0', 0)  # 客户端绑定到任意可用端口
         self.server_address = (server_host, server_port)

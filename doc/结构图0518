@@ -1,0 +1,52 @@
+                                  
+         +-----------------+                 
+         |  Communication  |                 
+         +-----------------+                 
+                 |                          
+                 |                          
+                 v                          
+         +-----------------+                 
+         | NetworkServer   |                 
+         +-----------------+                 
+         | - communication |                 
+         | - clients       |                 
+         | - actions       |                 
+         +-----------------+                 
+                 |                          
+                 |                          
+                 v                          
+         +-----------------+                 
+         |   BroadcastLoop |                 
+         +-----------------+                 
+                 |                          
+                 |                          
+                 v                          
++-----------------+     +-----------------+  
+|  NetworkClient  |     |  NetworkClient  |  
++-----------------+     +-----------------+  
+| - communication |     | - communication |  
+| - server_address|     | - server_address|
+| - action        |     | - action        |  
+| - received_acts |     | - received_acts |  
++-----------------+     +-----------------+  
+                 |                          
+                 |                          
+                 v                          
+         +---------------------+             
+         | GameClientManager   |             
+         +---------------------+             
+         | - network_client    |             
+         | - env               |             
+         | - human_player      |             
+         +---------------------+             
+                 |                          
+                 |                          
+                 v                          
+         +-----------------+                 
+         |      Env        |                 
+         +-----------------+                 
+         | - name          |                 
+         | - players       |                 
+         | - action_space  |                 
+         | - state         |                 
+         +-----------------+                 

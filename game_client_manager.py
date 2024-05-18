@@ -1,32 +1,12 @@
-import threading
-
-
-class NetworkClient:
-    def __init__(self, server_host, server_port):
-        self.communication = Communication('0.0.0.0', 0)  # 客户端绑定到任意可用端口
-        self.server_address = (server_host, server_port)
-        self.action = None
-
-    def start(self):
-        threading.Thread(target=self.receive_data).start()
-        while True:
-            if self.action is not None:
-                self.communication.send(self.action, self.server_address)
-                self.action = None
-
-    def receive_data(self):
-        while True:
-            data, _ = self.communication.receive()
-            if data:
-                print(f"Received from server: {data}")
-
-    def send_action(self, action):
-        self.action = action
+import threading, time
+from env import Env
+from com_client import CommunicationClient
+from player_human import HumanPlayer
 
 
 class GameClientManager:
     def __init__(self, server_host, server_port):
-        self.network_client = NetworkClient(server_host, server_port)
+        self.network_client = CommunicationClient(server_host, server_port)
         self.env = Env(name="SC2Env", player_config=player_config)
         self.human_player = HumanPlayer(name="HumanPlayer")
 
@@ -35,18 +15,20 @@ class GameClientManager:
         self.run_game()
 
     def run_game(self):
-        state = self.env.reset_game(config)
+        state = self.env.reset_game()
         done = False
         while not done:
             action = self.human_player.choose_action(state)
             self.network_client.send_action(action)
-            data, _ = self.network_client.communication.receive()
-            if data:
-                observations, rewards = data.split(",")
-                done = self.env.update(
-                    {self.network_client.server_address: action})
+            while self.network_client.received_actions is None:
+                # Wait for the server to broadcast the actions
+                time.sleep(0.01)
+            # Convert the received string back to a dictionary
+            action_dict = eval(self.network_client.received_actions)
+            self.network_client.received_actions = None
+            observations, rewards, done, _ = self.env.update(action_dict)
             if done:
-                state = self.env.reset_game(config)
+                state = self.env.reset_game()
 
     def get_human_action(self):
         # Implement method to get human player action
