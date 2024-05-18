@@ -2,11 +2,11 @@ from gym import spaces
 import numpy as np
 
 
-
+\
 class Env():
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, game_config):
+    def __init__(self, game_config, com):
         super(Env, self).__init__()
         self.name = game_config["name"]
         self.Scenario = game_config["scenario"]
@@ -14,6 +14,7 @@ class Env():
         self.weapon = game_config["weapon"]
         self.state = game_config["scenario"]
         self.current_step = None
+        self.com = com
 
         self.players = {}
         for color, units in self.scenario_data.items():
@@ -25,8 +26,6 @@ class Env():
             for unit_type, unit_list in units.items():
                 for unit in unit_list:
                     self.players[color][unit_type].append(unit)
-
-
 
         self.action_space = spaces.Discrete(2)  # 假设每个智能体的动作空间相同
         self.observation_space = spaces.Box(

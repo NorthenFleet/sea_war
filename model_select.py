@@ -1,5 +1,5 @@
 import torch.nn as nn
-from ppo import PPO
+from models.ppo import PPO
 from actor_critic import ActorCritic
 
 # def configure_network(config):

@@ -6,11 +6,14 @@ class Player_AI(Player_Base):
     def __init__(self, AI_config):
         super().__init__(AI_config["name"])
         self.memory = []
-        self.state_size = AI_config["state_size"]
-        self.action_size = AI_config["action_size"]
-        
+        # self.state_size = AI_config["state_size"]
+        # self.action_size = AI_config["action_size"]
 
         self.modle = model_select()(**AI_config["name"])
+        
+        for name, (module, cls) in AI_config.items():
+            self.agent = getattr(__import__(module), cls)
+            self.players[name] = agent_class(name, training_config)
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -29,5 +32,6 @@ class Player_AI(Player_Base):
         self.model.eval()  # Set the model to evaluation mode
 
 
-ppo.save_model("ppo", "000")
-print("保存网络")
+if __name__ == '__main__':
+    Player_AI.save_model("ppo", "000")
+    print("保存网络")

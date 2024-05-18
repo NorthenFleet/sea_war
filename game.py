@@ -21,19 +21,26 @@ class Game():
                        "map": map,
                        "weapon": weapon,
                        "GameLogic": GameLogic()}
-
-        # 玩家设置
-        player_config = {
-            "agent1": ("agents.ai_agent", "AI_Agent", self.ai_config),
-            "agent2": ("agents.rule_agent", "Rule_Agent", None)
-        }
-
-
-        # 游戏逻辑
-        self.game_env = Env(player_config)
+        
+        self.game_env = Env(self.game_config)
         self.current_step = None
         self.render = Render()
         self.max_step = 1000
+
+        # 玩家设置
+        player_config = {
+            "red": ("agents.ai_agent", "AI_Agent", "model"),
+            "blue": ("agents.rule_agent", "Rule_Agent")
+        }
+
+        self.players = {}
+        for name, (module, cls, model) in player_config.items():
+            player_class = getattr(__import__(module), cls)
+            if model is not None:
+                self.players[name] = player_class(name, model)
+            else:
+                self.players[name] = player_class(name)
+
 
     def run(self):
         observation = self.game_env.reset_game(self.config)
