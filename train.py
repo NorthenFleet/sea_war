@@ -28,7 +28,7 @@ class Train():
         self.use_epsilon = True
         self.replay_buffer = ReplayBuffer(capacity=2000)
 
-        self.training_config = {
+        self.AI_config = {
             "gamma": 0.95,
             "epsilon": 1.0,
             "epsilon_min": 0.01,
@@ -41,8 +41,8 @@ class Train():
 
         # 智能体
         player_config = {
-            "agent1": ("agents.ai_agent", "AI_Agent", self.ai_config),
-            "agent2": ("agents.rule_agent", "Rule_Agent", None)
+            "agent1": ("agents.ai_agent", "AI_Agent", self.AI_config),
+            "agent2": ("agents.rule_agent", "Rule_Agent")
         }
         self.game_env = Env(name, player_config)
 

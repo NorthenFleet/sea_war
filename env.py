@@ -1,6 +1,6 @@
 from gym import spaces
 import numpy as np
-from gameLogic import GameLogic
+
 
 
 class Env():
