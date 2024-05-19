@@ -1,6 +1,6 @@
 import torch.nn as nn
 from models.ppo import PPO
-from actor_critic import ActorCritic
+from models.actor_critic import ActorCritic
 
 # def configure_network(config):
 #     input_dim = config.get("input_dim", 4)

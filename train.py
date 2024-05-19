@@ -5,7 +5,6 @@ import torch.optim as optim
 from replay_bufer import ReplayBuffer
 
 
-
 class Train():
     def __init__(self) -> None:
         name = 'battle_royale'
@@ -41,7 +40,7 @@ class Train():
 
         # 智能体
         player_config = {
-            "agent1": ("agents.ai_agent", "AI_Agent", self.AI_config),
+            "agent1": ("agents.ai_agent", "AI_Agent", self.training_config),
             "agent2": ("agents.rule_agent", "Rule_Agent")
         }
         self.game_env = Env(name, player_config)

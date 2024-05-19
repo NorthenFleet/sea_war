@@ -51,7 +51,7 @@ class Game():
         self.current_step = 0
         while not game_over:
             actions = {agent_name: agent.choose_action(
-                observation) for agent_name, agent in self.game_env.agents.items()}
+                observation) for agent_name, agent in self.players.items()}
             observations, rewards, game_over, info = self.game_env.update(
                 actions)
 

@@ -2,7 +2,8 @@ from player_base import Player_Base
 import torch
 from model_select import *
 
-class Player_AI(Player_Base):
+
+class AIPlayer(Player_Base):
     def __init__(self, AI_config):
         super().__init__(AI_config["name"])
         self.memory = []
@@ -10,7 +11,6 @@ class Player_AI(Player_Base):
         # self.action_size = AI_config["action_size"]
 
         self.modle = model_select()(**AI_config["name"])
-        
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -30,5 +30,5 @@ class Player_AI(Player_Base):
 
 
 if __name__ == '__main__':
-    Player_AI.save_model("ppo", "000")
+    AIPlayer.save_model("ppo", "000")
     print("保存网络")
