@@ -6,12 +6,12 @@ import torch.optim as optim
 from replay_bufer import ReplayBuffer
 
 
-@ray.remote
+# @ray.remote
 class DistributedGameEnv:
     def __init__(self, config):
         self.config = config
         self.current_step = 0
-        self.game_env = Env(name, self.config["game_config"])
+        self.game_env = Env(self.config["game_config"])
         self.replay_buffer = ReplayBuffer(
             self.config["trainning_config"]["buffer_capacity"])
         self.players = {}
@@ -53,17 +53,18 @@ class DistributedGameEnv:
         self.env.close()
 
 
-class DistributedTraining:
-    def __init__(self, config, num_envs, num_episodes):
+class DistributedTraining():
+    def __init__(self, config):
         self.config = config
-        self.num_envs = num_envs
-        self.num_episodes = num_episodes
+        self.num_envs = self.config["trainning_config"]["num_envs"]
+        self.num_episodes = self.config["trainning_config"]["num_episodes"]
         self.envs = [DistributedGameEnv.remote(
-            config) for _ in range(num_envs)]
+            config) for _ in range(self.num_envs)]
 
     def run_training(self):
         for i in range(self.num_episodes):
-            results = ray.get([env.run_episode.remote() for env in self.envs])
+            results = ray.get(
+                [env.run_episode.remote() for env in self.envs])
             for env in self.envs:
                 env.train.remote()
             print(f"Episode {i+1}, results: {results}")
@@ -75,7 +76,7 @@ class DistributedTraining:
 
 def main():
     # 环境
-    name = 'battle_royale'
+    name = 'sea_war'
     weapons_path = 'data/weapons.json'
     scenarios_path = 'data/scenario.json'
     map_path = 'data/map.json'
@@ -84,7 +85,8 @@ def main():
     map = Map(map_path)
     weapon = Weapon(weapons_path)
 
-    game_config = {"scenario": scenario,
+    game_config = {"name": name,
+                   "scenario": scenario,
                    "map": map,
                    "weapon": weapon}
 
@@ -120,6 +122,7 @@ def main():
         "player_config": player_config,
         "trainning_config": trainning_config
     }
+    DistributedGameEnv(config)
 
     ray.init()
     training = DistributedTraining(config)

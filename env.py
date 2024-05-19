@@ -6,10 +6,10 @@ import numpy as np
 class Env():
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, game_config, com):
+    def __init__(self, game_config, com=None):
         super(Env, self).__init__()
         self.name = game_config["name"]
-        self.Scenario = game_config["scenario"]
+        self.scenario = game_config["scenario"]
         self.map = game_config["map"]
         self.weapon = game_config["weapon"]
         self.state = game_config["scenario"]
@@ -17,7 +17,7 @@ class Env():
         self.com = com
 
         self.players = {}
-        for color, units in self.scenario_data.items():
+        for color, units in self.scenario.items():
             self.players[color] = {
                 "flight": [],
                 "ship": [],
