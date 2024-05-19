@@ -33,7 +33,7 @@ class Game():
         player_config = {
             # "red": ("agents.ai_agent", "AI_Agent", "model"),
             # "blue": ("agents.rule_agent", "Rule_Agent")
-            "red": ("player_AI", "AI_Agent", "model"),
+            "red": ("player_AI", "AI_Agent", "ppo"),
             "blue": ("rule_agent", "Rule_Agent")
         }
 

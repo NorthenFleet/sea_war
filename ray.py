@@ -1,33 +1,47 @@
 import ray
+from env import Env
+from init import Map, Weapon, Scenario
+import numpy as np
+import torch.optim as optim
+from replay_bufer import ReplayBuffer
 
 
 @ray.remote
 class DistributedGameEnv:
     def __init__(self, config):
-        self.env = Env(name="SC2Env", player_config=config["player_config"])
-        self.agent1 = DQNAgent(
-            name="DQN_Agent_1", state_size=84*84, action_size=2)
-        self.agent2 = DQNAgent(
-            name="DQN_Agent_2", state_size=84*84, action_size=2)
+        self.config = config
+        self.current_step = 0
+        self.game_env = Env(name, self.config["game_config"])
+        self.replay_buffer = ReplayBuffer(
+            self.config["trainning_config"]["buffer_capacity"])
+        self.players = {}
+        for name, (module, cls, model) in self.config["player_config"].items():
+            player_class = getattr(__import__(module), cls)
+            if model is not None:
+                self.players[name] = player_class(name, model)
+            else:
+                self.players[name] = player_class(name)
 
     def run_episode(self):
-        state = self.env.reset_game()
-        state = state.flatten()
+        obs = self.game_env.reset_game(self.game_config)
         done = False
-        total_reward1 = 0
-        total_reward2 = 0
+        self.current_step = 0
         while not done:
-            action1 = self.agent1.choose_action(state)
-            action2 = self.agent2.choose_action(state)
-            actions = [action1, action2]
-            next_state, reward, done, _ = self.env.update(actions)
-            next_state = next_state.flatten()
-            self.agent1.remember(state, action1, reward, next_state, done)
-            self.agent2.remember(state, action2, reward, next_state, done)
-            state = next_state
-            total_reward1 += reward
-            total_reward2 += reward
-        return total_reward1, total_reward2
+            actions = {agent_name: agent.choose_action(obs, self.config["trainning_config"]["use_epsilon"])
+                       for agent_name, agent in self.players.items()}
+            next_obs, rewards, done, info = self.game_env.update(actions)
+            self.replay_buffer.push(obs, actions, rewards, next_obs, done)
+            obs = next_obs
+
+            self.current_step += 1
+            if self.current_step > self.max_step:
+                done = True
+        print(self.current_step)
+
+    def train(self, batch_size=32):
+        for agent in self.players.values():
+            if len(agent.memory) > batch_size:
+                agent.train(batch_size)
 
     def train(self, batch_size=32):
         if len(self.agent1.memory) > batch_size:
@@ -39,24 +53,80 @@ class DistributedGameEnv:
         self.env.close()
 
 
-ray.init()
+class DistributedTraining:
+    def __init__(self, config, num_envs, num_episodes):
+        self.config = config
+        self.num_envs = num_envs
+        self.num_episodes = num_episodes
+        self.envs = [DistributedGameEnv.remote(
+            config) for _ in range(num_envs)]
 
-num_envs = 4
-envs = [DistributedGameEnv.remote(
-    config={'max_steps': 100, 'player_config': player_config}) for _ in range(num_envs)]
+    def run_training(self):
+        for i in range(self.num_episodes):
+            results = ray.get([env.run_episode.remote() for env in self.envs])
+            for env in self.envs:
+                env.train.remote()
+            print(f"Episode {i+1}, results: {results}")
+
+    def close_envs(self):
+        for env in self.envs:
+            env.close.remote()
 
 
-def run_training(envs, num_episodes):
-    for i in range(num_episodes):
-        results = ray.get([env.run_episode.remote() for env in envs])
-        for env in envs:
-            env.train.remote()
-        print(f"Episode {i+1}, results: {results}")
+def main():
+    # 环境
+    name = 'battle_royale'
+    weapons_path = 'data/weapons.json'
+    scenarios_path = 'data/scenario.json'
+    map_path = 'data/map.json'
+
+    scenario = Scenario(scenarios_path, name)
+    map = Map(map_path)
+    weapon = Weapon(weapons_path)
+
+    game_config = {"scenario": scenario,
+                   "map": map,
+                   "weapon": weapon}
+
+    # 智能体
+    AI_agent_config = {
+        "gamma": 0.95,
+        "epsilon": 1.0,
+        "epsilon_min": 0.01,
+        "epsilon_decay": 0.995,
+        "learning_rate": 0.001,
+        "model": "PPO",
+        "input_dim": 100,
+        "output_dim": 50
+    }
+
+    # 智能体设置，智能体数量与想定文件scenario一致
+    player_config = {
+        "red": ("agents.ai_agent", "AI_Agent", AI_agent_config),
+        "blue": ("agents.rule_agent", "Rule_Agent")
+    }
+
+    # 分布式训练参数
+    trainning_config = {
+        "max_step": 1000,
+        "num_envs": 4,
+        "num_episodes": 100,
+        "use_epsilon": True,
+        "buffer_capacity": 2000
+    }
+
+    config = {
+        "game_config": game_config,
+        "player_config": player_config,
+        "trainning_config": trainning_config
+    }
+
+    ray.init()
+    training = DistributedTraining(config)
+    training.run_training()
+    training.close_envs()
+    ray.shutdown()
 
 
-run_training(envs, 100)
-
-for env in envs:
-    env.close.remote()
-
-ray.shutdown()
+if __name__ == '__main__':
+    main()

@@ -7,6 +7,7 @@ from replay_bufer import ReplayBuffer
 
 class Train():
     def __init__(self) -> None:
+        # 环境
         name = 'battle_royale'
         weapons_path = 'data/weapons.json'
         scenarios_path = 'data/scenario.json'
@@ -16,12 +17,12 @@ class Train():
         map = Map(map_path)
         weapon = Weapon(weapons_path)
 
-        # 环境
         self.game_config = {"scenario": scenario,
                             "map": map,
                             "weapon": weapon}
         self.current_step = None
         self.max_step = 1000
+        self.game_env = Env(name, self.game_config)
 
         # 训练
         self.use_epsilon = True
@@ -38,12 +39,19 @@ class Train():
             "output_dim": 50
         }
 
-        # 智能体
+        # 智能体设置，智能体数量与想定文件scenario一致
         player_config = {
-            "agent1": ("agents.ai_agent", "AI_Agent", self.training_config),
-            "agent2": ("agents.rule_agent", "Rule_Agent")
+            "red": ("agents.ai_agent", "AI_Agent", self.training_config),
+            "blue": ("agents.rule_agent", "Rule_Agent")
         }
-        self.game_env = Env(name, player_config)
+
+        self.players = {}
+        for name, (module, cls, model) in player_config.items():
+            player_class = getattr(__import__(module), cls)
+            if model is not None:
+                self.players[name] = player_class(name, model)
+            else:
+                self.players[name] = player_class(name)
 
     def run(self):
         obs = self.game_env.reset_game(self.game_config)
