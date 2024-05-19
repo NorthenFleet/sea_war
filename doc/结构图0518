@@ -21,32 +21,31 @@
                  |                          
                  |                          
                  v                          
-+-----------------+     +-----------------+  
-|  NetworkClient  |     |  NetworkClient  |  
-+-----------------+     +-----------------+  
-| - communication |     | - communication |  
-| - server_address|     | - server_address|
-| - action        |     | - action        |  
-| - received_acts |     | - received_acts |  
-+-----------------+     +-----------------+  
-                 |                          
-                 |                          
-                 v                          
-         +---------------------+             
-         | GameClientManager   |             
-         +---------------------+             
-         | - network_client    |             
-         | - env               |             
-         | - human_player      |             
-         +---------------------+             
-                 |                          
-                 |                          
-                 v                          
-         +-----------------+                 
-         |      Env        |                 
-         +-----------------+                 
-         | - name          |                 
-         | - players       |                 
-         | - action_space  |                 
-         | - state         |                 
-         +-----------------+                 
++-----------------+     +-----------------+     +-----------------+
+|  NetworkClient  |     |  NetworkClient  |     |  NetworkClient  |
++-----------------+     +-----------------+     +-----------------+
+| - communication |     | - communication |     | - communication |
+| - server_address|     | - server_address|     | - server_address|
+| - action        |     | - action        |     | - action        |
+| - received_acts |     | - received_acts |     | - received_acts |
++-----------------+     +-----------------+     +-----------------+
+        |                       |                         |
+        v                       v                         v
++------------------+    +------------------+    +------------------+
+|GameClientManager |    |GameClientManager |    |GameClientManager |
++------------------+    +------------------+    +------------------+
+| - network_client |    | - network_client |    | - network_client |
+| - env            |    | - env            |    | - env            |
+| - human_player   |    | - human_player   |    | - ai_agent       |
+| - ai_agent       |    +------------------+    +------------------+
++------------------+
+        |
+        v
++------------------+
+|       Env        |
++------------------+
+| - name           |
+| - players        |
+| - action_space   |
+| - state          |
++------------------+
