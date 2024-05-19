@@ -3,6 +3,7 @@ from env import Env
 from init import Map, Weapon, Scenario
 from gameLogic import GameLogic
 
+
 class Game():
     def __init__(self) -> None:
         name = 'battle_royale'
@@ -17,12 +18,12 @@ class Game():
 
         # 环境设置
         self.game_config = {
-                       "name":name, 
-                       "scenario": scenario,
-                       "map": map,
-                       "weapon": weapon,
-                       "GameLogic": game_logic}
-        
+            "name": name,
+            "scenario": scenario,
+            "map": map,
+            "weapon": weapon,
+            "GameLogic": game_logic}
+
         self.game_env = Env(self.game_config)
         self.current_step = None
         self.render = Render()
@@ -43,7 +44,6 @@ class Game():
                 self.players[name] = player_class(name, model)
             else:
                 self.players[name] = player_class(name)
-
 
     def run(self):
         observation = self.game_env.reset_game(self.config)

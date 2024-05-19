@@ -11,7 +11,7 @@ class DistributedGameEnv:
             name="DQN_Agent_2", state_size=84*84, action_size=2)
 
     def run_episode(self):
-        state = self.env.reset_game(config)
+        state = self.env.reset_game()
         state = state.flatten()
         done = False
         total_reward1 = 0

@@ -1,4 +1,8 @@
-class GameLogicManager:
+from env import Env
+import time
+
+
+class GameServeManager:
     def __init__(self, env, network_server):
         self.env = env
         self.network_server = network_server
@@ -21,7 +25,7 @@ class GameLogicManager:
             observations, rewards, done, _ = self.env.update(action_dict)
             self.send_observations(observations, rewards)
             if done:
-                self.env.reset_game(config)
+                self.env.reset_game()
 
     def receive_actions(self):
         action_dict = self.network_server.collect_actions()
