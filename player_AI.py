@@ -15,20 +15,21 @@ class AIPlayer(Player_Base):
             "output_dim": self.action_size
         }
 
-        self.modle = model_select()(**config)
+        self.modle = model_select(**config)
+
+        self.use_epsilon = AI_config["use_epsilon"]
 
         self.agents = {}
 
     def choose_action(self, state):
         print("我是AI智能体")
-        
+
         # state = torch.from_numpy(state).float().unsqueeze(0)
         # with torch.no_grad():
         #     action_probs = self.model.policy_network(state)
         #     action_dist = Categorical(action_probs)
         #     action = action_dist.sample()
         # return action.item()
-        
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -48,5 +49,7 @@ class AIPlayer(Player_Base):
 
 
 if __name__ == '__main__':
-    AIPlayer.save_model("ppo", "000")
+
+    AI = AIPlayer()
+    AI.save_model("ppo", "000")
     print("保存网络")

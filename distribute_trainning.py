@@ -11,9 +11,11 @@ class DistributedGameEnv:
     def __init__(self, config):
         self.config = config
         self.current_step = 0
+        self.max_step = config["trainning_config"]["max_step"]
         self.game_env = Env(self.config["game_config"])
         self.replay_buffer = ReplayBuffer(
             self.config["trainning_config"]["buffer_capacity"])
+
         self.players = {}
         for name, (path, module, config) in self.config["player_config"].items():
             player_class = getattr(__import__(path), module)
@@ -23,11 +25,11 @@ class DistributedGameEnv:
                 self.players[name] = player_class()
 
     def run_episode(self):
-        obs = self.game_env.reset_game(self.game_config)
+        obs = self.game_env.reset_game(self.config["game_config"])
         done = False
         self.current_step = 0
         while not done:
-            actions = {agent_name: agent.choose_action(obs, self.config["trainning_config"]["use_epsilon"])
+            actions = {agent_name: agent.choose_action(obs)
                        for agent_name, agent in self.players.items()}
             next_obs, rewards, done, info = self.game_env.update(actions)
             self.replay_buffer.push(obs, actions, rewards, next_obs, done)
@@ -44,6 +46,8 @@ class DistributedGameEnv:
                 agent.train(batch_size)
 
     def train(self, batch_size=32):
+        
+
         if len(self.agent1.memory) > batch_size:
             self.agent1.train(batch_size)
         if len(self.agent2.memory) > batch_size:
@@ -91,7 +95,7 @@ def main():
                    "weapon": weapon}
 
     # 智能体
-    AI_agent_config = {
+    AI_config = {
         "gamma": 0.95,
         "epsilon": 1.0,
         "epsilon_min": 0.01,
@@ -99,13 +103,14 @@ def main():
         "learning_rate": 0.001,
         "model": "PPO",
         "state_size": 100,
-        "action_size": 50
+        "action_size": 50,
+        "use_epsilon": True,
     }
 
     # 智能体设置，智能体数量与想定文件scenario一致
     player_config = {
-        "red": ("player_AI", "AIPlayer", AI_agent_config),
-        "blue": ("rule_agent", "RulePlayer", None)
+        "red": ("player_AI", "AIPlayer", AI_config),
+        "blue": ("player_rule", "RulePlayer", None)
     }
 
     # 分布式训练参数
@@ -113,7 +118,6 @@ def main():
         "max_step": 1000,
         "num_envs": 4,
         "num_episodes": 100,
-        "use_epsilon": True,
         "buffer_capacity": 2000
     }
 
@@ -122,7 +126,6 @@ def main():
         "player_config": player_config,
         "trainning_config": trainning_config
     }
-
 
     ray.init()
     training = DistributedTraining(config)
