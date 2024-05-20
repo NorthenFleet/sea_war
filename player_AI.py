@@ -14,8 +14,8 @@ class AIPlayer(Player_Base):
             "input_dim": self.state_size,
             "output_dim": self.action_size
         }
-    
-        self.modle = model_select(**config)
+
+        self.modle = model_select()(**config)
 
         self.agents = {}
 
