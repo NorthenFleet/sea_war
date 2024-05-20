@@ -9,7 +9,7 @@ from replay_bufer import ReplayBuffer
 # @ray.remote
 class DistributedGameEnv:
     def __init__(self, config):
-        self.config = config 
+        self.config = config
         self.current_step = 0
         self.game_env = Env(self.config["game_config"])
         self.replay_buffer = ReplayBuffer(
@@ -98,8 +98,8 @@ def main():
         "epsilon_decay": 0.995,
         "learning_rate": 0.001,
         "model": "PPO",
-        "input_dim": 100,
-        "output_dim": 50
+        "state_size": 100,
+        "action_size": 50
     }
 
     # 智能体设置，智能体数量与想定文件scenario一致

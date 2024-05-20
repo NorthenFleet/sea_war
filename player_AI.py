@@ -8,8 +8,13 @@ class AIPlayer(Player_Base):
         super(AIPlayer, self).__init__()
         self.state_size = AI_config["state_size"]
         self.action_size = AI_config["action_size"]
+        config = {
+            "model_type": AI_config["model"],
+            "input_dim": self.state_size,
+            "output_dim": self.action_size
+        }
 
-        self.modle = model_select()(**AI_config["model"])
+        self.modle = model_select()(**config)
 
         self.agents = {}
         # for name, (module, cls, training_config) in AI_config.items():
