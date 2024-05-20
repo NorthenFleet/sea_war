@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from base_model import BaseModel
 
 class BodyNetwork(nn.Module):
     def __init__(self, input_dim, hidden_layers=2, hidden_units=128):
@@ -36,9 +35,8 @@ class ValueNetwork(nn.Module):
         features = self.body_network(x)
         return self.head(features)
 
-class ActorCritic(BaseModel):
+class ActorCritic():
     def __init__(self, input_dim, output_dim, hidden_layers=2, hidden_units=128):
-        super(AC, self).__init__()
         self.body_network = BodyNetwork(input_dim, hidden_layers, hidden_units)
         self.policy_network = PolicyNetwork(self.body_network, output_dim)
         self.value_network = ValueNetwork(self.body_network)

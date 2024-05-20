@@ -9,18 +9,18 @@ from replay_bufer import ReplayBuffer
 # @ray.remote
 class DistributedGameEnv:
     def __init__(self, config):
-        self.config = config
+        self.config = config 
         self.current_step = 0
         self.game_env = Env(self.config["game_config"])
         self.replay_buffer = ReplayBuffer(
             self.config["trainning_config"]["buffer_capacity"])
         self.players = {}
-        for name, (module, cls, model) in self.config["player_config"].items():
-            player_class = getattr(__import__(module), cls)
-            if model is not None:
-                self.players[name] = player_class(name, model)
+        for name, (path, module, config) in self.config["player_config"].items():
+            player_class = getattr(__import__(path), module)
+            if config is not None:
+                self.players[name] = player_class(config)
             else:
-                self.players[name] = player_class(name)
+                self.players[name] = player_class()
 
     def run_episode(self):
         obs = self.game_env.reset_game(self.game_config)
@@ -104,8 +104,8 @@ def main():
 
     # 智能体设置，智能体数量与想定文件scenario一致
     player_config = {
-        "red": ("agents.ai_agent", "AI_Agent", AI_agent_config),
-        "blue": ("agents.rule_agent", "Rule_Agent")
+        "red": ("player_AI", "AIPlayer", AI_agent_config),
+        "blue": ("rule_agent", "RulePlayer")
     }
 
     # 分布式训练参数

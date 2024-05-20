@@ -10,13 +10,7 @@ class Player_Base:
         # self.players = {name: getattr(__import__(module), cls)(
         #     name) for name, (module, cls) in player_config.items()}
 
-        # self.agents = {}
-        # for name, (module, cls, training_config) in AI_config.items():
-        #     agent_class = getattr(__import__(module), cls)
-        #     if training_config["model"] is not None:
-        #         self.players[name] = agent_class(name, training_config)
-        #     else:
-        #         self.players[name] = agent_class(name)
+        pass
 
     def choose_action(self, state):
         pass
