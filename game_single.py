@@ -73,9 +73,11 @@ class Game():
                 actions)
 
             self.current_step += 1
+            print(self.current_step)
+            
             if self.current_step > self.max_step:
                 game_over = True
-        print(self.current_step)
+            
 
 
 # 使用示例

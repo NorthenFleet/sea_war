@@ -1,6 +1,7 @@
 from player_base import Player_Base
 import torch
 from model_select import *
+import torch.nn.functional as F
 
 
 class AIPlayer(Player_Base):
@@ -17,12 +18,17 @@ class AIPlayer(Player_Base):
         self.modle = model_select(**config)
 
         self.agents = {}
-        # for name, (module, cls, training_config) in AI_config.items():
-        #     agent_class = getattr(__import__(module), cls)
-        #     if training_config["model"] is not None:
-        #         self.players[name] = agent_class(name, training_config)
-        #     else:
-        #         self.players[name] = agent_class(name)
+
+    def choose_action(self, state):
+        print("我是AI智能体")
+        
+        # state = torch.from_numpy(state).float().unsqueeze(0)
+        # with torch.no_grad():
+        #     action_probs = self.model.policy_network(state)
+        #     action_dist = Categorical(action_probs)
+        #     action = action_dist.sample()
+        # return action.item()
+        
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))

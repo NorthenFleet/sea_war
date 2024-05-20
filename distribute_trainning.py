@@ -122,7 +122,7 @@ def main():
         "player_config": player_config,
         "trainning_config": trainning_config
     }
-    DistributedGameEnv(config)
+
 
     ray.init()
     training = DistributedTraining(config)
