@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from itertools import chain
 
 
 class BodyNetwork(nn.Module):
@@ -16,6 +17,7 @@ class BodyNetwork(nn.Module):
 
     def forward(self, x):
         return self.layers(x)
+    
 
 class PolicyNetwork(nn.Module):
     def __init__(self, body_network, output_dim):
@@ -26,6 +28,8 @@ class PolicyNetwork(nn.Module):
     def forward(self, x):
         features = self.body_network(x)
         return torch.softmax(self.head(features), dim=-1)
+    
+
 
 class ValueNetwork(nn.Module):
     def __init__(self, body_network):
@@ -36,8 +40,9 @@ class ValueNetwork(nn.Module):
     def forward(self, x):
         features = self.body_network(x)
         return self.head(features)
+    
 
-class PPO():
+class PPO(nn.Module):
     def __init__(self, input_dim, output_dim, lr=0.001):
         super(PPO, self).__init__()
         self.input_dim = input_dim
@@ -50,9 +55,13 @@ class PPO():
         self.body_network = BodyNetwork(**config)
         self.policy_network = PolicyNetwork(self.body_network, output_dim)
         self.value_network = ValueNetwork(self.body_network)
-
+        
         # 初始化优化器
-        self.optimizer = optim.Adam(self.parameters(), lr=lr)
+        self.optimizer = optim.Adam(chain(self.body_network.parameters(), self.policy_network.parameters(), self.value_network.parameters()), lr=lr)
+
+    # parameters()方法
+    def parameters(self):
+        return chain(self.body_network.parameters(), self.policy_network.parameters(), self.value_network.parameters())
 
     def forward(self, x):
         return self.policy_network(x), self.value_network(x)

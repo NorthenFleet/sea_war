@@ -105,7 +105,7 @@ def main():
     # 智能体设置，智能体数量与想定文件scenario一致
     player_config = {
         "red": ("player_AI", "AIPlayer", AI_agent_config),
-        "blue": ("rule_agent", "RulePlayer")
+        "blue": ("rule_agent", "RulePlayer", None)
     }
 
     # 分布式训练参数

@@ -17,14 +17,14 @@ class Game():
         game_logic = GameLogic(scenario, map, weapon)
 
         # 环境设置
-        self.game_config = {
+        self.env_config = {
             "name": name,
             "scenario": scenario,
             "map": map,
             "weapon": weapon,
             "GameLogic": game_logic}
 
-        self.game_env = Env(self.game_config)
+        self.game_env = Env(self.env_config)
         self.current_step = None
         self.render = Render()
         self.max_step = 1000
@@ -46,7 +46,7 @@ class Game():
             # "red": ("agents.ai_agent", "AI_Agent", "model"),
             # "blue": ("agents.rule_agent", "Rule_Agent")
             "red": ("player_AI", "AIPlayer", AI_agent_config),
-            "blue": ("rule_agent", "RulePlayer")
+            "blue": ("player_rule", "RulePlayer", None)
         }
 
         self.players = {}
@@ -56,6 +56,11 @@ class Game():
                 self.players[name] = player_class(config)
             else:
                 self.players[name] = player_class()
+
+        self.config = {
+            "game_config": self.env_config,
+            "player_config": player_config,
+        }
 
     def run(self):
         observation = self.game_env.reset_game(self.config)
