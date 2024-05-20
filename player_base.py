@@ -1,11 +1,10 @@
 class Player_Base:
-    def __init__(self, communication):
+    def __init__(self):
         # self.name = agents_config["name"]
         # self.player_type = agents_config["player_type"]
         # self.agents = agents_config if isinstance(
         #     agents_config, list) else [agents_config]
-        self.communication = communication
-        
+
 
         # 动态导入智能体模块
         # self.players = {name: getattr(__import__(module), cls)(

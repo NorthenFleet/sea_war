@@ -3,11 +3,12 @@ import threading
 from env import Env
 from player_human import HumanPlayer
 from player_AI import AIPlayer
+from com_client import CommunicationClient
 
 
 class GameClientManager:
     def __init__(self, server_host, server_port, use_ai=False):
-        self.network_client = NetworkClient(server_host, server_port)
+        self.network_client = CommunicationClient(server_host, server_port)
         self.env = Env(name="SC2Env", player_config=player_config)
         self.human_player = HumanPlayer(name="HumanPlayer")
 

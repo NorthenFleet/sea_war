@@ -16,22 +16,13 @@ class Env():
         self.current_step = None
         self.com = com
 
-        self.players = {}
-        for color, units in self.scenario.items():
-            self.players[color] = {
-                "flight": [],
-                "ship": [],
-                "submarine": []
-            }
-            for unit_type, unit_list in units.items():
-                for unit in unit_list:
-                    self.players[color][unit_type].append(unit)
-
+        self.players = self.scenario.players
+        
         self.action_space = spaces.Discrete(2)  # 假设每个智能体的动作空间相同
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(1,), dtype=np.float32)
 
-    def reset_game(self):
+    def reset_game(self, config):
         # 重置游戏
         self.current_step = 0
         self.game_over = False

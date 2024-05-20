@@ -6,11 +6,11 @@ from model_select import *
 class AIPlayer(Player_Base):
     def __init__(self, AI_config):
         super().__init__(AI_config["name"])
-        self.memory = []
-        # self.state_size = AI_config["state_size"]
-        # self.action_size = AI_config["action_size"]
 
-        self.modle = model_select()(**AI_config["name"])
+        self.state_size = AI_config["state_size"]
+        self.action_size = AI_config["action_size"]
+
+        self.modle = model_select()(**AI_config["model"])
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))

@@ -14,8 +14,18 @@ class Scenario(DataLoader):
     def __init__(self, path, name):
         super().__init__(path)
         self.name = name
-        self.red = self.data["red"]
-        self.blue = self.data["blue"]
+        self.players = {}
+        for color, units in self.data.items():
+            self.players[color] = {
+                "flight": [],
+                "ship": [],
+                "submarine": []
+            }
+            for unit_type, unit_list in units.items():
+                for unit in unit_list:
+                    self.players[color][unit_type].append(unit)
+
+
         # self.units = self.create_units()
 
     def create_units(self):
@@ -76,24 +86,7 @@ class Weapon(DataLoader):
         pass
 
 
-class Weapon:
-    def __init__(self, type, count):
-        self.type = type
-        self.count = count
 
 
-class Equipment:
-    def __init__(self, type, count):
-        self.type = type
-        self.count = count
 
 
-class Entity:
-    def __init__(self, id, x, y, speed_x, speed_y, health, endurance, weapons, equipment):
-        self.id = id
-        self.position = (x, y)
-        self.speed = (speed_x, speed_y)
-        self.health = health
-        self.endurance = endurance
-        self.weapons = [Weapon(**w) for w in weapons]
-        self.equipment = [Equipment(**e) for e in equipment]
