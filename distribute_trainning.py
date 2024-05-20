@@ -6,7 +6,7 @@ import torch.optim as optim
 from replay_bufer import ReplayBuffer
 
 
-# @ray.remote
+@ray.remote
 class DistributedGameEnv:
     def __init__(self, config):
         self.config = config

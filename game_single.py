@@ -50,12 +50,12 @@ class Game():
         }
 
         self.players = {}
-        for name, (module, cls, model) in player_config.items():
-            player_class = getattr(__import__(module), cls)
-            if model is not None:
-                self.players[name] = player_class(name, model)
+        for name, (path, module, config) in player_config.items():
+            player_class = getattr(__import__(path), module)
+            if config is not None:
+                self.players[name] = player_class(config)
             else:
-                self.players[name] = player_class(name)
+                self.players[name] = player_class()
 
     def run(self):
         observation = self.game_env.reset_game(self.config)

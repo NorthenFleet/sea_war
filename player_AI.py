@@ -14,7 +14,7 @@ class AIPlayer(Player_Base):
             "output_dim": self.action_size
         }
 
-        self.modle = model_select()(**config)
+        self.modle = model_select(**config)
 
         self.agents = {}
         # for name, (module, cls, training_config) in AI_config.items():
