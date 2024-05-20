@@ -2,7 +2,7 @@ import threading
 import time
 from communication import Communication
 
-class CommunicationServer:
+class CommunicationServer():
     def __init__(self, host='0.0.0.0', port=9999, max_clients=2):
         self.communication = Communication(host, port)
         self.clients = {}

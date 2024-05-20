@@ -3,7 +3,7 @@ import time
 from communication import Communication
 
 
-class NetworkServer:
+class GameServeManager():
     def __init__(self, host='0.0.0.0', port=9999, max_clients=2):
         self.communication = Communication(host, port)
         self.clients = {}
@@ -43,3 +43,7 @@ class NetworkServer:
     def collect_actions(self):
         # Convert actions to a suitable format for sending
         return str(self.actions)
+
+if __name__ == "__main__":
+    game_serve = GameServeManager()
+    game_serve.start()
