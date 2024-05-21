@@ -1,7 +1,10 @@
 from player_base import Player_Base
 import torch
+import torch.nn as nn
+import torch.optim as optim
+import numpy as np
+import random
 from model_select import *
-import torch.nn.functional as F
 
 
 class AIPlayer(Player_Base):
@@ -9,6 +12,7 @@ class AIPlayer(Player_Base):
         super(AIPlayer, self).__init__()
         self.state_size = AI_config["state_size"]
         self.action_size = AI_config["action_size"]
+        
         config = {
             "model_type": AI_config["model"],
             "input_dim": self.state_size,
@@ -16,27 +20,38 @@ class AIPlayer(Player_Base):
         }
 
         self.modle = model_select(**config)
-
         self.use_epsilon = AI_config["use_epsilon"]
-
+        self.epsilon = AI_config["epsilon"]
+        self.epsilon_min = AI_config["epsilon_min"]
+        self.epsilon_decay = AI_config["epsilon_decay"]
+        self.learning_rate = AI_config["learning_rate"]
         self.agents = {}
+        self.memory = []
 
     def choose_action(self, state):
         print("我是AI智能体")
 
-        # state = torch.from_numpy(state).float().unsqueeze(0)
-        # with torch.no_grad():
-        #     action_probs = self.model.policy_network(state)
-        #     action_dist = Categorical(action_probs)
-        #     action = action_dist.sample()
-        # return action.item()
+        if self.use_epsilon and np.random.rand() <= self.epsilon:
+            return random.randrange(self.action_size)
+        act_values = self.model(torch.FloatTensor(state))
+        return np.argmax(act_values.detach().numpy())
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
 
-    def train(self, batch_size):
-        raise NotImplementedError(
-            "This method should be overridden by subclasses")
+    def train(self, samples):
+        for state, action, reward, next_state, done in samples:
+            target = reward
+            if not done:
+                target = (reward + self.gamma * np.amax(self.model(torch.FloatTensor(next_state)).detach().numpy()))
+            target_f = self.model(torch.FloatTensor(state))
+            target_f[action] = target
+            self.model.zero_grad()
+            loss = nn.MSELoss()(target_f, torch.FloatTensor([target]))
+            loss.backward()
+            self.optimizer.step()
+        if self.epsilon > self.epsilon_min:
+            self.epsilon *= self.epsilon_decay
 
     def save_model(self, name, episodes):
         file_name = 'models/' + name + '-' + str(episodes) + '.pth'

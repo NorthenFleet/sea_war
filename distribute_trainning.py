@@ -40,18 +40,13 @@ class DistributedGameEnv:
                 done = True
         print(self.current_step)
 
-    def train(self, batch_size=32):
-        for agent in self.players.values():
-            if len(agent.memory) > batch_size:
-                agent.train(batch_size)
-
-    def train(self, batch_size=32):
-        
-
-        if len(self.agent1.memory) > batch_size:
-            self.agent1.train(batch_size)
-        if len(self.agent2.memory) > batch_size:
-            self.agent2.train(batch_size)
+    def train(self, batch_size=32, alpha=0.6):
+        if len(self.replay_buffer) > batch_size:
+            samples, indices = self.replay_buffer.sample(batch_size, alpha)
+            for agent in self.players.values():
+                agent.train(samples)
+            priorities = [max(abs(sample[2]), 1.0) for sample in samples]
+            self.replay_buffer.update_priorities(indices, priorities)
 
     def close(self):
         self.env.close()
