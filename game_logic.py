@@ -132,7 +132,7 @@ class GameLogic():
                     print(f"Entity {entity_id} out of map bounds")
                     # 你可以在这里添加相应的处理逻辑
 
-    def step(self, actions):
+    def update(self, actions):
         # 处理动作，更新状态
         for entity_id, action in actions.items():
             if action == 'move':

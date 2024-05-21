@@ -1,4 +1,4 @@
-import time
+import time, sys
 import threading
 from env import Env
 from player_human import HumanPlayer
@@ -12,7 +12,7 @@ class GameClientManager:
         self.env = Env(name="SC2Env", player_config=player_config)
         self.human_player = HumanPlayer(name="HumanPlayer")
 
-        # 玩家设置
+        # AI玩家设置
         player_config = {
             "red": ("player_AI", "AI_Agent", "model"),
             "blue": ("rule_agent", "Rule_Agent")
@@ -62,10 +62,10 @@ class GameClientManager:
 
 if __name__ == "__main__":
     use_ai = '--ai' in sys.argv
-    if '--train' in sys.argv:
-        ray.init()
-        tune.run(train_dqn, config=ray_config)
-    else:
-        game_client_manager = GameClientManager(
+    # if '--train' in sys.argv:
+    #     ray.init()
+    #     tune.run(train_dqn, config=ray_config)
+    # else:
+    game_client_manager = GameClientManager(
             server_host='127.0.0.1', server_port=9999, use_ai=use_ai)
-        game_client_manager.start()
+    game_client_manager.start()

@@ -1,7 +1,7 @@
 from render import Render
 from env import Env
 from init import Map, Weapon, Scenario
-from gameLogic import GameLogic
+from game_logic import GameLogic
 
 
 class Game():
@@ -14,15 +14,14 @@ class Game():
         scenario = Scenario(scenarios_path, name)
         map = Map(map_path)
         weapon = Weapon(weapons_path)
-        game_logic = GameLogic(scenario, map, weapon)
 
         # 环境设置
         self.env_config = {
             "name": name,
             "scenario": scenario,
             "map": map,
-            "weapon": weapon,
-            "GameLogic": game_logic}
+            "weapon": weapon
+        }
 
         self.game_env = Env(self.env_config)
         self.current_step = None
