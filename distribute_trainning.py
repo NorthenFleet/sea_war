@@ -116,7 +116,7 @@ def main():
     # 分布式训练参数
     trainning_config = {
         "max_step": 1000,
-        "num_envs": 4,
+        "num_envs": 2,
         "num_episodes": 100,
         "buffer_capacity": 2000
     }

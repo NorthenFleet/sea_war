@@ -5,6 +5,8 @@ class ReplayBuffer:
     def __init__(self, capacity):
         self.capacity = capacity
         self.memory = []
+        self.priorities = []
+        self.position = 0
 
     def push(self, observations, actions, rewards,
              next_observations, done):
