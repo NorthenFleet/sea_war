@@ -30,7 +30,7 @@ class Game():
         self.max_step = 1000
 
         # 智能体
-        AI_agent_config = {
+        AI_config = {
             "gamma": 0.95,
             "epsilon": 1.0,
             "epsilon_min": 0.01,
@@ -38,14 +38,15 @@ class Game():
             "learning_rate": 0.001,
             "model": "PPO",
             "state_size": 100,
-            "action_size": 50
+            "action_size": 50,
+            "use_epsilon": True,
         }
 
         # 玩家设置
         player_config = {
             # "red": ("agents.ai_agent", "AI_Agent", "model"),
             # "blue": ("agents.rule_agent", "Rule_Agent")
-            "red": ("player_AI", "AIPlayer", AI_agent_config),
+            "red": ("player_AI", "AIPlayer", AI_config),
             "blue": ("player_rule", "RulePlayer", None)
         }
 
