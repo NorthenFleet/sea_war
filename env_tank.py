@@ -1,17 +1,33 @@
 import numpy as np
+from gym import spaces
+from env import Env
 
 
-class GameLogic():
-    def __init__(self, scenario, map, weapon):
-        self.scenario = scenario
-        self.map = map
-        self.weapon = weapon
+class EnvTank(Env):
+    def __init__(self, game_config):
+        self.name = game_config["name"]
+        self.scenario = game_config["scenario"]
+        self.map = game_config["map"]
+        self.weapon = game_config["weapon"]
+        self.state = game_config["scenario"]
+
+        self.players = self.scenario.players
         self.entities = {}
-        self.current_step = 0
         self.game_over = False
+        self.current_step = 0
+
+        self.action_space = spaces.Discrete(2)  # 假设每个智能体的动作空间相同
+        self.observation_space = spaces.Box(
+            low=0, high=1, shape=(1,), dtype=np.float32)
 
     def load_scenario(self, scenario):
         self.scenario = scenario
+
+    def reset_game(self, config):
+        self.current_step = 0
+        self.game_over = False
+        print("Game starts with the following units:")
+        return {name: self.observation_space.sample() for name in self.players}
 
     def create_entity(self, entity_id, entity_type, position, speed, faction, hp, attack_power):
         self.entities[entity_id] = {
@@ -33,10 +49,9 @@ class GameLogic():
             return
 
         current_position = self.entities[entity_id]['position']
-        speed = self.entities[entity_id].get('speed', 1)  # 假设实体有速度属性
+        speed = self.entities[entity_id].get('speed', 1)
         move_distance = move_distance if move_distance is not None else speed
 
-        # 计算新位置
         new_position = current_position + \
             np.array(move_direction) * move_distance
         self.entities[entity_id]['position'] = new_position
@@ -50,7 +65,7 @@ class GameLogic():
         current_position = self.entities[entity_id]['position']
         direction_vector = np.array(destination) - np.array(current_position)
         distance = np.linalg.norm(direction_vector)
-        speed = self.entities[entity_id].get('speed', 1)  # 假设实体有速度属性
+        speed = self.entities[entity_id].get('speed', 1)
 
         if distance < speed:
             new_position = destination
@@ -81,43 +96,33 @@ class GameLogic():
         attacker = self.entities[attacker_id]
         target = self.entities[target_id]
 
-        # 检查目标是否在攻击范围内
         attacker_pos = np.array(attacker['position'])
         target_pos = np.array(target['position'])
         if np.linalg.norm(attacker_pos - target_pos) > attack_range:
             return "Target out of range"
 
-        # 执行攻击
         damage = attacker['attack_power']
         target['hp'] -= damage
         if target['hp'] <= 0:
-            self.delete_entity(target_id)
+            self.destroy_entity(target_id)
             return f"Target {target_id} destroyed"
         return f"Attacked {target_id}, {damage} damage dealt"
-    
+
     def crash_check(self):
-        # 碰撞检测 - 其他坦克
         for entity_id, entity_data in self.entities.items():
             entity_position = entity_data['position']
             for other_id, other_data in self.entities.items():
                 if other_id != entity_id:
                     other_position = other_data['position']
                     if np.array_equal(entity_position, other_position):
-                        # 处理碰撞逻辑,例如扣血或者销毁实体
                         print(f"Entity {entity_id} collided with {other_id}")
-                        # 你可以在这里添加相应的处理逻辑
 
-        # 碰撞检测 - 地图要素
         for entity_id, entity_data in self.entities.items():
             entity_position = entity_data['position']
             if self.map is not None:
-                # 假设地图是一个二维数组,0表示可通过,1表示障碍物
                 if self.map[int(entity_position[0]), int(entity_position[1])] == 1:
-                    # 处理碰撞逻辑,例如扣血或者销毁实体
                     print(f"Entity {entity_id} collided with map obstacle")
-                    # 你可以在这里添加相应的处理逻辑
 
-        # 检查新位置是否在边界内
         map_size = self.map.shape if self.map is not None else None
         for entity_id, entity_data in self.entities.items():
             entity_position = entity_data['position']
@@ -128,22 +133,18 @@ class GameLogic():
                     or entity_position[1] < 0
                     or entity_position[1] >= map_size[1]
                 ):
-                    # 处理边界碰撞逻辑,例如禁止移动或者销毁实体
                     print(f"Entity {entity_id} out of map bounds")
-                    # 你可以在这里添加相应的处理逻辑
 
     def update(self, actions):
-        # 处理动作，更新状态
         for entity_id, action in actions.items():
             if action == 'move':
-                # 假设每次移动改变位置1
-                self.move_entity(
-                    entity_id, self.entities[entity_id]['position'] + 1)
+                # Example move direction
+                self.local_move(entity_id, move_direction=(1, 0))
             elif action == 'delete':
-                self.delete_entity(entity_id)
+                self.destroy_entity(entity_id)
 
         self.current_step += 1
-        if self.current_step > 100:  # 示例结束条件
+        if self.current_step > 100:
             self.game_over = True
 
         return self.detect_entities()

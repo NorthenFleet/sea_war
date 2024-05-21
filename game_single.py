@@ -1,7 +1,7 @@
 from render import Render
 from env import Env
 from init import Map, Weapon, Scenario
-from game_logic import GameLogic
+from env_tank import GameLogic
 
 
 class Game():

@@ -1,6 +1,7 @@
 import random
 import numpy as np
 
+
 class ReplayBuffer:
     def __init__(self, capacity):
         self.capacity = capacity
@@ -21,7 +22,8 @@ class ReplayBuffer:
         priorities = np.array(self.priorities)
         probabilities = priorities ** alpha
         probabilities /= probabilities.sum()
-        indices = np.random.choice(len(self.memory), batch_size, p=probabilities)
+        indices = np.random.choice(
+            len(self.memory), batch_size, p=probabilities)
         samples = [self.memory[i] for i in indices]
         return samples, indices
 
