@@ -23,7 +23,7 @@ class GameLogic():
             "attack_power": attack_power
         }
 
-    def delete_entity(self, entity_id):
+    def destroy_entity(self, entity_id):
         if entity_id in self.entities:
             del self.entities[entity_id]
 
@@ -94,6 +94,43 @@ class GameLogic():
             self.delete_entity(target_id)
             return f"Target {target_id} destroyed"
         return f"Attacked {target_id}, {damage} damage dealt"
+    
+    def crash_check(self):
+        # 碰撞检测 - 其他坦克
+        for entity_id, entity_data in self.entities.items():
+            entity_position = entity_data['position']
+            for other_id, other_data in self.entities.items():
+                if other_id != entity_id:
+                    other_position = other_data['position']
+                    if np.array_equal(entity_position, other_position):
+                        # 处理碰撞逻辑,例如扣血或者销毁实体
+                        print(f"Entity {entity_id} collided with {other_id}")
+                        # 你可以在这里添加相应的处理逻辑
+
+        # 碰撞检测 - 地图要素
+        for entity_id, entity_data in self.entities.items():
+            entity_position = entity_data['position']
+            if self.map is not None:
+                # 假设地图是一个二维数组,0表示可通过,1表示障碍物
+                if self.map[int(entity_position[0]), int(entity_position[1])] == 1:
+                    # 处理碰撞逻辑,例如扣血或者销毁实体
+                    print(f"Entity {entity_id} collided with map obstacle")
+                    # 你可以在这里添加相应的处理逻辑
+
+        # 检查新位置是否在边界内
+        map_size = self.map.shape if self.map is not None else None
+        for entity_id, entity_data in self.entities.items():
+            entity_position = entity_data['position']
+            if map_size is not None:
+                if (
+                    entity_position[0] < 0
+                    or entity_position[0] >= map_size[0]
+                    or entity_position[1] < 0
+                    or entity_position[1] >= map_size[1]
+                ):
+                    # 处理边界碰撞逻辑,例如禁止移动或者销毁实体
+                    print(f"Entity {entity_id} out of map bounds")
+                    # 你可以在这里添加相应的处理逻辑
 
     def step(self, actions):
         # 处理动作，更新状态

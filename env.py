@@ -1,5 +1,6 @@
 from gym import spaces
 import numpy as np
+from game_logic import GameLogic
 
 
 \
@@ -14,13 +15,15 @@ class Env():
         self.weapon = game_config["weapon"]
         self.state = game_config["scenario"]
         self.current_step = None
-        self.com = com
+        self.gameLogic = GameLogic(self.scenario, self.map, self.weapon)
 
         self.players = self.scenario.players
         
         self.action_space = spaces.Discrete(2)  # 假设每个智能体的动作空间相同
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(1,), dtype=np.float32)
+        
+        self.com = com
 
     def reset_game(self, config):
         # 重置游戏
