@@ -30,6 +30,10 @@ class Entity:
             return
         self.position += np.array(move_direction) * move_distance
 
+    def update_action(self, speed):
+        self.speed = speed
+
+
     def take_damage(self, damage):
         if not self.alive:
             return

@@ -1,7 +1,7 @@
 import numpy as np
 from gym import spaces
 from env import Env
-
+from game_state import GameState
 
 class EnvTank(Env):
     def __init__(self, env_config):
@@ -9,7 +9,7 @@ class EnvTank(Env):
         self.scenario = env_config["scenario"]
         self.map = env_config["map"]
         self.weapon = env_config["weapon"]
-        self.state = env_config["scenario"]
+        self.state = GameState()
 
         self.players = self.scenario.players
         self.entities = {}
