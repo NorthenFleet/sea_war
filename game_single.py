@@ -1,7 +1,6 @@
 from render import Render
-from env import Env
 from init import Map, Weapon, Scenario
-from env_tank import GameLogic
+from env_tank import EnvTank
 
 
 class Game():
@@ -23,7 +22,7 @@ class Game():
             "weapon": weapon
         }
 
-        self.game_env = Env(self.env_config)
+        self.game_env = EnvTank(self.env_config)
         self.current_step = None
         self.render = Render()
         self.max_step = 1000

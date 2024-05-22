@@ -4,12 +4,12 @@ from env import Env
 
 
 class EnvTank(Env):
-    def __init__(self, game_config):
-        self.name = game_config["name"]
-        self.scenario = game_config["scenario"]
-        self.map = game_config["map"]
-        self.weapon = game_config["weapon"]
-        self.state = game_config["scenario"]
+    def __init__(self, env_config):
+        self.name = env_config["name"]
+        self.scenario = env_config["scenario"]
+        self.map = env_config["map"]
+        self.weapon = env_config["weapon"]
+        self.state = env_config["scenario"]
 
         self.players = self.scenario.players
         self.entities = {}
@@ -140,9 +140,13 @@ class EnvTank(Env):
             if action == 'move':
                 # Example move direction
                 self.local_move(entity_id, move_direction=(1, 0))
-            elif action == 'delete':
-                self.destroy_entity(entity_id)
+            elif action == 'attack':
+                self.attack(entity_id)
+            
 
+        for entity_id, entity_data in self.entities.items():
+            entity_position = entity_data['position']
+        
         self.current_step += 1
         if self.current_step > 100:
             self.game_over = True
