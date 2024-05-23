@@ -12,7 +12,7 @@ class GameClientManager:
         self.env = Env(name="SC2Env", player_config=player_config)
         self.human_player = HumanPlayer(name="HumanPlayer")
 
-        # AI玩家设置
+        # 玩家设置
         player_config = {
             "red": ("player_AI", "AI_Agent", "model"),
             "blue": ("rule_agent", "Rule_Agent")
