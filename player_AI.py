@@ -36,8 +36,8 @@ class AIPlayer(Player_Base):
         act_values = self.model(torch.FloatTensor(state))
         return np.argmax(act_values.detach().numpy())
 
-    def remember(self, state, action, reward, next_state, done):
-        self.memory.append((state, action, reward, next_state, done))
+    # def remember(self, state, action, reward, next_state, done):
+    #     self.memory.append((state, action, reward, next_state, done))
 
     def train(self, samples):
         for state, action, reward, next_state, done in samples:

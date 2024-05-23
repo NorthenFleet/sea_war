@@ -32,12 +32,17 @@ class DistributedGameEnv:
             actions = {agent_name: agent.choose_action(obs)
                        for agent_name, agent in self.players.items()}
             next_obs, rewards, done, info = self.game_env.update(actions)
+            # ToDo 不能把所有动作放到一个四元组中，每个智能体存放自己的记录，然后合成到一起。
             self.replay_buffer.push(obs, actions, rewards, next_obs, done)
             obs = next_obs
 
             self.current_step += 1
             if self.current_step > self.max_step:
                 done = True
+
+        for agent_name, agent in self.players.items():
+            self.replay_buffer.push(agent.memory)
+
         print(self.current_step)
 
     def train(self, batch_size=32, alpha=0.6):

@@ -30,7 +30,6 @@ class PolicyNetwork(nn.Module):
         return torch.softmax(self.head(features), dim=-1)
     
 
-
 class ValueNetwork(nn.Module):
     def __init__(self, body_network):
         super(ValueNetwork, self).__init__()

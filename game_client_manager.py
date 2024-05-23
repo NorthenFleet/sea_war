@@ -7,7 +7,7 @@ from com_client import CommunicationClient
 
 
 class GameClientManager:
-    def __init__(self, server_host, server_port, use_ai=False):
+    def __init__(self, server_host, server_port, net=False):
         self.network_client = CommunicationClient(server_host, server_port)
         self.env = Env(name="SC2Env", player_config=player_config)
         self.human_player = HumanPlayer(name="HumanPlayer")
@@ -34,7 +34,7 @@ class GameClientManager:
         state = self.env.reset_game(config)
         done = False
         while not done:
-            if self.use_ai:
+            if self.net:
                 action = self.ai_agent.act(state)
             else:
                 action = self.human_player.choose_action(state)
@@ -47,7 +47,7 @@ class GameClientManager:
             action_dict = eval(self.network_client.received_actions)
             self.network_client.received_actions = None
             observations, rewards, done, _ = self.env.update(action_dict)
-            if self.use_ai:
+            if self.net:
                 self.ai_agent.remember(
                     state, action, rewards[0], observations, done)
                 if len(self.ai_agent.memory) > 32:
@@ -61,11 +61,11 @@ class GameClientManager:
 
 
 if __name__ == "__main__":
-    use_ai = '--ai' in sys.argv
+    net = '--net' in sys.argv
     # if '--train' in sys.argv:
     #     ray.init()
     #     tune.run(train_dqn, config=ray_config)
     # else:
     game_client_manager = GameClientManager(
-            server_host='127.0.0.1', server_port=9999, use_ai=use_ai)
+            server_host='127.0.0.1', server_port=9999, net=net)
     game_client_manager.start()
