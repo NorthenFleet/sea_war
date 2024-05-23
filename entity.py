@@ -7,7 +7,7 @@ class Devices:
 
 class Equipment:
     def __init__(self, type, count):
-        self.type = type
+        self.type = type    
         self.count = count
 
 
@@ -19,6 +19,7 @@ class Entity:
         self.speed = speed
         self.faction = faction
         self.hp = hp
+        self.set_observation = []
         self.attack_power = attack_power
         self.alive = True
 
@@ -30,10 +31,19 @@ class Entity:
             return
         self.position += np.array(move_direction) * move_distance
 
-    def update_action(self, speed):
-        self.speed = speed
+    
+    def set_observer(self, observer):
+        self.set_observer = observer
 
-
+    
+    def update_state(self, speed=None,  devices=None, equipments=None):
+        if speed is not None:
+            self.speed = speed
+        if devices is not None:
+            self.devices = devices
+        if equipments is not None:
+            self.equipments = equipments
+             
     def take_damage(self, damage):
         if not self.alive:
             return
