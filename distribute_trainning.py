@@ -1,9 +1,75 @@
 import ray
+import torch.nn as nn
+import torch
+import torch.optim as optim
+from collections import deque
+import random
 from env import Env
 from init import Map, Weapon, Scenario
 import numpy as np
-import torch.optim as optim
 from replay_bufer import ReplayBuffer
+
+
+@ray.remote
+class SupervisedGameEnv:
+    def __init__(self, config):
+        self.config = config
+        self.game_env = Env(self.config["game_config"])
+        self.memory = deque(maxlen=10000)
+        self.model = self.build_model(
+            config["state_size"], config["action_size"])
+        self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+        self.batch_size = config["trainning_config"]["batch_size"]
+
+    def build_model(self, state_size, action_size):
+        """构建神经网络模型"""
+        return nn.Sequential(
+            nn.Linear(state_size, 64),
+            nn.ReLU(),
+            nn.Linear(64, 64),
+            nn.ReLU(),
+            nn.Linear(64, action_size)
+        )
+
+    def remember(self, state, action, reward):
+        self.memory.append((state, action, reward))
+
+    def run_episode(self):
+        obs = self.game_env.reset_game(self.config["game_config"])
+        done = False
+        while not done:
+            actions = {agent_name: agent.choose_action(obs)
+                       for agent_name, agent in self.players.items()}
+            next_obs, rewards, done, info = self.game_env.update(actions)
+            for agent_name, reward in rewards.items():
+                self.remember(obs, actions[agent_name], reward)
+            obs = next_obs
+
+    def train(self):
+        if len(self.memory) < self.batch_size:
+            return
+
+        minibatch = random.sample(self.memory, self.batch_size)
+        states, actions, rewards = zip(*minibatch)
+        states = torch.tensor(states, dtype=torch.float)
+        actions = torch.tensor(actions, dtype=torch.long)
+        rewards = torch.tensor(rewards, dtype=torch.float)
+
+        pred_actions = self.model(states)
+        action_one_hot = torch.nn.functional.one_hot(
+            actions, num_classes=self.config["action_size"])
+        pred_values = torch.sum(pred_actions * action_one_hot, dim=1)
+
+        loss = nn.MSELoss()(pred_values, rewards)
+
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+        print(f"Training loss: {loss.item()}")
+
+    def close(self):
+        self.game_env.close()
 
 
 @ray.remote
@@ -65,7 +131,13 @@ class DistributedTraining():
         self.envs = [DistributedGameEnv.remote(
             config) for _ in range(self.num_envs)]
 
-    def run_training(self):
+    def supervised_training(self):
+        for i in range(self.config["trainning_config"]["num_episodes"]):
+            ray.get([env.run_episode.remote() for env in self.envs])
+            ray.get([env.train.remote() for env in self.envs])
+            print(f"Episode {i+1} completed")
+
+    def rl_training(self):
         for i in range(self.num_episodes):
             results = ray.get(
                 [env.run_episode.remote() for env in self.envs])
@@ -129,7 +201,7 @@ def main():
 
     ray.init()
     training = DistributedTraining(config)
-    training.run_training()
+    training.rl_training()
     training.close_envs()
     ray.shutdown()
 
