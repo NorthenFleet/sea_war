@@ -43,38 +43,6 @@ class EnvTank(Env):
         if entity_id in self.entities:
             del self.entities[entity_id]
 
-    def local_move(self, entity_id, move_direction, move_distance=None):
-        if entity_id not in self.entities:
-            print(f"Entity {entity_id} does not exist.")
-            return
-
-        current_position = self.entities[entity_id]['position']
-        speed = self.entities[entity_id].get('speed', 1)
-        move_distance = move_distance if move_distance is not None else speed
-
-        new_position = current_position + \
-            np.array(move_direction) * move_distance
-        self.entities[entity_id]['position'] = new_position
-        print(f"Entity {entity_id} moved locally to {new_position}")
-
-    def global_move(self, entity_id, destination):
-        if entity_id not in self.entities:
-            print(f"Entity {entity_id} does not exist.")
-            return
-
-        current_position = self.entities[entity_id]['position']
-        direction_vector = np.array(destination) - np.array(current_position)
-        distance = np.linalg.norm(direction_vector)
-        speed = self.entities[entity_id].get('speed', 1)
-
-        if distance < speed:
-            new_position = destination
-        else:
-            direction_vector_normalized = direction_vector / distance
-            new_position = current_position + direction_vector_normalized * speed
-
-        self.entities[entity_id]['position'] = new_position
-        print(f"Entity {entity_id} moved to {new_position}")
 
     def detect_entities(self, entity_id, detection_range):
         if entity_id not in self.entities:
@@ -143,6 +111,7 @@ class EnvTank(Env):
             elif action == 'attack':
                 self.attack(entity_id)
             
+        self.update_posi
 
         for entity_id, entity_data in self.entities.items():
             entity_position = entity_data['position']
@@ -151,4 +120,5 @@ class EnvTank(Env):
         if self.current_step > 100:
             self.game_over = True
 
-        return self.detect_entities()
+
+        return 
