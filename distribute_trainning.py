@@ -150,7 +150,7 @@ class DistributedTraining():
             env.close.remote()
 
 
-def main():
+if __name__ == '__main__':
     # 环境
     name = 'sea_war'
     weapons_path = 'data/weapons.json'
@@ -167,7 +167,7 @@ def main():
                    "weapon": weapon}
 
     # 智能体
-    AI_config = {
+    agent_config = {
         "gamma": 0.95,
         "epsilon": 1.0,
         "epsilon_min": 0.01,
@@ -181,7 +181,7 @@ def main():
 
     # 智能体设置，智能体数量与想定文件scenario一致
     player_config = {
-        "red": ("player_AI", "AIPlayer", AI_config),
+        "red": ("player_AI", "AIPlayer", agent_config),
         "blue": ("player_rule", "RulePlayer", None)
     }
 
@@ -204,7 +204,3 @@ def main():
     training.rl_training()
     training.close_envs()
     ray.shutdown()
-
-
-if __name__ == '__main__':
-    main()

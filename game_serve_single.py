@@ -3,6 +3,7 @@ from init import Map, Weapon, Scenario
 from env_tank import EnvTank
 import json
 
+
 class GameConfig:
     def __init__(self):
         # 从全局配置字典中加载参数
@@ -31,6 +32,7 @@ class GameConfig:
             if module == "AIPlayer":
                 config['player_config'][name] = (path, module, self.ai_config)
 
+
 class Game:
     def __init__(self, config):
         self.config = config
@@ -52,8 +54,10 @@ class Game:
         game_over = False
         self.current_step = 0
         while not game_over:
-            actions = {agent_name: agent.choose_action(observation) for agent_name, agent in self.players.items()}
-            observations, rewards, game_over, info = self.game_env.update(actions)
+            actions = {agent_name: agent.choose_action(
+                observation) for agent_name, agent in self.players.items()}
+            observations, rewards, game_over, info = self.game_env.update(
+                actions)
 
             self.current_step += 1
             print(self.current_step)
@@ -61,14 +65,19 @@ class Game:
             if self.current_step > self.max_step:
                 game_over = True
 
-# 定义全局配置字典
-config = {
-    'name': 'battle_royale',
-    'max_step': 1000,
-    'weapons_path': 'data/weapons.json',
-    'scenarios_path': 'data/scenario.json',
-    'map_path': 'data/map.json',
-    'ai_config': {
+
+# 使用示例
+if __name__ == '__main__':
+    # 定义全局配置字典
+
+    game_config = {
+        'name': 'battle_royale',
+
+        'weapons_path': 'data/weapons.json',
+        'scenarios_path': 'data/scenario.json',
+        'map_path': 'data/map.json',
+    }
+    agent_config = {
         "gamma": 0.95,
         "epsilon": 1.0,
         "epsilon_min": 0.01,
@@ -78,17 +87,22 @@ config = {
         "state_size": 100,
         "action_size": 50,
         "use_epsilon": True,
-    },
-    'player_config': {
-        "red": ("player_AI", "AIPlayer", None),
+    }
+
+    player_config = {
+        "red": ("player_AI", "AIPlayer", agent_config),
         "blue": ("player_rule", "RulePlayer", None)
     }
-}
 
-# 使用示例
-if __name__ == '__main__':
+    trainning_config = {
+        'max_step': 1000,
+    }
+
+    config = {
+
+
+    }
+
     config = GameConfig()
     game = Game(config)
     game.run()
-
-

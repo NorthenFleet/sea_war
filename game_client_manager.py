@@ -120,32 +120,32 @@ class Game:
         return 'move_up'  # Example action
 
 
-# 定义全局配置字典
-config = {
-    'name': 'battle_royale',
-    'max_step': 1000,
-    'weapons_path': 'data/weapons.json',
-    'scenarios_path': 'data/scenario.json',
-    'map_path': 'data/map.json',
-    'ai_config': {
-        "gamma": 0.95,
-        "epsilon": 1.0,
-        "epsilon_min": 0.01,
-        "epsilon_decay": 0.995,
-        "learning_rate": 0.001,
-        "model": "PPO",
-        "state_size": 100,
-        "action_size": 50,
-        "use_epsilon": True,
-    },
-    'player_config': {
-        "red": ("player_AI", "AIPlayer", None),
-        "blue": ("player_rule", "RulePlayer", None)
-    }
-}
-
 # 使用示例
 if __name__ == '__main__':
+    # 定义全局配置字典
+    config = {
+        'name': 'battle_royale',
+        'max_step': 1000,
+        'weapons_path': 'data/weapons.json',
+        'scenarios_path': 'data/scenario.json',
+        'map_path': 'data/map.json',
+        'ai_config': {
+            "gamma": 0.95,
+            "epsilon": 1.0,
+            "epsilon_min": 0.01,
+            "epsilon_decay": 0.995,
+            "learning_rate": 0.001,
+            "model": "PPO",
+            "state_size": 100,
+            "action_size": 50,
+            "use_epsilon": True,
+        },
+        'player_config': {
+            "red": ("player_AI", "AIPlayer", None),
+            "blue": ("player_rule", "RulePlayer", None)
+        }
+    }
+
     net = '--net' in sys.argv
     server_host = '127.0.0.1'
     server_port = 9999
