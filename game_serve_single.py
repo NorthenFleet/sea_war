@@ -72,7 +72,6 @@ if __name__ == '__main__':
 
     game_config = {
         'name': 'battle_royale',
-
         'weapons_path': 'data/weapons.json',
         'scenarios_path': 'data/scenario.json',
         'map_path': 'data/map.json',
