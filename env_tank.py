@@ -3,6 +3,7 @@ from gym import spaces
 from env import Env
 from game_state import GameState
 
+
 class EnvTank(Env):
     def __init__(self, env_config):
         self.name = env_config["name"]
@@ -23,7 +24,7 @@ class EnvTank(Env):
     def load_scenario(self, scenario):
         self.scenario = scenario
 
-    def reset_game(self, config):
+    def reset_game(self):
         self.current_step = 0
         self.game_over = False
         print("Game starts with the following units:")
@@ -42,7 +43,6 @@ class EnvTank(Env):
     def destroy_entity(self, entity_id):
         if entity_id in self.entities:
             del self.entities[entity_id]
-
 
     def detect_entities(self, entity_id, detection_range):
         if entity_id not in self.entities:
@@ -103,6 +103,10 @@ class EnvTank(Env):
                 ):
                     print(f"Entity {entity_id} out of map bounds")
 
+    def update_posi(self):
+        for entity_id, entity_data in self.entities.items():
+            entity_position = entity_data['position']
+
     def update(self, actions):
         for entity_id, action in actions.items():
             if action == 'move':
@@ -110,15 +114,10 @@ class EnvTank(Env):
                 self.local_move(entity_id, move_direction=(1, 0))
             elif action == 'attack':
                 self.attack(entity_id)
-            
+
         self.update_posi
 
         for entity_id, entity_data in self.entities.items():
             entity_position = entity_data['position']
-        
-        self.current_step += 1
-        if self.current_step > 100:
-            self.game_over = True
 
-
-        return 
+        return

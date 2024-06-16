@@ -4,11 +4,11 @@ from env_tank import EnvTank
 import json
 
 
-class GameConfig:
-    def __init__(self):
+class GameData:
+    def __init__(self, config):
         # 从全局配置字典中加载参数
         self.name = config['name']
-        self.max_step = config['max_step']
+        # self.max_step = config['max_step']
         self.weapons_path = config['weapons_path']
         self.scenarios_path = config['scenarios_path']
         self.map_path = config['map_path']
@@ -24,33 +24,48 @@ class GameConfig:
             "weapon": self.weapon
         }
 
-        self.ai_config = config['ai_config']
-        self.player_config = config['player_config']
+        # self.ai_config = config['ai_config']
+        # self.player_config = config['player_config']
 
-        # 更新全局配置字典中的玩家配置
-        for name, (path, module, _) in self.player_config.items():
-            if module == "AIPlayer":
-                config['player_config'][name] = (path, module, self.ai_config)
+        # # 更新全局配置字典中的玩家配置
+        # for name, (path, module, _) in self.player_config.items():
+        #     if module == "AIPlayer":
+        #         config['player_config'][name] = (path, module, self.ai_config)
 
 
 class Game:
-    def __init__(self, config):
-        self.config = config
-        self.game_env = EnvTank(self.config.env_config)
-        self.current_step = None
-        self.render = Render()
-        self.max_step = self.config.max_step
+    def __init__(self, game_config, agent_config, player_config, trainning_config):
+
+        weapons_path = game_config['weapons_path']
+        scenarios_path = game_config['scenarios_path']
+        map_path = game_config['map_path']
+        self.scenario = Scenario(scenarios_path, game_config["name"])
+        self.map = Map(map_path)
+        self.weapon = Weapon(weapons_path)
+
+        env_config = {
+            "name": game_config["name"],
+            "scenario": self.scenario,
+            "map": self.map,
+            "weapon": self.weapon
+        }
+
+        self.game_env = EnvTank(env_config)
 
         self.players = {}
-        for name, (path, module, config) in self.config.player_config.items():
+        for name, (path, module, config) in player_config.items():
             player_class = getattr(__import__(path), module)
             if config is not None:
-                self.players[name] = player_class(config)
+                self.players[name] = player_class(agent_config)
             else:
                 self.players[name] = player_class()
 
+        self.current_step = None
+        # self.max_step = self.config.max_step
+        self.render = Render()
+
     def run(self):
-        observation = self.game_env.reset_game(self.config.env_config)
+        observation = self.game_env.reset_game()
         game_over = False
         self.current_step = 0
         while not game_over:
@@ -62,8 +77,8 @@ class Game:
             self.current_step += 1
             print(self.current_step)
 
-            if self.current_step > self.max_step:
-                game_over = True
+            if game_over:
+                break
 
 
 # 使用示例
@@ -71,11 +86,12 @@ if __name__ == '__main__':
     # 定义全局配置字典
 
     game_config = {
-        'name': 'battle_royale',
+        'name': 'AirDefense',
         'weapons_path': 'data/weapons.json',
         'scenarios_path': 'data/scenario.json',
         'map_path': 'data/map.json',
     }
+
     agent_config = {
         "gamma": 0.95,
         "epsilon": 1.0,
@@ -94,14 +110,17 @@ if __name__ == '__main__':
     }
 
     trainning_config = {
-        'max_step': 1000,
+        'training_max_step': 1000,
     }
 
-    config = {
+    # config = {
+    #     'name': game_config['name'],
+    #     'player_config': player_config,
+    #     'ai_config': agent_config,
+    #     'env_config': game_config,
+    #     'trainning_config': trainning_config
+    # }
 
-
-    }
-
-    config = GameConfig()
-    game = Game(config)
+    # config = GameData(game_config)
+    game = Game(game_config, agent_config, player_config, trainning_config)
     game.run()
