@@ -5,8 +5,8 @@
                 "id": 101001,
                 "x": 100,
                 "y": 150,
-                "speed_x": 5,
-                "speed_y": 3,
+                "course": 5,
+                "speed": 3,
                 "health": 100,
                 "endurance": 200,
                 "weapons": [
@@ -30,8 +30,8 @@
                 "id": 101002,
                 "x": 150,
                 "y": 150,
-                "speed_x": 5,
-                "speed_y": 3,
+                "course": 5,
+                "speed": 3,
                 "health": 100,
                 "endurance": 200,
                 "weapons": [
@@ -56,13 +56,238 @@
         "submarine": []
     },
     "blue": {
-        "flight": [
+        "missile": [
             {
-                "id": 201001,
-                "x": 800,
-                "y": 850,
-                "speed_x": 5,
-                "speed_y": 3,
+                "id": 210001,
+                "x": 130.1,
+                "y": 149.9,
+                "course": 231.72,
+                "speed": 0.8,
+                "health": 100,
+                "endurance": 200,
+                "weapons": [
+                    {
+                        "type": "missile",
+                        "count": 4
+                    },
+                    {
+                        "type": "cannon",
+                        "count": 2
+                    }
+                ],
+                "equipment": [
+                    {
+                        "type": "radar",
+                        "count": 1
+                    }
+                ]
+            },
+            {
+                "id": 210002,
+                "x": 129.9,
+                "y": 146.0,
+                "course": 231,
+                "speed": 0.8,
+                "health": 100,
+                "endurance": 200,
+                "weapons": [
+                    {
+                        "type": "missile",
+                        "count": 4
+                    },
+                    {
+                        "type": "cannon",
+                        "count": 2
+                    }
+                ],
+                "equipment": [
+                    {
+                        "type": "radar",
+                        "count": 1
+                    }
+                ]
+            },
+            {
+                "id": 210003,
+                "x": 127.0,
+                "y": 152.7,
+                "course": 232.97,
+                "speed": 0.8,
+                "health": 100,
+                "endurance": 200,
+                "weapons": [
+                    {
+                        "type": "missile",
+                        "count": 4
+                    },
+                    {
+                        "type": "cannon",
+                        "count": 2
+                    }
+                ],
+                "equipment": [
+                    {
+                        "type": "radar",
+                        "count": 1
+                    }
+                ]
+            },
+            {
+                "id": 210004,
+                "x": 127.3,
+                "y": 148.6,
+                "course": 232.12,
+                "speed": 0.8,
+                "health": 100,
+                "endurance": 200,
+                "weapons": [
+                    {
+                        "type": "missile",
+                        "count": 4
+                    },
+                    {
+                        "type": "cannon",
+                        "count": 2
+                    }
+                ],
+                "equipment": [
+                    {
+                        "type": "radar",
+                        "count": 1
+                    }
+                ]
+            },
+            {
+                "id": 210005,
+                "x": 129.6,
+                "y": 152.6,
+                "course": 232.35,
+                "speed": 0.8,
+                "health": 100,
+                "endurance": 200,
+                "weapons": [
+                    {
+                        "type": "missile",
+                        "count": 4
+                    },
+                    {
+                        "type": "cannon",
+                        "count": 2
+                    }
+                ],
+                "equipment": [
+                    {
+                        "type": "radar",
+                        "count": 1
+                    }
+                ]
+            },
+            {
+                "id": 210006,
+                "x": 128.8,
+                "y": 150.4,
+                "course": 232.1,
+                "speed": 0.8,
+                "health": 100,
+                "endurance": 200,
+                "weapons": [
+                    {
+                        "type": "missile",
+                        "count": 4
+                    },
+                    {
+                        "type": "cannon",
+                        "count": 2
+                    }
+                ],
+                "equipment": [
+                    {
+                        "type": "radar",
+                        "count": 1
+                    }
+                ]
+            },
+            {
+                "id": 210007,
+                "x": 145.2,
+                "y": 165.1,
+                "course": 231.04,
+                "speed": 3.2,
+                "health": 100,
+                "endurance": 200,
+                "weapons": [
+                    {
+                        "type": "missile",
+                        "count": 4
+                    },
+                    {
+                        "type": "cannon",
+                        "count": 2
+                    }
+                ],
+                "equipment": [
+                    {
+                        "type": "radar",
+                        "count": 1
+                    }
+                ]
+            },
+            {
+                "id": 210008,
+                "x": 147.9,
+                "y": 163.9,
+                "course": 230.27,
+                "speed": 3.2,
+                "health": 100,
+                "endurance": 200,
+                "weapons": [
+                    {
+                        "type": "missile",
+                        "count": 4
+                    },
+                    {
+                        "type": "cannon",
+                        "count": 2
+                    }
+                ],
+                "equipment": [
+                    {
+                        "type": "radar",
+                        "count": 1
+                    }
+                ]
+            },
+            {
+                "id": 210009,
+                "x": 128.2,
+                "y": 146.6,
+                "course": 128.48,
+                "speed": 0.8,
+                "health": 100,
+                "endurance": 200,
+                "weapons": [
+                    {
+                        "type": "missile",
+                        "count": 4
+                    },
+                    {
+                        "type": "cannon",
+                        "count": 2
+                    }
+                ],
+                "equipment": [
+                    {
+                        "type": "radar",
+                        "count": 1
+                    }
+                ]
+            },
+            {
+                "id": 210010,
+                "x": 128.4,
+                "y": 151.3,
+                "course": 128.26,
+                "speed": 0.8,
                 "health": 100,
                 "endurance": 200,
                 "weapons": [
