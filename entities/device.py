@@ -1,19 +1,34 @@
+from utils import *
+
+
 class Carrier:
     def __init__(self, id, health, speed):
         self.id = id
         self.health = health
         self.speed = speed
 
-    def move(self, x, y):
-        print(f"Carrier {self.id} is moving to ({x}, {y})")
+    def global_move(self, target_x, target_y, steps):
+        path = global_move(self, target_x, target_y, steps)
+        for position in path:
+            self.x, self.y = position
+            print(f"Carrier {self.id} moved to ({self.x}, {self.y})")
+
+    def local_move(self, angle, speed, steps, time_per_step):
+        path = local_move(self, angle, speed, steps, time_per_step)
+        for position in path:
+            self.x, self.y = position
+            print(f"Carrier {self.id} moved to ({self.x}, {self.y})")
 
 
 class Sensor:
     def __init__(self, range):
         self.range = range
 
-    def detect(self):
-        print(f"Sensor with range {self.range} is detecting")
+    def detect(self, targets):
+        detected_targets = detect_targets(self, targets)
+        for target in detected_targets:
+            print(
+                f"Sensor {self.id} detected target {target.id} at ({target.x}, {target.y})")
 
 
 class Launcher:

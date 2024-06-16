@@ -23,23 +23,23 @@ class Entity:
         self.ammo = Ammo()
         self.state = None
 
-    def move(self, x, y):
-        self.carrier.move(x, y)
+    def global_move(self, target_x, target_y, steps):
+        self.carrier.global_move(target_x, target_y, steps)
 
-    def detect(self):
-        self.sensor.detect()
+    def local_move(self, angle, speed, steps, time_per_step):
+        self.carrier.local_move(angle, speed, steps, time_per_step)
+
+    def detect(self, targets):
+        self.sensor.detect(targets)
 
     def fire(self):
         self.launcher.fire()
 
-    def update_position(self):
-        pass
-
     def set_observer(self, observer):
         pass
 
-    def update_state(self):
-        pass
+    def change_state(self, state):
+        self.state = state
 
     def take_damage(self, damage):
         pass

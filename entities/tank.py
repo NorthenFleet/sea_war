@@ -1,7 +1,8 @@
-import numpy as np 
+import numpy as np
 from entity import Entity
 from entity import Devices
 from entity import Equipment
+
 
 class Tank(Entity):
     def __init__(self, entity_id, entity_type, position, speed, direction, faction, hp, attack_power, weapons, equipments):
@@ -41,11 +42,10 @@ class Tank(Entity):
 
         self.entities[entity_id]['position'] = new_position
         print(f"Entity {entity_id} moved to {new_position}")
-    
+
     def set_observer(self, observer):
         self.set_observer = observer
 
-    
     def update_state(self, speed=None,  devices=None, equipments=None):
         if speed is not None:
             self.speed = speed
@@ -53,7 +53,7 @@ class Tank(Entity):
             self.devices = devices
         if equipments is not None:
             self.equipments = equipments
-             
+
     def take_damage(self, damage):
         if not self.alive:
             return

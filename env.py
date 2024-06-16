@@ -23,18 +23,6 @@ class Env():
         raise NotImplementedError(
             "This method should be overridden by subclasses")
 
-    def local_move(self, entity_id, move_direction, move_distance=None):
-        raise NotImplementedError(
-            "This method should be overridden by subclasses")
-
-    def global_move(self, entity_id, destination):
-        raise NotImplementedError(
-            "This method should be overridden by subclasses")
-
-    def detect_entities(self, entity_id, detection_range):
-        raise NotImplementedError(
-            "This method should be overridden by subclasses")
-
     def attack(self, attacker_id, target_id, attack_range):
         raise NotImplementedError(
             "This method should be overridden by subclasses")
