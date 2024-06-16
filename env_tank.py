@@ -4,6 +4,13 @@ from env import Env
 from game_state import GameState
 
 
+class GamePlayer:
+    def __init__(self):
+        self.flight = []
+        self.ship = []
+        self.submarine = []
+
+
 class EnvTank(Env):
     def __init__(self, env_config):
         self.name = env_config["name"]
@@ -12,8 +19,9 @@ class EnvTank(Env):
         self.weapon = env_config["weapon"]
         self.state = GameState()
 
-        self.players = self.scenario.players
-        self.entities = {}
+        self.num_players = env_config["num_players"]
+        self.players = [GamePlayer(id=i) for i in range(self.num_players)]
+        self.actions = {}
         self.game_over = False
         self.current_step = 0
 
@@ -21,12 +29,27 @@ class EnvTank(Env):
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(1,), dtype=np.float32)
 
-    def load_scenario(self, scenario):
-        self.scenario = scenario
+    def load_scenario(self):
+        # with open(file_path, 'r') as file:
+        #     data = json.load(file)
+
+        players = {}
+        for player_color in ['red', 'blue']:
+            player_data = self.scenario.get(player_color, {})
+            player = GamePlayer()
+
+            for entity_type in ['flight', 'ship', 'submarine']:
+                entities = player_data.get(entity_type, [])
+                setattr(player, entity_type, entities)
+
+            players[player_color] = player
+
+        return players
 
     def reset_game(self):
         self.current_step = 0
         self.game_over = False
+        self.entities
         print("Game starts with the following units:")
         return {name: self.observation_space.sample() for name in self.players}
 
@@ -103,21 +126,43 @@ class EnvTank(Env):
                 ):
                     print(f"Entity {entity_id} out of map bounds")
 
+    def update_hp(self):
+        for entity_id, entity_data in self.entities.items():
+            entity_hp = entity_data['hp']
+            if entity_hp <= 0:
+                self.destroy_entity(entity_id)
+
     def update_posi(self):
         for entity_id, entity_data in self.entities.items():
             entity_position = entity_data['position']
+            entity_speed = entity_data['speed']
+            entity_position += entity_speed
+            entity_data['position'] = entity_position
+            self.entities[entity_id] = entity_data
 
-    def update(self, actions):
+    def update_detect(self):
+        for entity_id, entity_data in self.entities.items():
+            entity_position = entity_data['position']
+            entity_detection_range = entity_data['detection_range']
+            visible_entities = self.detect_entities(
+                entity_id, entity_detection_range)
+            entity_data['visible_entities'] = visible_entities
+            self.entities[entity_id] = entity_data
+
+    def update_state(self, actions):
         for entity_id, action in actions.items():
             if action == 'move':
                 # Example move direction
-                self.local_move(entity_id, move_direction=(1, 0))
+
             elif action == 'attack':
                 self.attack(entity_id)
 
-        self.update_posi
+        self.current_step += 1
 
-        for entity_id, entity_data in self.entities.items():
-            entity_position = entity_data['position']
+    def update(self, actions):
+        self.update_detect()
+
+        self.update_hp()
+        self.update_posi()
 
         return

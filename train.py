@@ -10,7 +10,7 @@ class Train():
         # 环境
         name = 'battle_royale'
         weapons_path = 'data/weapons.json'
-        scenarios_path = 'data/scenario.json'
+        scenarios_path = 'data/AirDefense.json'
         map_path = 'data/map.json'
 
         scenario = Scenario(scenarios_path, name)
