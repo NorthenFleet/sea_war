@@ -19,7 +19,7 @@ class EnvTank(Env):
         self.weapon = env_config["weapon"]
         self.state = GameState()
 
-        self.players = []
+        self.players = self.load_scenario()
         self.actions = {}
         self.game_over = False
         self.current_step = 0
@@ -33,7 +33,7 @@ class EnvTank(Env):
         #     data = json.load(file)
 
         players = []
-        for player_color in ['red', 'blue']:
+        for player in self.scenario.players:
             player_data = self.scenario.get(player_color, {})
             player = GamePlayer()
 
