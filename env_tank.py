@@ -19,8 +19,7 @@ class EnvTank(Env):
         self.weapon = env_config["weapon"]
         self.state = GameState()
 
-        self.num_players = env_config["num_players"]
-        self.players = [GamePlayer(id=i) for i in range(self.num_players)]
+        self.players = []
         self.actions = {}
         self.game_over = False
         self.current_step = 0
@@ -33,7 +32,7 @@ class EnvTank(Env):
         # with open(file_path, 'r') as file:
         #     data = json.load(file)
 
-        players = {}
+        players = []
         for player_color in ['red', 'blue']:
             player_data = self.scenario.get(player_color, {})
             player = GamePlayer()
@@ -153,6 +152,7 @@ class EnvTank(Env):
         for entity_id, action in actions.items():
             if action == 'move':
                 # Example move direction
+                self.global_move()
 
             elif action == 'attack':
                 self.attack(entity_id)

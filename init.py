@@ -1,5 +1,6 @@
 import json
 
+
 class DataLoader:
     def __init__(self, path):
         self.data = self.load_json(path)
@@ -24,7 +25,7 @@ class Scenario(DataLoader):
             for unit_type, unit_list in units.items():
                 for unit in unit_list:
                     self.players[color][unit_type].append(unit)
-
+        self.num_players = len(self.players)
 
         # self.units = self.create_units()
 
@@ -84,9 +85,3 @@ class Weapon(DataLoader):
 
     def update(self):
         pass
-
-
-
-
-
-

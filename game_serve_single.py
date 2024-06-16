@@ -88,7 +88,7 @@ if __name__ == '__main__':
     game_config = {
         'name': 'AirDefense',
         'weapons_path': 'data/weapons.json',
-        'scenarios_path': 'data/scenario.json',
+        'scenarios_path': 'data/AirDefense.json',
         'map_path': 'data/map.json',
     }
 
