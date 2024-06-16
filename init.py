@@ -20,7 +20,9 @@ class Scenario(DataLoader):
             self.players[color] = {
                 "flight": [],
                 "ship": [],
-                "submarine": []
+                "submarine": [],
+                "missile": [],
+                "anti_air": []
             }
             for unit_type, unit_list in units.items():
                 for unit in unit_list:

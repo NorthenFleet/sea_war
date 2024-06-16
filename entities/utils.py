@@ -17,17 +17,12 @@ def global_move(entity, target_x, target_y, steps):
     return path
 
 
-def local_move(entity, angle, speed, steps, time_per_step):
-    path = []
+def local_move(entity, course, speed):
     current_x, current_y = entity.x, entity.y
-    rad_angle = math.radians(angle)
+    step_x = speed * math.sin(course)
+    step_y = speed * math.cos(course)
 
-    for _ in range(steps):
-        current_x += speed * math.cos(rad_angle) * time_per_step
-        current_y += speed * math.sin(rad_angle) * time_per_step
-        path.append((current_x, current_y))
-
-    return path
+    return step_x, step_y
 
 
 def detect_targets(sensor, targets):

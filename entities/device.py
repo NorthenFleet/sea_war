@@ -2,16 +2,22 @@ from utils import *
 
 
 class Carrier:
-    def __init__(self, id, health, speed):
-        self.id = id
-        self.health = health
+    def __init__(self, speed):
         self.speed = speed
 
-    def global_move(self, target_x, target_y, steps):
-        path = global_move(self, target_x, target_y, steps)
-        for position in path:
-            self.x, self.y = position
-            print(f"Carrier {self.id} moved to ({self.x}, {self.y})")
+    def global_move(self, entity_id, destination):
+        direction_vector = np.array(destination) - np.array(self.position)
+        distance = np.linalg.norm(direction_vector)
+        speed = self.entities[entity_id].get('speed', 1)
+
+        if distance < speed:
+            new_position = destination
+        else:
+            direction_vector_normalized = direction_vector / distance
+            new_position = self.position + direction_vector_normalized * speed
+
+        self.entities[entity_id]['position'] = new_position
+        print(f"Entity {entity_id} moved to {new_position}")
 
     def local_move(self, angle, speed, steps, time_per_step):
         path = local_move(self, angle, speed, steps, time_per_step)

@@ -2,26 +2,37 @@ import numpy as np
 from device import Carrier, Sensor, Launcher, Ammo
 
 
-class Devices:
-    def __init__(self, type, count):
-        self.type = type
-        self.count = count
-
-
-class Equipment:
-    def __init__(self, type, count):
-        self.type = type
-        self.count = count
+class EntityInfo:
+    def __init__(self):
+        self.entity_id = None
+        self.entity_type = None
+        self.position = None
+        self.speed = None
+        self.direction = None
+        self.faction = None
+        self.hp = None
+        self.attack_power = None
+        self.weapons = None
+        self.equipments = None
+        self.sensor = None
+        self.launcher = None
 
 
 class Entity:
-    def __init__(self, id):
-        self.id = id
+    def __init__(self, EntityInfo):
+        self.id = EntityInfo.id
+        self.hp = 100
+        self.type = None
         self.carrier = Carrier()
         self.sensor = Sensor()
         self.launcher = Launcher()
         self.ammo = Ammo()
         self.state = None
+        self.position = np.array(EntityInfo.position)
+        self.speed = None
+        self.set_observation = []
+        self.attack_power = None
+        self.alive = True
 
     def global_move(self, target_x, target_y, steps):
         self.carrier.global_move(target_x, target_y, steps)
@@ -42,4 +53,8 @@ class Entity:
         self.state = state
 
     def take_damage(self, damage):
-        pass
+        if not self.alive:
+            return
+        self.hp -= damage
+        if self.hp <= 0:
+            self.alive = False

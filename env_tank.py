@@ -6,9 +6,10 @@ from game_state import GameState
 
 class GamePlayer:
     def __init__(self):
-        self.flight = []
-        self.ship = []
-        self.submarine = []
+        # self.flight = []
+        # self.ship = []
+        # self.submarine = []
+        pass
 
 
 class EnvTank(Env):
@@ -29,20 +30,26 @@ class EnvTank(Env):
             low=0, high=1, shape=(1,), dtype=np.float32)
 
     def load_scenario(self):
-        # with open(file_path, 'r') as file:
-        #     data = json.load(file)
-
         players = []
-        for player in self.scenario.players:
-            player_data = self.scenario.get(player_color, {})
+        for player_data in self.scenario.players:
             player = GamePlayer()
-
-            for entity_type in ['flight', 'ship', 'submarine']:
-                entities = player_data.get(entity_type, [])
-                setattr(player, entity_type, entities)
-
-            players[player_color] = player
-
+            player.entity_id = player_data["id"]
+            player.position = [player_data["x"], player_data["y"]]
+            player.course = player_data["course"]
+            player.speed = player_data["speed"]
+            player.health = 100
+            player.endurance = 200
+            player.weapons = []
+            for weapon in player_data["weapons"]:
+                weapon_dict = {
+                    "type": weapon["type"], "count": weapon["count"]}
+                player.weapons.append(weapon_dict)
+            player.equipments = []
+            for equipment in player_data["equipment"]:
+                equipment_dict = {
+                    "type": equipment["type"], "count": equipment["count"]}
+                player.equipments.append(equipment_dict)
+            players.append(player)
         return players
 
     def reset_game(self):
