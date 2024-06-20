@@ -1,15 +1,6 @@
 import numpy as np
 from gym import spaces
 from env import Env
-from game_state import GameState
-
-
-class GamePlayer:
-    def __init__(self):
-        # self.flight = []
-        # self.ship = []
-        # self.submarine = []
-        pass
 
 
 class EnvTank(Env):
@@ -18,9 +9,8 @@ class EnvTank(Env):
         self.scenario = env_config["scenario"]
         self.map = env_config["map"]
         self.weapon = env_config["weapon"]
-        self.state = GameState()
-
-        self.players = self.load_scenario()
+        self.players = env_config["players"]
+        self.entities = env_config["entities"]
         self.actions = {}
         self.game_over = False
         self.current_step = 0
@@ -28,29 +18,6 @@ class EnvTank(Env):
         self.action_space = spaces.Discrete(2)  # 假设每个智能体的动作空间相同
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(1,), dtype=np.float32)
-
-    def load_scenario(self):
-        players = []
-        for player_data in self.scenario.players:
-            player = GamePlayer()
-            player.entity_id = player_data["id"]
-            player.position = [player_data["x"], player_data["y"]]
-            player.course = player_data["course"]
-            player.speed = player_data["speed"]
-            player.health = 100
-            player.endurance = 200
-            player.weapons = []
-            for weapon in player_data["weapons"]:
-                weapon_dict = {
-                    "type": weapon["type"], "count": weapon["count"]}
-                player.weapons.append(weapon_dict)
-            player.equipments = []
-            for equipment in player_data["equipment"]:
-                equipment_dict = {
-                    "type": equipment["type"], "count": equipment["count"]}
-                player.equipments.append(equipment_dict)
-            players.append(player)
-        return players
 
     def reset_game(self):
         self.current_step = 0

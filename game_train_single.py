@@ -40,6 +40,7 @@ class Game:
         scenarios_path = game_config['scenarios_path']
         map_path = game_config['map_path']
         self.scenario = Scenario(scenarios_path, game_config["name"])
+        enities = self.scenario.load_scenario()
         self.map = Map(map_path)
         self.weapon = Weapon(weapons_path)
 
@@ -47,7 +48,8 @@ class Game:
             "name": game_config["name"],
             "scenario": self.scenario,
             "map": self.map,
-            "weapon": self.weapon
+            "weapon": self.weapon,
+            "entites": enities
         }
 
         self.game_env = EnvTank(env_config)

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class GameState:
     def __init__(self):
         self.entities = {}
@@ -20,18 +21,11 @@ class GameState:
         if num_entities == 0:
             self.entity_matrix = None
             return
-        self.entity_matrix = np.zeros((num_entities, 5))  # 假设我们需要存储位置(x, y)、速度、HP、存活状态等信息
+        # 假设我们需要存储位置(x, y)、速度、HP、存活状态等信息
+        self.entity_matrix = np.zeros((num_entities, 5))
         for i, entity in enumerate(self.entities.values()):
             self.entity_matrix[i, 0] = entity.position[0]
             self.entity_matrix[i, 1] = entity.position[1]
             self.entity_matrix[i, 2] = entity.speed
             self.entity_matrix[i, 3] = entity.hp
             self.entity_matrix[i, 4] = entity.alive
-
-    def update_positions(self):
-        # 批量更新位置
-        for entity in self.entities.values():
-            if entity.alive:
-                # 这里可以进行复杂的物理运算，例如受力、碰撞等
-                pass
-        self.update_entity_matrix()

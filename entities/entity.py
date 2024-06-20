@@ -4,8 +4,10 @@ from device import Carrier, Sensor, Launcher, Ammo
 
 class EntityInfo:
     def __init__(self):
+        self.side = None
         self.entity_id = None
         self.entity_type = None
+
         self.position = None
         self.speed = None
         self.direction = None
