@@ -1,4 +1,4 @@
-from utils import *
+from entities.utils import *
 
 
 class Carrier:
@@ -26,9 +26,14 @@ class Carrier:
             print(f"Carrier {self.id} moved to ({self.x}, {self.y})")
 
 
+class SensorInfo:
+    def __init__(self, detect_range) -> None:
+        self.detect_range = detect_range
+
+
 class Sensor:
-    def __init__(self, range):
-        self.range = range
+    def __init__(self, sensor_info):
+        self.range = sensor_info.range
 
     def detect(self, targets):
         detected_targets = detect_targets(self, targets)
@@ -57,3 +62,5 @@ class Ammo:
 
     def explode(self):
         print(f"Ammo explodes with {self.damage} damage")
+
+

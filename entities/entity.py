@@ -1,5 +1,5 @@
 import numpy as np
-from device import Carrier, Sensor, Launcher, Ammo
+from device import *
 
 
 class EntityInfo:

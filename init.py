@@ -1,6 +1,6 @@
 import json
 from entities.entity import EntityInfo, Entity
-from entities.device import *
+from device import *
 
 
 class DataLoader:
@@ -36,10 +36,10 @@ class Scenario(DataLoader):
             for unit_type, unit_list in units.items():
                 if unit_list:
                     if unit_type == 'flight':
-                        player.flight = self.create_units(unit_list)
+                        player.flight = self.create_units(color, unit_list)
                         self.entities.append(player.flight)
                     elif unit_type == 'ship':
-                        player.ship = self.create_units(unit_list)
+                        player.ship = self.create_units(color, unit_list)
                         self.entities.append(player.ship)
                     elif unit_type == 'submarine':
                         player.submarine = self.create_units(color, unit_list)
@@ -54,7 +54,7 @@ class Scenario(DataLoader):
             entity_info = EntityInfo()
             entity_info.side = color
             entity_info.entity_id = unit['id']
-            entity_info.entity_type = unit['type']
+            entity_info.entity_type = unit['entity_type']
             entity_info.position = [unit['x'], unit['y']]
             entity_info.speed = unit['speed']
             entity_info.direction = unit['course']
@@ -62,8 +62,7 @@ class Scenario(DataLoader):
             entity_info.attack_power = 0  # 示例中未提供攻击力
             entity_info.weapons = unit['weapons']
             entity_info.equipments = unit['equipment']
-            entity_info.sensor = Sensor(
-                entity_info.id, 100, entity_info.position[0], entity_info.position[1])
+            entity_info.sensor = Sensor()
             entity_info.launcher = Launcher(entity_info.id, 'missile', 4)
             units.append(Entity(entity_info))
         return units
