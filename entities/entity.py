@@ -25,10 +25,10 @@ class Entity:
         self.id = EntityInfo.id
         self.hp = 100
         self.type = None
-        self.carrier = Carrier()
-        self.sensor = Sensor()
-        self.launcher = Launcher()
-        self.ammo = Ammo()
+        self.carrier = []
+        self.sensor = []
+        self.launcher = []
+        self.ammo = []
         self.state = None
         self.position = np.array(EntityInfo.position)
         self.speed = None
@@ -43,10 +43,15 @@ class Entity:
         self.carrier.local_move(angle, speed, steps, time_per_step)
 
     def detect(self, targets):
-        self.sensor.detect(targets)
+        detected_targets = []
+        for sensor in self.sensors:
+            detected_targets.extend(sensor.detect(targets, self.position))
+        return detected_targets
 
-    def fire(self):
-        self.launcher.fire()
+    def fire(self, target):
+        for weapon in self.weapons:
+            if weapon.fire(target):
+                break
 
     def set_observer(self, observer):
         pass

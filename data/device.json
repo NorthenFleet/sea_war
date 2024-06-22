@@ -1,0 +1,18 @@
+{
+    "sensor": {
+        "dk_radar": {
+            "range": 1000,
+            "accurate": 8
+        },
+        "ds_sonor": {
+            "range": 1000,
+            "accurate": 8
+        }
+    },
+    "weapon": {
+        "gun": {
+            "range": 1000,
+            "accurate": 8
+        }
+    }
+}

@@ -1,5 +1,5 @@
 from render import Render
-from init import Map, Weapon, Scenario
+from init import Map, Sensor, Scenario
 from env_tank import EnvTank
 import json
 
@@ -33,7 +33,7 @@ class GameData:
         #         config['player_config'][name] = (path, module, self.ai_config)
 
 
-class Game:
+class Trainer:
     def __init__(self, game_config, agent_config, player_config, trainning_config):
 
         weapons_path = game_config['weapons_path']
@@ -81,6 +81,12 @@ class Game:
 
             if game_over:
                 break
+
+    def save_model(self, path):
+        ModelManager.save_model(self.model, self.model_path)
+
+    def load_model(self):
+        ModelManager.load_model(self.model, self.model_path, self.device)
 
 
 # 使用示例

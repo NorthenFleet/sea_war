@@ -94,14 +94,15 @@ class Map(DataLoader):
             print(" ".join(map(str, row)))
 
 
-class Weapon(DataLoader):
-    def __init__(self, path):
-        super().__init__(path)
-        self.platforms = self.data['platforms']
-        self.weapons = self.data['weapons']
-
-    def index(self):
+class Initialize():
+    def __init__(self) -> None:
         pass
 
-    def update(self):
-        pass
+    # 初始化Scenario
+    scenario = Scenario('path_to_your_scenario.json', 'name_of_your_scenario')
+
+    # 初始化Map
+    map = Map('path_to_your_map.json')
+
+    # 初始化Device
+    device = Device('path_to_your_device.json')
