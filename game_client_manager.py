@@ -5,7 +5,7 @@ from env import Env
 from player_human import HumanPlayer
 from player_AI import AIPlayer
 from com_client import CommunicationClient
-from render import Render
+from render.render_manager import Render
 from init import Map, Weapon, Scenario
 from env_tank import EnvTank
 

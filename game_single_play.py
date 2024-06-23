@@ -1,7 +1,6 @@
-from render import Render
 from init import Initializer
 from env_tank import EnvTank
-import json
+from render.render_manager import RenderManager
 
 
 class GameData:
@@ -48,11 +47,11 @@ class Game:
                 self.players[name] = player_class()
 
         self.current_step = None
-        # self.max_step = self.config.max_step
-        self.render = Render()
+        self.render_manager = RenderManager(self.env_config)
 
     def run(self):
         observation = self.game_env.reset_game()
+        self.render_manager.run()
         game_over = False
         self.current_step = 0
         while not game_over:
