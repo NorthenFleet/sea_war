@@ -1,5 +1,5 @@
 from render import Render
-from init import Map, Scenario
+from init import Initializer
 from env_tank import EnvTank
 import json
 
@@ -13,16 +13,16 @@ class GameData:
         self.scenarios_path = config['scenarios_path']
         self.map_path = config['map_path']
 
-        self.scenario = Scenario(self.scenarios_path, self.name)
-        self.map = Map(self.map_path)
-        self.weapon = Weapon(self.weapons_path)
+        # self.scenario = Scenario(self.scenarios_path, self.name)
+        # self.map = Map(self.map_path)
+        # self.weapon = Weapon(self.weapons_path)
 
-        self.env_config = {
-            "name": self.name,
-            "scenario": self.scenario,
-            "map": self.map,
-            "weapon": self.weapon
-        }
+        # self.env_config = {
+        #     "name": self.name,
+        #     "scenario": self.scenario,
+        #     "map": self.map,
+        #     "weapon": self.weapon
+        # }
 
         # self.ai_config = config['ai_config']
         # self.player_config = config['player_config']
@@ -35,23 +35,7 @@ class GameData:
 
 class Game:
     def __init__(self, game_config, agent_config, player_config, trainning_config=None):
-
-        weapons_path = game_config['weapons_path']
-        scenarios_path = game_config['scenarios_path']
-        map_path = game_config['map_path']
-        self.scenario = Scenario(scenarios_path, game_config["name"])
-        enities = self.scenario.load_scenario()
-        self.map = Map(map_path)
-        self.weapon = Weapon(weapons_path)
-
-        env_config = {
-            "name": game_config["name"],
-            "scenario": self.scenario,
-            "map": self.map,
-            "weapon": self.weapon,
-            "entites": enities
-        }
-
+        env_config = Initializer(game_config)
         self.game_env = EnvTank(env_config)
 
         self.players = {}
@@ -82,6 +66,22 @@ class Game:
             if game_over:
                 break
 
+    def train(self):
+        observation = self.game_env.reset_game()
+        game_over = False
+        self.current_step = 0
+        while not game_over:
+            actions = {agent_name: agent.choose_action(
+                observation) for agent_name, agent in self.players.items()}
+            observations, rewards, game_over, info = self.game_env.update(
+                actions)
+
+            self.current_step += 1
+            print(self.current_step)
+
+            if game_over:
+                break
+
 
 # 使用示例
 if __name__ == '__main__':
@@ -89,7 +89,7 @@ if __name__ == '__main__':
 
     game_config = {
         'name': 'AirDefense',
-        'weapons_path': 'data/weapons.json',
+        'device_path': 'data/device.json',
         'scenarios_path': 'data/AirDefense.json',
         'map_path': 'data/map.json',
     }
@@ -108,7 +108,21 @@ if __name__ == '__main__':
 
     player_config = {
         "red": ("player_AI", "AIPlayer", agent_config),
-        "blue": ("player_rule", "RulePlayer", None)
+        "blue": ("player_rule", "RulePlayer", None),
+        "green": ("player_human", "HumanPlayer", None)
+    }
+
+    trainning_config = {
+        "gamma": 0.95,
+        "epsilon": 1.0,
+        "epsilon_min": 0.01,
+        "epsilon_decay": 0.995,
+        "learning_rate": 0.001,
+        "model": "PPO",
+        "state_size": 100,
+        "action_size": 50,
+        "use_epsilon": True,
+        'training_max_step': 1000,
     }
 
     # config = {
@@ -122,3 +136,4 @@ if __name__ == '__main__':
     # config = GameData(game_config)
     game = Game(game_config, agent_config, player_config)
     game.run()
+    # game.train()

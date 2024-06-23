@@ -28,10 +28,10 @@ class Carrier:
 
 
 class Sensor:
-    def __init__(self, sensor_type):
-        config = device_config['sensors'][sensor_type]
-        self.type = sensor_type
-        self.range = config['range']
+    def __init__(self, name, detection_range, accurate):
+        self.name = name
+        self.detection_range = detection_range
+        self.accurate = accurate
 
     def detect(self, targets, position):
         detected_targets = []
@@ -41,6 +41,11 @@ class Sensor:
             if distance <= self.range:
                 detected_targets.append(target)
         return detected_targets
+
+    def _is_within_range(self, current_position, target_position):
+        distance = ((current_position[0] - target_position[0]) ** 2 +
+                    (current_position[1] - target_position[1]) ** 2) ** 0.5
+        return distance <= self.detection_range
 
 
 class Launcher:
@@ -59,11 +64,16 @@ class Launcher:
 
 class Ammo:
     def __init__(self, weapon_type, count):
-        config = device_config['weapons'][weapon_type]
+        self.type = None
+        self.count = None
+        self.damage = None
+        self.range = None
+
+    def set_properties(self, weapon_type, ammo_type, damage, range):
         self.type = weapon_type
-        self.count = count
-        self.damage = config['damage']
-        self.range = config['range']
+        self.ammo_type = ammo_type
+        self.damage = damage
+        self.range = range
 
     def fire(self, target):
         if self.count > 0:
@@ -77,7 +87,20 @@ class Ammo:
 
 
 class Weapon:
-    def __init__(self, weapon_type, ammo_type, capacity):
-        self.weapon_type = weapon_type
-        self.ammo_type = ammo_type
-        self.capacity = capacity
+    def __init__(self, name, damage, range, cooldown):
+        self.name = name
+        self.damage = damage
+        self.range = range
+        self.cooldown = cooldown
+        self.current_cooldown = 0
+
+    def attack(self, target):
+        if self.current_cooldown == 0:
+            target.take_damage(self.damage)
+            self.current_cooldown = self.cooldown
+        else:
+            print(f"{self.name} is cooling down.")
+
+    def reduce_cooldown(self):
+        if self.current_cooldown > 0:
+            self.current_cooldown -= 1

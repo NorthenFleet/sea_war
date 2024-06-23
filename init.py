@@ -26,30 +26,32 @@ class Scenario(DataLoader):
         super().__init__(path)
         self.name = name
         self.path = path
-        self.name = name
         self.players = {}
         self.entities = []
 
-    def load_scenario(self):
+    def load_scenario(self, device):
         for color, units in self.data.items():
             player = GamePlayer()
             for unit_type, unit_list in units.items():
                 if unit_list:
                     if unit_type == 'flight':
-                        player.flight = self.create_units(color, unit_list)
+                        player.flight = self.create_entity(
+                            color, unit_list, device)
                         self.entities.append(player.flight)
                     elif unit_type == 'ship':
-                        player.ship = self.create_units(color, unit_list)
+                        player.ship = self.create_entity(
+                            color, unit_list, device)
                         self.entities.append(player.ship)
                     elif unit_type == 'submarine':
-                        player.submarine = self.create_units(color, unit_list)
+                        player.submarine = self.create_entity(
+                            color, unit_list, device)
                         self.entities.append(player.submarine)
                     # 添加更多的单位类型处理
             self.players[color] = player
         return self.players, self.entities
 
-    def create_units(self, color, unit_data):
-        units = []
+    def create_entity(self, color, unit_data, device):
+        entities = []
         for unit in unit_data:
             entity_info = EntityInfo()
             entity_info.side = color
@@ -60,12 +62,18 @@ class Scenario(DataLoader):
             entity_info.direction = unit['course']
             entity_info.hp = unit['health']
             entity_info.attack_power = 0  # 示例中未提供攻击力
-            entity_info.weapons = unit['weapons']
-            entity_info.equipments = unit['equipment']
-            entity_info.sensor = Sensor()
-            entity_info.launcher = Launcher(entity_info.id, 'missile', 4)
-            units.append(Entity(entity_info))
-        return units
+            entity_info.weapons = None
+            entity_info.sensor = None
+            entity_info.launcher = None
+
+            entity = Entity(entity_info)
+            for weapon_name in unit_data.weapons:
+                entity.add_weapon(device.get_weapon(weapon_name))
+            for sensor_name in unit_data.sensor:
+                entity.add_sensor(device.get_sensor(sensor_name))
+
+            entities.append()
+        return entities
 
     def display_units(self):
         for faction, force_types in self.units.items():
@@ -86,23 +94,52 @@ class Scenario(DataLoader):
 class Map(DataLoader):
     def __init__(self, path):
         super().__init__(path)
-        self.map_info = self.data['map_info']
-        self.map_data = self.data['map_data']
+        pass
 
     def display_map(self):
-        for row in self.map_data:
+        for row in self.data:
             print(" ".join(map(str, row)))
 
 
-class Initialize():
-    def __init__(self) -> None:
-        pass
+class Device(DataLoader):
+    def __init__(self, path):
+        super().__init__(path)
 
-    # 初始化Scenario
-    scenario = Scenario('path_to_your_scenario.json', 'name_of_your_scenario')
+        self.weapons = {}
+        self.sensors = {}
+        self.launchers = {}
 
-    # 初始化Map
-    map = Map('path_to_your_map.json')
+        for weapon_data in self.data['weapons']:
+            weapon = Weapon(**weapon_data)
+            self.weapons[weapon.name] = weapon
+        for sensor_data in self.data['sensors']:
+            sensor = Sensor(**sensor_data)
+            self.sensors[sensor.name] = sensor
 
-    # 初始化Device
-    device = Device('path_to_your_device.json')
+    def get_weapon(self, name):
+        return self.weapon.get(name)
+
+    def get_sensor(self, name):
+        return self.sensor.get(name)
+
+
+class Initializer():
+    def __init__(self, game_config):
+        device_path = game_config['device_path']
+        scenarios_path = game_config['scenarios_path']
+        map_path = game_config['map_path']
+
+        self.map = Map(map_path)
+        self.device_table = Device(device_path)
+        self.scenario = Scenario(scenarios_path, game_config["name"])
+        players = self.scenario.load_scenario(self.device_table)
+
+        env_config = {
+            "name": game_config["name"],
+            "scenario": self.scenario,
+            "map": self.map,
+            "weapon": self.device_table,
+            "players": players
+        }
+
+        return env_config

@@ -1,18 +1,29 @@
 {
-    "sensor": {
-        "dk_radar": {
-            "range": 1000,
-            "accurate": 8
+    "weapons": [
+        {
+            "name": "Laser Cannon",
+            "damage": 10,
+            "range": 5,
+            "cooldown": 2
         },
-        "ds_sonor": {
-            "range": 1000,
-            "accurate": 8
+        {
+            "name": "Missile Launcher",
+            "damage": 25,
+            "range": 10,
+            "cooldown": 5
+        },
+        {
+            "name": "Plasma Cannon",
+            "damage": 15,
+            "range": 8,
+            "cooldown": 3
         }
-    },
-    "weapon": {
-        "gun": {
-            "range": 1000,
-            "accurate": 8
+    ],
+    "sensors": [
+        {
+            "name": "Radar",
+            "detection_range": 10,
+            "accurate": 10
         }
-    }
+    ]
 }

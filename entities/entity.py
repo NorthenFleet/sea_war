@@ -3,38 +3,42 @@ from device import *
 
 
 class EntityInfo:
-    def __init__(self):
-        self.side = None
-        self.entity_id = None
-        self.entity_type = None
-
-        self.position = None
-        self.speed = None
-        self.direction = None
-        self.faction = None
-        self.hp = None
-        self.attack_power = None
-        self.weapons = None
-        self.equipments = None
-        self.sensor = None
-        self.launcher = None
+    def __init__(self, side=None, entity_id=None, entity_type=None, position=None, speed=None, direction=None, faction=None, hp=None, weapons=None, equipments=None, sensor=None, launcher=None):
+        self.side = side
+        self.entity_id = entity_id
+        self.entity_type = entity_type
+        self.position = position
+        self.speed = speed
+        self.direction = direction
+        self.faction = faction
+        self.hp = hp
+        self.weapons = weapons if weapons is not None else []
+        self.equipments = equipments if equipments is not None else []
+        self.sensor = sensor
+        self.launcher = launcher
 
 
 class Entity:
     def __init__(self, EntityInfo):
-        self.id = EntityInfo.id
-        self.hp = 100
-        self.type = None
-        self.carrier = []
-        self.sensor = []
+        self.id = EntityInfo.entity_id
+        self.hp = EntityInfo.hp
+        self.type = EntityInfo.entity_type
+        self.carrier = None
+        self.weapons = []
+        self.sensors = []
         self.launcher = []
         self.ammo = []
         self.state = None
         self.position = np.array(EntityInfo.position)
         self.speed = None
         self.set_observation = []
-        self.attack_power = None
         self.alive = True
+
+    def add_weapon(self, weapon):
+        self.weapons.append(weapon)
+
+    def add_sensor(self, sensor):
+        self.sensors.append(sensor)
 
     def global_move(self, target_x, target_y, steps):
         self.carrier.global_move(target_x, target_y, steps)
@@ -48,10 +52,16 @@ class Entity:
             detected_targets.extend(sensor.detect(targets, self.position))
         return detected_targets
 
-    def fire(self, target):
-        for weapon in self.weapons:
-            if weapon.fire(target):
-                break
+    def attack(self, target, weapon_name=None):
+        if weapon_name:
+            for weapon in self.weapons:
+                if weapon.name == weapon_name:
+                    weapon.attack(target)
+                    return
+            print(f"Weapon {weapon_name} not found.")
+        else:
+            for weapon in self.weapons:
+                weapon.attack(target)
 
     def set_observer(self, observer):
         pass
