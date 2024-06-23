@@ -106,11 +106,17 @@ if __name__ == '__main__':
         "action_size": 50,
         "use_epsilon": True,
     }
+    rule_config = {
+        "name": "Rule"
+    }
+    human_config = {
+        "name": "Human"
+    }
 
     player_config = {
         "red": ("player_AI", "AIPlayer", agent_config),
-        "blue": ("player_rule", "RulePlayer", None),
-        "green": ("player_human", "HumanPlayer", None)
+        "blue": ("player_rule", "RulePlayer", rule_config),
+        "green": ("player_human", "HumanPlayer", human_config)
     }
 
     trainning_config = {

@@ -13,8 +13,7 @@ class EntityInfo:
         self.faction = faction
         self.hp = hp
         self.weapons = weapons if weapons is not None else []
-        self.equipments = equipments if equipments is not None else []
-        self.sensor = sensor
+        self.sensor = sensor if sensor is not None else []
         self.launcher = launcher
 
 
@@ -39,6 +38,12 @@ class Entity:
 
     def add_sensor(self, sensor):
         self.sensors.append(sensor)
+
+    def reset(self, entity_info, device):
+        self.entity_info = entity_info
+        self.device = device
+        self.weapons.clear()
+        self.sensors.clear()
 
     def global_move(self, target_x, target_y, steps):
         self.carrier.global_move(target_x, target_y, steps)

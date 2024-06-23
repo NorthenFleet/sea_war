@@ -11,6 +11,7 @@ class EnvTank(Env):
         self.weapon = env_config["weapon"]
         self.players = env_config["players"]
         self.entities = env_config["entities"]
+        self.entity_registry = env_config["entity_registry"]
         self.actions = {}
         self.game_over = False
         self.current_step = 0

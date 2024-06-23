@@ -33,6 +33,7 @@ class Scenario(DataLoader):
         self.players = {}
         self.entities = []
         self.entity_pool = ObjectPool(self.create_entity)
+        self.entity_registry = {}  # Centralized registry
 
     def load_scenario(self, device):
         for color, units in self.data.items():
@@ -42,7 +43,7 @@ class Scenario(DataLoader):
                 setattr(player, unit_type, entities)
                 self.entities.extend(entities)
             self.players[color] = player
-        return self.players, self.entities
+        return self.players, self.entities, self.entity_registry
 
     def create_entities(self, color, unit_list, device):
         entities = []
@@ -55,16 +56,17 @@ class Scenario(DataLoader):
                 speed=unit['speed'],
                 direction=unit['course'],
                 hp=unit['health'],
-                endurance=unit['endurance'],
                 weapons=[w['type'] for w in unit['weapons']],
                 sensor=[s['type'] for s in unit['sensor']]
             )
             entity = self.entity_pool.acquire(entity_info, device)
+            # Register the entity by ID
+            self.entity_registry[unit['id']] = entity
             entities.append(entity)
         return entities
 
     def create_entity(self, entity_info, device):
-        entity = Entity(entity_info, device)
+        entity = Entity(entity_info)
         for weapon_name in entity_info.weapons:
             weapon = device.get_weapon(weapon_name)
             if weapon:
@@ -117,10 +119,10 @@ class Device(DataLoader):
             self.sensors[sensor.name] = sensor
 
     def get_weapon(self, name):
-        return self.weapon.get(name)
+        return self.weapons.get(name)
 
     def get_sensor(self, name):
-        return self.sensor.get(name)
+        return self.sensors.get(name)
 
 
 class Initializer:
@@ -132,7 +134,8 @@ class Initializer:
         self.map = Map(map_path)
         self.device_table = Device(device_path)
         self.scenario = Scenario(scenarios_path, game_config["name"])
-        players, entities = self.scenario.load_scenario(self.device_table)
+        players, entities, entity_registry = self.scenario.load_scenario(
+            self.device_table)
 
         self.env_config = {
             "name": game_config["name"],
@@ -140,7 +143,8 @@ class Initializer:
             "map": self.map,
             "weapon": self.device_table,
             "players": players,
-            "entities": entities
+            "entities": entities,
+            "entity_registry": entity_registry
         }
 
     def get_env_config(self):

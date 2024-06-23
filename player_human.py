@@ -4,7 +4,8 @@ from player_base import Player_Base
 
 class HumanPlayer(Player_Base):
     def __init__(self, name):
-        super().__init__(name)
+        super().__init__()
+        self.name = name
         self.current_action = None
         self.default_action = 'idle'
         self.input_event_listener = None
