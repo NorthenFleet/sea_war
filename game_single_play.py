@@ -35,8 +35,9 @@ class GameData:
 
 class Game:
     def __init__(self, game_config, agent_config, player_config, trainning_config=None):
-        env_config = Initializer(game_config)
-        self.game_env = EnvTank(env_config)
+        initializer = Initializer(game_config)
+        self.env_config = initializer.get_env_config()
+        self.game_env = EnvTank(self.env_config)
 
         self.players = {}
         for name, (path, module, config) in player_config.items():

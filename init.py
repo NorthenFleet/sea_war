@@ -1,6 +1,7 @@
 import json
 from entities.entity import EntityInfo, Entity
 from device import *
+from object_pool import ObjectPool
 
 
 class DataLoader:
@@ -21,6 +22,9 @@ class GamePlayer:
         pass
 
 
+# scenario.py
+
+
 class Scenario(DataLoader):
     def __init__(self, path, name):
         super().__init__(path)
@@ -28,52 +32,48 @@ class Scenario(DataLoader):
         self.path = path
         self.players = {}
         self.entities = []
+        self.entity_pool = ObjectPool(self.create_entity)
 
     def load_scenario(self, device):
         for color, units in self.data.items():
             player = GamePlayer()
             for unit_type, unit_list in units.items():
-                if unit_list:
-                    if unit_type == 'flight':
-                        player.flight = self.create_entity(
-                            color, unit_list, device)
-                        self.entities.append(player.flight)
-                    elif unit_type == 'ship':
-                        player.ship = self.create_entity(
-                            color, unit_list, device)
-                        self.entities.append(player.ship)
-                    elif unit_type == 'submarine':
-                        player.submarine = self.create_entity(
-                            color, unit_list, device)
-                        self.entities.append(player.submarine)
-                    # 添加更多的单位类型处理
+                entities = self.create_entities(color, unit_list, device)
+                setattr(player, unit_type, entities)
+                self.entities.extend(entities)
             self.players[color] = player
         return self.players, self.entities
 
-    def create_entity(self, color, unit_data, device):
+    def create_entities(self, color, unit_list, device):
         entities = []
-        for unit in unit_data:
-            entity_info = EntityInfo()
-            entity_info.side = color
-            entity_info.entity_id = unit['id']
-            entity_info.entity_type = unit['entity_type']
-            entity_info.position = [unit['x'], unit['y']]
-            entity_info.speed = unit['speed']
-            entity_info.direction = unit['course']
-            entity_info.hp = unit['health']
-            entity_info.attack_power = 0  # 示例中未提供攻击力
-            entity_info.weapons = None
-            entity_info.sensor = None
-            entity_info.launcher = None
-
-            entity = Entity(entity_info)
-            for weapon_name in unit_data.weapons:
-                entity.add_weapon(device.get_weapon(weapon_name))
-            for sensor_name in unit_data.sensor:
-                entity.add_sensor(device.get_sensor(sensor_name))
-
-            entities.append()
+        for unit in unit_list:
+            entity_info = EntityInfo(
+                side=color,
+                entity_id=unit['id'],
+                entity_type=unit['entity_type'],
+                position=(unit['x'], unit['y']),
+                speed=unit['speed'],
+                direction=unit['course'],
+                hp=unit['health'],
+                endurance=unit['endurance'],
+                weapons=[w['type'] for w in unit['weapons']],
+                sensor=[s['type'] for s in unit['sensor']]
+            )
+            entity = self.entity_pool.acquire(entity_info, device)
+            entities.append(entity)
         return entities
+
+    def create_entity(self, entity_info, device):
+        entity = Entity(entity_info, device)
+        for weapon_name in entity_info.weapons:
+            weapon = device.get_weapon(weapon_name)
+            if weapon:
+                entity.add_weapon(weapon)
+        for sensor_name in entity_info.sensor:
+            sensor = device.get_sensor(sensor_name)
+            if sensor:
+                entity.add_sensor(sensor)
+        return entity
 
     def display_units(self):
         for faction, force_types in self.units.items():
@@ -123,7 +123,7 @@ class Device(DataLoader):
         return self.sensor.get(name)
 
 
-class Initializer():
+class Initializer:
     def __init__(self, game_config):
         device_path = game_config['device_path']
         scenarios_path = game_config['scenarios_path']
@@ -132,14 +132,16 @@ class Initializer():
         self.map = Map(map_path)
         self.device_table = Device(device_path)
         self.scenario = Scenario(scenarios_path, game_config["name"])
-        players = self.scenario.load_scenario(self.device_table)
+        players, entities = self.scenario.load_scenario(self.device_table)
 
-        env_config = {
+        self.env_config = {
             "name": game_config["name"],
             "scenario": self.scenario,
             "map": self.map,
             "weapon": self.device_table,
-            "players": players
+            "players": players,
+            "entities": entities
         }
 
-        return env_config
+    def get_env_config(self):
+        return self.env_config
