@@ -19,7 +19,7 @@ class RenderThread(threading.Thread):
     def render_frame(self):
         self.screen.fill((0, 0, 0))  # Clear screen with black
         # Render entities
-        for player in self.env_config['players']:
+        for player, entity in self.env_config['players']:
             for entity in player['entities']:
                 self.draw_entity(entity)
         pygame.display.flip()

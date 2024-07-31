@@ -1,4 +1,4 @@
-class Player_Base:
+class Player:
     def __init__(self):
         # self.name = agents_config["name"]
         # self.player_type = agents_config["player_type"]

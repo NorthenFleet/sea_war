@@ -3,7 +3,7 @@ from gym import spaces
 from env import Env
 
 
-class EnvTank(Env):
+class SeaWarEnv(Env):
     def __init__(self, env_config):
         self.name = env_config["name"]
         self.scenario = env_config["scenario"]

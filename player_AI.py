@@ -1,4 +1,4 @@
-from player_base import Player_Base
+from player import Player_Base
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -8,23 +8,36 @@ from model_select import *
 
 
 class AIPlayer(Player_Base):
-    def __init__(self, AI_config):
+    def __init__(self):
         super(AIPlayer, self).__init__()
-        self.state_size = AI_config["state_size"]
-        self.action_size = AI_config["action_size"]
-        
+
+        agent_config = {
+            "gamma": 0.95,
+            "epsilon": 1.0,
+            "epsilon_min": 0.01,
+            "epsilon_decay": 0.995,
+            "learning_rate": 0.001,
+            "model": "PPO",
+            "state_size": 100,
+            "action_size": 50,
+            "use_epsilon": True,
+        }
+
+        self.state_size = agent_config["state_size"]
+        self.action_size = agent_config["action_size"]
+
         config = {
-            "model_type": AI_config["model"],
+            "model_type": agent_config["model"],
             "input_dim": self.state_size,
             "output_dim": self.action_size
         }
 
         self.modle = model_select(**config)
-        self.use_epsilon = AI_config["use_epsilon"]
-        self.epsilon = AI_config["epsilon"]
-        self.epsilon_min = AI_config["epsilon_min"]
-        self.epsilon_decay = AI_config["epsilon_decay"]
-        self.learning_rate = AI_config["learning_rate"]
+        self.use_epsilon = agent_config["use_epsilon"]
+        self.epsilon = agent_config["epsilon"]
+        self.epsilon_min = agent_config["epsilon_min"]
+        self.epsilon_decay = agent_config["epsilon_decay"]
+        self.learning_rate = agent_config["learning_rate"]
         self.agents = {}
         self.memory = []
 
@@ -43,7 +56,8 @@ class AIPlayer(Player_Base):
         for state, action, reward, next_state, done in samples:
             target = reward
             if not done:
-                target = (reward + self.gamma * np.amax(self.model(torch.FloatTensor(next_state)).detach().numpy()))
+                target = (reward + self.gamma *
+                          np.amax(self.model(torch.FloatTensor(next_state)).detach().numpy()))
             target_f = self.model(torch.FloatTensor(state))
             target_f[action] = target
             self.model.zero_grad()

@@ -1,7 +1,7 @@
-from player_base import Player_Base
+from player import Player
 
 
-class RulePlayer(Player_Base):
+class RulePlayer(Player):
     def __init__(self, name):
         super().__init__()
         self.name = name

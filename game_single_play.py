@@ -1,6 +1,9 @@
 from init import Initializer
-from env_tank import EnvTank
+from sea_war_env import SeaWarEnv
 from render.render_manager import RenderManager
+from player_AI import AIPlayer
+from player_human import HumanPlayer
+from player_rule import RulePlayer
 
 
 class GameData:
@@ -12,46 +15,29 @@ class GameData:
         self.scenarios_path = config['scenarios_path']
         self.map_path = config['map_path']
 
-        # self.scenario = Scenario(self.scenarios_path, self.name)
-        # self.map = Map(self.map_path)
-        # self.weapon = Weapon(self.weapons_path)
-
-        # self.env_config = {
-        #     "name": self.name,
-        #     "scenario": self.scenario,
-        #     "map": self.map,
-        #     "weapon": self.weapon
-        # }
-
-        # self.ai_config = config['ai_config']
-        # self.player_config = config['player_config']
-
-        # # 更新全局配置字典中的玩家配置
-        # for name, (path, module, _) in self.player_config.items():
-        #     if module == "AIPlayer":
-        #         config['player_config'][name] = (path, module, self.ai_config)
-
 
 class Game:
-    def __init__(self, game_config, agent_config, player_config, trainning_config=None):
+    def __init__(self, game_config,  player):
         initializer = Initializer(game_config)
         self.env_config = initializer.get_env_config()
-        self.env = EnvTank(self.env_config)
+        self.env = SeaWarEnv(self.env_config)
 
-        self.players = {}
-        for name, (path, module, config) in player_config.items():
-            player_class = getattr(__import__(path), module)
-            if config is not None:
-                self.players[name] = player_class(agent_config)
-            else:
-                self.players[name] = player_class()
+        self.players = player
+
+        # 动态载入player类
+        # for name, (path, module, config) in player_config.items():
+        #     player_class = getattr(__import__(path), module)
+        #     if config is not None:
+        #         self.players[name] = player_class(agent_config)
+        #     else:
+        #         self.players[name] = player_class()
 
         self.current_step = None
         self.render_manager = RenderManager(self.env_config)
 
     def run(self):
         observation = self.env.reset_game()
-        self.render_manager.run()
+        # self.render_manager.run()
         game_over = False
         self.current_step = 0
         while not game_over:
@@ -94,42 +80,12 @@ if __name__ == '__main__':
         'map_path': 'data/map.json',
     }
 
-    
-    rule_config = {
-        "name": "Rule"
-    }
-    human_config = {
-        "name": "Human"
-    }
-
-    player_config = {
-        "red": ("player_AI", "AIPlayer", agent_config),
-        "blue": ("player_rule", "RulePlayer", rule_config),
-        "green": ("player_human", "HumanPlayer", human_config)
+    player = {
+        "red": ("AIPlayer", AIPlayer),
+        "blue": ("RulePlayer", AIPlayer)
+        # "blue": ("RulePlayer", HumanPlayer),
+        # "green": ("HumanPlayer", RulePlayer)
     }
 
-    trainning_config = {
-        "gamma": 0.95,
-        "epsilon": 1.0,
-        "epsilon_min": 0.01,
-        "epsilon_decay": 0.995,
-        "learning_rate": 0.001,
-        "model": "PPO",
-        "state_size": 100,
-        "action_size": 50,
-        "use_epsilon": True,
-        'training_max_step': 1000,
-    }
-
-    # config = {
-    #     'name': game_config['name'],
-    #     'player_config': player_config,
-    #     'ai_config': agent_config,
-    #     'env_config': game_config,
-    #     'trainning_config': trainning_config
-    # }
-
-    # config = GameData(game_config)
-    game = Game(game_config, agent_config, player_config)
+    game = Game(game_config, player)
     game.run()
-    # game.train()

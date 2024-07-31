@@ -1,8 +1,8 @@
 from pynput import keyboard, mouse
-from player_base import Player_Base
+from player import Player
 
 
-class HumanPlayer(Player_Base):
+class HumanPlayer(Player):
     def __init__(self, name):
         super().__init__()
         self.name = name

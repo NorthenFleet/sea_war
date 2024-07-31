@@ -7,7 +7,7 @@ from player_AI import AIPlayer
 from com_client import CommunicationClient
 from render.render_manager import Render
 from init import Map, Weapon, Scenario
-from env_tank import EnvTank
+from sea_war_env import EnvTank
 
 
 class GameConfig:
