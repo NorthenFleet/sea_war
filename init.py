@@ -14,7 +14,7 @@ class DataLoader:
             return json.load(file)
 
 
-class GamePlayer:
+class Side:
     def __init__(self):
         self.flight = []
         self.ship = []
@@ -37,12 +37,12 @@ class Scenario(DataLoader):
 
     def load_scenario(self, device):
         for color, units in self.data.items():
-            player = GamePlayer()
+            side = Side()
             for unit_type, unit_list in units.items():
                 entities = self.create_entities(color, unit_list, device)
-                setattr(player, unit_type, entities)
+                setattr(side, unit_type, entities)
                 self.entities.extend(entities)
-            self.players[color] = player
+            self.players[color] = side
         return self.players, self.entities, self.entity_registry
 
     def create_entities(self, color, unit_list, device):
@@ -126,9 +126,15 @@ class Device(DataLoader):
 
 
 class GameData:
-    def __init__(self, config):
+    def __init__(self):
         # 从全局配置字典中加载参数
-        self.name = config['name']
+        self.enities = []
+
+    def reset(self):
+        self.enities = []
+
+    def set_enities(self, enities):
+        self.enities = enities
 
 
 class Initializer:
@@ -140,19 +146,20 @@ class Initializer:
         self.map = Map(map_path)
         self.device_table = Device(device_path)
         self.scenario = Scenario(scenarios_path, game_config["name"])
-        players, entities, entity_registry = self.scenario.load_scenario(
+        sides, entities, entity_registry = self.scenario.load_scenario(
             self.device_table)
 
-        game_date = GameData()
+        game_data = GameData()
+        game_data.set_enities(entities)
 
         self.env_config = {
             "name": game_config["name"],
             "scenario": self.scenario,
             "map": self.map,
             "weapon": self.device_table,
-            "players": players,
-            "entities": entities,
-            "entity_registry": entity_registry
+            "sides": sides,
+            "entity_registry": entity_registry,
+            "game_data": game_data
         }
 
     def get_env_config(self):

@@ -6,12 +6,12 @@ from player_human import HumanPlayer
 from player_rule import RulePlayer
 
 class Game:
-    def __init__(self, game_config,  player):
+    def __init__(self, game_config,  players):
         initializer = Initializer(game_config)
         self.env_config = initializer.get_env_config()
         self.env = SeaWarEnv(self.env_config)
 
-        self.players = player
+        self.players = players
 
         # 动态载入player类
         # for name, (path, module, config) in player_config.items():

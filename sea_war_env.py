@@ -9,8 +9,8 @@ class SeaWarEnv(Env):
         self.scenario = env_config["scenario"]
         self.map = env_config["map"]
         self.weapon = env_config["weapon"]
-        self.players = env_config["players"]
-        self.entities = env_config["entities"]
+        self.players = env_config["sides"]
+        self.game_data = env_config["game_data"]
         self.entity_registry = env_config["entity_registry"]
         self.actions = {}
         self.game_over = False
@@ -23,7 +23,7 @@ class SeaWarEnv(Env):
     def reset_game(self):
         self.current_step = 0
         self.game_over = False
-        self.entities
+        self.game_data.reset()
         print("Game starts with the following units:")
         return {name: self.observation_space.sample() for name in self.players}
 
