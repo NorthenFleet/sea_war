@@ -1,4 +1,4 @@
-from player import Player_Base
+from player import Player
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -7,7 +7,7 @@ import random
 from model_select import *
 
 
-class AIPlayer(Player_Base):
+class AIPlayer(Player):
     def __init__(self):
         super(AIPlayer, self).__init__()
 

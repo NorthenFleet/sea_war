@@ -125,6 +125,12 @@ class Device(DataLoader):
         return self.sensors.get(name)
 
 
+class GameData:
+    def __init__(self, config):
+        # 从全局配置字典中加载参数
+        self.name = config['name']
+
+
 class Initializer:
     def __init__(self, game_config):
         device_path = game_config['device_path']
@@ -136,6 +142,8 @@ class Initializer:
         self.scenario = Scenario(scenarios_path, game_config["name"])
         players, entities, entity_registry = self.scenario.load_scenario(
             self.device_table)
+
+        game_date = GameData()
 
         self.env_config = {
             "name": game_config["name"],

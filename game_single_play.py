@@ -5,17 +5,6 @@ from player_AI import AIPlayer
 from player_human import HumanPlayer
 from player_rule import RulePlayer
 
-
-class GameData:
-    def __init__(self, config):
-        # 从全局配置字典中加载参数
-        self.name = config['name']
-        # self.max_step = config['max_step']
-        self.weapons_path = config['weapons_path']
-        self.scenarios_path = config['scenarios_path']
-        self.map_path = config['map_path']
-
-
 class Game:
     def __init__(self, game_config,  player):
         initializer = Initializer(game_config)
@@ -38,22 +27,6 @@ class Game:
     def run(self):
         observation = self.env.reset_game()
         # self.render_manager.run()
-        game_over = False
-        self.current_step = 0
-        while not game_over:
-            actions = {agent_name: agent.choose_action(
-                observation) for agent_name, agent in self.players.items()}
-            observations, rewards, game_over, info = self.env.update(
-                actions)
-
-            self.current_step += 1
-            print(self.current_step)
-
-            if game_over:
-                break
-
-    def train(self):
-        observation = self.env.reset_game()
         game_over = False
         self.current_step = 0
         while not game_over:
