@@ -36,7 +36,7 @@ class Game:
     def __init__(self, game_config, agent_config, player_config, trainning_config=None):
         initializer = Initializer(game_config)
         self.env_config = initializer.get_env_config()
-        self.game_env = EnvTank(self.env_config)
+        self.env = EnvTank(self.env_config)
 
         self.players = {}
         for name, (path, module, config) in player_config.items():
@@ -50,14 +50,14 @@ class Game:
         self.render_manager = RenderManager(self.env_config)
 
     def run(self):
-        observation = self.game_env.reset_game()
+        observation = self.env.reset_game()
         self.render_manager.run()
         game_over = False
         self.current_step = 0
         while not game_over:
             actions = {agent_name: agent.choose_action(
                 observation) for agent_name, agent in self.players.items()}
-            observations, rewards, game_over, info = self.game_env.update(
+            observations, rewards, game_over, info = self.env.update(
                 actions)
 
             self.current_step += 1
@@ -67,13 +67,13 @@ class Game:
                 break
 
     def train(self):
-        observation = self.game_env.reset_game()
+        observation = self.env.reset_game()
         game_over = False
         self.current_step = 0
         while not game_over:
             actions = {agent_name: agent.choose_action(
                 observation) for agent_name, agent in self.players.items()}
-            observations, rewards, game_over, info = self.game_env.update(
+            observations, rewards, game_over, info = self.env.update(
                 actions)
 
             self.current_step += 1
@@ -94,17 +94,7 @@ if __name__ == '__main__':
         'map_path': 'data/map.json',
     }
 
-    agent_config = {
-        "gamma": 0.95,
-        "epsilon": 1.0,
-        "epsilon_min": 0.01,
-        "epsilon_decay": 0.995,
-        "learning_rate": 0.001,
-        "model": "PPO",
-        "state_size": 100,
-        "action_size": 50,
-        "use_epsilon": True,
-    }
+    
     rule_config = {
         "name": "Rule"
     }
