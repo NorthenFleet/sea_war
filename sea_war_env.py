@@ -9,7 +9,7 @@ class SeaWarEnv(Env):
         self.scenario = env_config["scenario"]
         self.map = env_config["map"]
         self.weapon = env_config["weapon"]
-        self.players = env_config["sides"]
+        self.sides = env_config["sides"]
         self.game_data = env_config["game_data"]
         self.entity_registry = env_config["entity_registry"]
         self.actions = {}
@@ -25,7 +25,7 @@ class SeaWarEnv(Env):
         self.game_over = False
         self.game_data.reset()
         print("Game starts with the following units:")
-        return {name: self.observation_space.sample() for name in self.players}
+        return {name: self.observation_space.sample() for name in self.sides}
 
     def create_entity(self, entity_id, entity_type, position, speed, faction, hp, attack_power):
         self.entities[entity_id] = {
@@ -38,8 +38,8 @@ class SeaWarEnv(Env):
         }
 
     def destroy_entity(self, entity_id):
-        if entity_id in self.entities:
-            del self.entities[entity_id]
+        if entity_id in self.game_data.entities:
+            del self.game_data.entities[entity_id]
 
     def detect_entities(self, entity_id, detection_range):
         if entity_id not in self.entities:
@@ -115,7 +115,7 @@ class SeaWarEnv(Env):
             self.entities[entity_id] = entity_data
 
     def update_detect(self):
-        for entity_id, entity_data in self.entities.items():
+        for entity_id, entity_data in self.game_data.entities.items():
             entity_position = entity_data['position']
             entity_detection_range = entity_data['detection_range']
             visible_entities = self.detect_entities(

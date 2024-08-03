@@ -16,13 +16,7 @@ class DataLoader:
 
 class Side:
     def __init__(self):
-        self.flight = []
-        self.ship = []
-        self.submarine = []
-        pass
-
-
-# scenario.py
+        self.units = []
 
 
 class Scenario(DataLoader):
@@ -36,34 +30,26 @@ class Scenario(DataLoader):
         self.entity_registry = {}  # Centralized registry
 
     def load_scenario(self, device):
-        for color, units in self.data.items():
+        for color, unit_list in self.data.items():
             side = Side()
-            for unit_type, unit_list in units.items():
-                entities = self.create_entities(color, unit_list, device)
-                setattr(side, unit_type, entities)
-                self.entities.extend(entities)
+            for unitid, unit in unit_list.items():
+                entity_info = EntityInfo(
+                    entity_id=unit['id'],
+                    entity_type=unit['entity_type'],
+                    position=(unit['x'], unit['y']),
+                    speed=unit['speed'],
+                    direction=unit['course'],
+                    hp=unit['health'],
+                    weapons=[w['type'] for w in unit['weapons']],
+                    sensor=[s['type'] for s in unit['sensor']]
+                )
+                entity = self.entity_pool.acquire(entity_info, device)
+                # Register the entity by ID
+                self.entity_registry[unit["id"]] = entity
+                # setattr(side, entities)
+                self.entities.append(entity)
             self.players[color] = side
         return self.players, self.entities, self.entity_registry
-
-    def create_entities(self, color, unit_list, device):
-        entities = []
-        for unit in unit_list:
-            entity_info = EntityInfo(
-                side=color,
-                entity_id=unit['id'],
-                entity_type=unit['entity_type'],
-                position=(unit['x'], unit['y']),
-                speed=unit['speed'],
-                direction=unit['course'],
-                hp=unit['health'],
-                weapons=[w['type'] for w in unit['weapons']],
-                sensor=[s['type'] for s in unit['sensor']]
-            )
-            entity = self.entity_pool.acquire(entity_info, device)
-            # Register the entity by ID
-            self.entity_registry[unit['id']] = entity
-            entities.append(entity)
-        return entities
 
     def create_entity(self, entity_info, device):
         entity = Entity(entity_info)

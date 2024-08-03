@@ -5,6 +5,7 @@ from player_AI import AIPlayer
 from player_human import HumanPlayer
 from player_rule import RulePlayer
 
+
 class Game:
     def __init__(self, game_config,  players):
         initializer = Initializer(game_config)
@@ -30,8 +31,13 @@ class Game:
         game_over = False
         self.current_step = 0
         while not game_over:
-            actions = {agent_name: agent.choose_action(
-                observation) for agent_name, agent in self.players.items()}
+            actions = []
+            for player, agent in self.players.items():
+                action = agent.choose_action(observation)
+                actions.append(action)
+
+            # actions = {agent_name: agent.choose_action(
+            #     observation) for agent_name, agent in self.players.items()}
             observations, rewards, game_over, info = self.env.update(
                 actions)
 
@@ -53,9 +59,12 @@ if __name__ == '__main__':
         'map_path': 'data/map.json',
     }
 
+    red_player = RulePlayer("red")
+    blue_player = RulePlayer("blue")
+
     player = {
-        "red": ("AIPlayer", AIPlayer),
-        "blue": ("RulePlayer", AIPlayer)
+        "red": red_player,
+        "blue": blue_player
         # "blue": ("RulePlayer", HumanPlayer),
         # "green": ("HumanPlayer", RulePlayer)
     }
