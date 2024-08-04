@@ -7,11 +7,8 @@ from player_rule import RulePlayer
 
 
 class Game:
-    def __init__(self, game_config,  players):
-        initializer = Initializer(game_config)
-        self.env_config = initializer.get_env_config()
-        self.env = SeaWarEnv(self.env_config)
-
+    def __init__(self, game_config, players):
+        self.env = SeaWarEnv(game_config)
         self.players = players
 
         # 动态载入player类
@@ -23,7 +20,7 @@ class Game:
         #         self.players[name] = player_class()
 
         self.current_step = None
-        self.render_manager = RenderManager(self.env_config)
+        self.render_manager = RenderManager(self.env_info)
 
     def run(self):
         observation = self.env.reset_game()
@@ -55,7 +52,7 @@ if __name__ == '__main__':
     game_config = {
         'name': 'AirDefense',
         'device_path': 'data/device.json',
-        'scenarios_path': 'data/AirDefense.json',
+        'scenario_path': 'data/AirDefense.json',
         'map_path': 'data/map.json',
     }
 

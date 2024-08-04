@@ -1,17 +1,21 @@
 import numpy as np
 from gym import spaces
 from env import Env
+from game_data import GameData
+from init import Map, Device, Side
+from entities.entity import Entity, EntityInfo
+# 定义为游戏的战术层，从战术层面对游戏过程进行解析
 
 
 class SeaWarEnv(Env):
-    def __init__(self, env_config):
-        self.name = env_config["name"]
-        self.scenario = env_config["scenario"]
-        self.map = env_config["map"]
-        self.weapon = env_config["weapon"]
-        self.sides = env_config["sides"]
-        self.game_data = env_config["game_data"]
-        self.entity_registry = env_config["entity_registry"]
+    def __init__(self, game_config):
+        self.name = game_config["name"]
+        self.map = Map(game_config['map_path'])
+        self.device_table = Device(game_config['device_path'])
+        scenario_path = game_config['scenario_path']
+        self.game_data = self.load_scenario(self.device_table, scenario_path)
+
+        self.sides = []
         self.actions = {}
         self.game_over = False
         self.current_step = 0
@@ -20,26 +24,37 @@ class SeaWarEnv(Env):
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(1,), dtype=np.float32)
 
+    def initialize(self, game_config):
+        sides, entities, entity_registry = self.scenario.load_scenario(
+            self.device_table)
+
     def reset_game(self):
         self.current_step = 0
         self.game_over = False
-        self.game_data.reset()
+        self.game_data = self.ini_game_data
         print("Game starts with the following units:")
-        return {name: self.observation_space.sample() for name in self.sides}
+        return self.game_data
 
-    def create_entity(self, entity_id, entity_type, position, speed, faction, hp, attack_power):
-        self.entities[entity_id] = {
-            "type": entity_type,
-            "position": position,
-            "speed": speed,
-            "faction": faction,
-            "hp": hp,
-            "attack_power": attack_power
-        }
+    def load_scenario(self, device, path):
+        game_data = GameData()
+        for color, unit_list in .items():
 
-    def destroy_entity(self, entity_id):
-        if entity_id in self.game_data.entities:
-            del self.game_data.entities[entity_id]
+            for unitid, unit in unit_list.items():
+                entity_info = EntityInfo(
+                    entity_id=unit['id'],
+                    entity_type=unit['entity_type'],
+                    position=(unit['x'], unit['y']),
+                    speed=unit['speed'],
+                    direction=unit['course'],
+                    hp=unit['health'],
+                    weapons=[w['type'] for w in unit['weapons']],
+                    sensor=[s['type'] for s in unit['sensor']]
+                )
+                game_data.add_entity(entity_info, device)
+            side = Side(color)
+            side.set_entities(game_data.get_player_units(color))
+            self.sides.append(side)
+        return self.sides, game_data, self.entity_registry
 
     def detect_entities(self, entity_id, detection_range):
         if entity_id not in self.entities:

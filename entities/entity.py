@@ -26,11 +26,12 @@ class Entity:
         self.weapons = []
         self.sensors = []
         self.launcher = []
-        self.ammo = []
+        self.armo = []
         self.state = None
         self.position = np.array(EntityInfo.position)
         self.speed = None
         self.set_observation = []
+        self.data_chain = []
         self.alive = True
 
     def add_weapon(self, weapon):
