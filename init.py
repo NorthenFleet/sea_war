@@ -15,13 +15,20 @@ class DataLoader:
 class Side:
     def __init__(self, name):
         self.name = name
-        self.entities = {}
+        self.entities = []
+        self.enemies = []
 
     def set_entities(self, entities):
         self.entities = entities
 
-    def get_entities(self, id):
-        return self.entities.get(id)
+    def get_entities(self):
+        return self.entities
+
+    def set_enemies(self, enemies):
+        self.enemies = enemies
+
+    def get_enemies(self):
+        return self.enemies
 
 
 class Scenario(DataLoader):

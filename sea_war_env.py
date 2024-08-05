@@ -7,6 +7,14 @@ from entities.entity import EntityInfo
 # 定义为游戏的战术层，从战术层面对游戏过程进行解析
 
 
+class Process():
+    def __init__(self, name, unit_id, action):
+        self.name = name
+        self.unit_id = unit_id
+        self.action = action
+        self.terminated = False
+
+
 class SeaWarEnv(Env):
     def __init__(self, game_config):
         self.name = game_config["name"]
@@ -26,6 +34,8 @@ class SeaWarEnv(Env):
         self.map = Map(game_config['map_path'])
         self.device_table = Device(game_config['device_path'])
         self.scenario = Scenario(game_config['scenario_path'])
+
+        self.action_list = []
 
     def reset_game(self):
         self.current_step = 0
@@ -49,8 +59,9 @@ class SeaWarEnv(Env):
                 )
                 self.game_data.add_entity(entity_info, device, color)
             side = Side(color)
-            side.set_entities(self.game_data.get_player_units(color))
+            side.set_entities(self.game_data.get_player_unit_ids(color))
             self.sides[color] = side
+            units = self.game_data.get_player_unit_ids()
         return self.sides
 
     def detect_compute(self, entity_id, detection_range):
@@ -138,11 +149,9 @@ class SeaWarEnv(Env):
             elif action == 'attack':
                 self.game_data.units[entity_id]
 
-        self.current_step += 1
-
-    def update(self, actions):
         self.detect_compute()()
-        self.update_com()
-        self.update_attack()
+        self.com_compute()
+        self.attack_compute()
         self.pos_compute()
-        return
+
+        self.current_step += 1
