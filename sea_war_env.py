@@ -2,19 +2,18 @@ import numpy as np
 from gym import spaces
 from env import Env
 from game_data import GameData
-from init import Map, Device, Side
-from entities.entity import Entity, EntityInfo
+from init import Map, Device, Side, Scenario
+from entities.entity import EntityInfo
 # 定义为游戏的战术层，从战术层面对游戏过程进行解析
 
 
 class SeaWarEnv(Env):
     def __init__(self, game_config):
         self.name = game_config["name"]
-        self.map = Map(game_config['map_path'])
-        self.device_table = Device(game_config['device_path'])
-        scenario_path = game_config['scenario_path']
-        self.game_data = self.load_scenario(self.device_table, scenario_path)
-
+        self.map = None
+        self.device_table = None
+        self.scenario = None
+        self.game_data = GameData()
         self.sides = []
         self.actions = {}
         self.game_over = False
@@ -24,21 +23,18 @@ class SeaWarEnv(Env):
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(1,), dtype=np.float32)
 
-    def initialize(self, game_config):
-        sides, entities, entity_registry = self.scenario.load_scenario(
-            self.device_table)
+        self.map = Map(game_config['map_path'])
+        self.device_table = Device(game_config['device_path'])
+        self.scenario = Scenario(game_config['scenario_path'])
 
     def reset_game(self):
         self.current_step = 0
         self.game_over = False
-        self.game_data = self.ini_game_data
-        print("Game starts with the following units:")
-        return self.game_data
+        self.game_data.reset()
+        self.load_scenario(self.device_table, self.scenario)
 
-    def load_scenario(self, device, path):
-        game_data = GameData()
-        for color, unit_list in .items():
-
+    def load_scenario(self, device, scenario):
+        for color, unit_list in scenario.data.items():
             for unitid, unit in unit_list.items():
                 entity_info = EntityInfo(
                     entity_id=unit['id'],
@@ -50,11 +46,11 @@ class SeaWarEnv(Env):
                     weapons=[w['type'] for w in unit['weapons']],
                     sensor=[s['type'] for s in unit['sensor']]
                 )
-                game_data.add_entity(entity_info, device)
+                self.game_data.add_entity(entity_info, device, unit['id'])
             side = Side(color)
-            side.set_entities(game_data.get_player_units(color))
+            side.set_entities(self.game_data.get_player_units(color))
             self.sides.append(side)
-        return self.sides, game_data, self.entity_registry
+        return self.sides
 
     def detect_entities(self, entity_id, detection_range):
         if entity_id not in self.entities:

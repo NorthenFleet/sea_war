@@ -1,4 +1,3 @@
-from init import Initializer
 from sea_war_env import SeaWarEnv
 from render.render_manager import RenderManager
 from player_AI import AIPlayer
@@ -20,7 +19,7 @@ class Game:
         #         self.players[name] = player_class()
 
         self.current_step = None
-        self.render_manager = RenderManager(self.env_info)
+        self.render_manager = RenderManager(self.env.game_data)
 
     def run(self):
         observation = self.env.reset_game()

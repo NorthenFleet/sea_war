@@ -4,8 +4,8 @@ from render.render_thread import RenderThread
 
 
 class RenderManager:
-    def __init__(self, env_config):
-        self.env_config = env_config
+    def __init__(self, game_data):
+        self.game_data = game_data
         self.screen = None
         self.clock = None
         self.render_thread = None
@@ -17,7 +17,7 @@ class RenderManager:
         self.clock = pygame.time.Clock()
 
     def start_render_thread(self):
-        self.render_thread = RenderThread(self.screen, self.env_config)
+        self.render_thread = RenderThread(self.screen, self.game_data)
         self.render_thread.start()
 
     def stop_render_thread(self):

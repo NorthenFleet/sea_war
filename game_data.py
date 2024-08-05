@@ -31,6 +31,11 @@ class GameData:
             cls._instance.object_pool = ObjectPool(cls._instance.create_entity)
         return cls._instance
 
+    def reset(self):
+        self.units = set()
+        self.player_units = dict()
+        self.unit_owner = dict()
+
     def get_all_units(self):
         """返回所有单位的集合的字典"""
         return set(self.units)
@@ -73,7 +78,7 @@ class GameData:
             weapon = device.get_weapon(weapon_name)
             if weapon:
                 entity.add_weapon(weapon)
-        for sensor_name in entity_info.sensors:
+        for sensor_name in entity_info.sensor:
             sensor = device.get_sensor(sensor_name)
             if sensor:
                 entity.add_sensor(sensor)

@@ -16,22 +16,19 @@ class Side:
     def __init__(self, name):
         self.name = name
         self.entities = {}
+        self.enemys = {}
 
-    def set_entity(self, entities):
+    def set_entities(self, entities):
         self.entities = entities
 
-    def get_entity(self, id):
+    def get_entities(self, id):
         return self.entities.get(id)
 
 
 class Scenario(DataLoader):
-    def __init__(self, path, name):
+    def __init__(self, path):
         super().__init__(path)
-        self.name = name
         self.path = path
-        self.sides = {}
-        self.entities = []
-        self.entity_registry = {}  # Centralized registry
 
 
 class Map(DataLoader):
