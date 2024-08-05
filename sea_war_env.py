@@ -114,11 +114,13 @@ class SeaWarEnv(Env):
                 ):
                     print(f"Entity {entity_id} out of map bounds")
 
-    def update_adjudication(self):
-        # 攻击裁决
+    def attack_compute(self):
+        pass
 
+    def com_compute(self):
+        pass
 
-    def update_posi(self):
+    def pos_compute(self):
         for entity_id, entity_data in self.entities.items():
             entity_position = entity_data['position']
             entity_speed = entity_data['speed']
@@ -126,17 +128,8 @@ class SeaWarEnv(Env):
             entity_data['position'] = entity_position
             self.entities[entity_id] = entity_data
 
-    def update_detect(self):
-        for entity_id, entity_data in self.game_data.entities.items():
-            entity_position = entity_data['position']
-            entity_detection_range = entity_data['detection_range']
-            detect_entities = self.detect_compute(
-                entity_id, entity_detection_range)
-            entity_data['detect_entities'] = detect_entities
-            self.entities[entity_id] = entity_data
-
     def update_state(self, actions):
-        
+
         for entity_id, action in actions.items():
             if action == 'move':
                 # Example move direction
@@ -148,8 +141,8 @@ class SeaWarEnv(Env):
         self.current_step += 1
 
     def update(self, actions):
-        self.update_detect()
+        self.detect_compute()()
         self.update_com()
         self.update_attack()
-        self.update_posi()
+        self.pos_compute()
         return
