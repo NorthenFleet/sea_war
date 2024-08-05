@@ -4,9 +4,6 @@ import math
 ma = 340
 
 
-
-
-
 def global_move(entity, target_x, target_y, steps):
     path = []
     current_x, current_y = entity.x, entity.y

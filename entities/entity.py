@@ -23,16 +23,19 @@ class Entity:
         self.hp = EntityInfo.hp
         self.type = EntityInfo.entity_type
         self.carrier = None
-        self.weapons = []
-        self.sensors = []
-        self.launcher = []
-        self.armo = []
-        self.state = None
+        self.weapons = {}
+        self.sensors = {}
+        self.launcher = {}
+        self.armo = {}
+
         self.position = np.array(EntityInfo.position)
         self.speed = None
-        self.set_observation = []
-        self.data_chain = []
+        self.state = None
         self.alive = True
+
+        self.com_level = 5
+        self.data_chain = {"Alliance": {}, "Enemy": {}}
+        self.detect_entities = {}
 
     def add_weapon(self, weapon):
         self.weapons.append(weapon)

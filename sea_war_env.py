@@ -47,16 +47,15 @@ class SeaWarEnv(Env):
                     weapons=[w['type'] for w in unit['weapons']],
                     sensor=[s['type'] for s in unit['sensor']]
                 )
-                self.game_data.add_entity(entity_info, device, unit['id'])
+                self.game_data.add_entity(entity_info, device, color)
             side = Side(color)
             side.set_entities(self.game_data.get_player_units(color))
             self.sides[color] = side
         return self.sides
 
-    def detect_entities(self, entity_id, detection_range):
+    def detect_compute(self, entity_id, detection_range):
         if entity_id not in self.entities:
             return {}
-
         current_position = np.array(self.entities[entity_id]['position'])
         visible_entities = {}
         for other_id, data in self.entities.items():
@@ -65,6 +64,9 @@ class SeaWarEnv(Env):
                 if np.linalg.norm(current_position - other_position) <= detection_range:
                     visible_entities[other_id] = data
         return visible_entities
+
+    def data_chain_compute(self, entity_id):
+        pass
 
     def attack(self, attacker_id, target_id, attack_range):
         if attacker_id not in self.entities or target_id not in self.entities:
@@ -112,11 +114,9 @@ class SeaWarEnv(Env):
                 ):
                     print(f"Entity {entity_id} out of map bounds")
 
-    def update_hp(self):
-        for entity_id, entity_data in self.entities.items():
-            entity_hp = entity_data['hp']
-            if entity_hp <= 0:
-                self.destroy_entity(entity_id)
+    def update_adjudication(self):
+        # 攻击裁决
+
 
     def update_posi(self):
         for entity_id, entity_data in self.entities.items():
@@ -130,25 +130,26 @@ class SeaWarEnv(Env):
         for entity_id, entity_data in self.game_data.entities.items():
             entity_position = entity_data['position']
             entity_detection_range = entity_data['detection_range']
-            visible_entities = self.detect_entities(
+            detect_entities = self.detect_compute(
                 entity_id, entity_detection_range)
-            entity_data['visible_entities'] = visible_entities
+            entity_data['detect_entities'] = detect_entities
             self.entities[entity_id] = entity_data
 
     def update_state(self, actions):
+        
         for entity_id, action in actions.items():
             if action == 'move':
                 # Example move direction
                 self.global_move()
 
             elif action == 'attack':
-                self.attack(entity_id)
+                self.game_data.units[entity_id]
 
         self.current_step += 1
 
     def update(self, actions):
         self.update_detect()
-        self.update_hp()
+        self.update_com()
+        self.update_attack()
         self.update_posi()
-
         return

@@ -29,7 +29,6 @@ class Game:
         while not game_over:
             actions = []
             for player, agent in self.players.items():
-
                 action = agent.choose_action(sides[player])
                 actions.append(action)
 

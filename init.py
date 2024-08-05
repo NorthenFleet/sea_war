@@ -16,7 +16,6 @@ class Side:
     def __init__(self, name):
         self.name = name
         self.entities = {}
-        self.enemys = {}
 
     def set_entities(self, entities):
         self.entities = entities
