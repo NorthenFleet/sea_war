@@ -14,7 +14,7 @@ class SeaWarEnv(Env):
         self.device_table = None
         self.scenario = None
         self.game_data = GameData()
-        self.sides = []
+        self.sides = {}
         self.actions = {}
         self.game_over = False
         self.current_step = 0
@@ -31,7 +31,8 @@ class SeaWarEnv(Env):
         self.current_step = 0
         self.game_over = False
         self.game_data.reset()
-        self.load_scenario(self.device_table, self.scenario)
+        sides = self.load_scenario(self.device_table, self.scenario)
+        return self.game_data, sides
 
     def load_scenario(self, device, scenario):
         for color, unit_list in scenario.data.items():
@@ -49,7 +50,7 @@ class SeaWarEnv(Env):
                 self.game_data.add_entity(entity_info, device, unit['id'])
             side = Side(color)
             side.set_entities(self.game_data.get_player_units(color))
-            self.sides.append(side)
+            self.sides[color] = side
         return self.sides
 
     def detect_entities(self, entity_id, detection_range):
@@ -147,7 +148,6 @@ class SeaWarEnv(Env):
 
     def update(self, actions):
         self.update_detect()
-
         self.update_hp()
         self.update_posi()
 

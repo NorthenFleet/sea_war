@@ -22,14 +22,15 @@ class Game:
         self.render_manager = RenderManager(self.env.game_data)
 
     def run(self):
-        observation = self.env.reset_game()
+        game_data, sides = self.env.reset_game()
         # self.render_manager.run()
         game_over = False
         self.current_step = 0
         while not game_over:
             actions = []
             for player, agent in self.players.items():
-                action = agent.choose_action(observation)
+
+                action = agent.choose_action(sides[player])
                 actions.append(action)
 
             # actions = {agent_name: agent.choose_action(
