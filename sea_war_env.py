@@ -4,15 +4,34 @@ from env import Env
 from game_data import GameData
 from init import Map, Device, Side, Scenario
 from entities.entity import EntityInfo
+from utils import *
 # 定义为游戏的战术层，从战术层面对游戏过程进行解析
 
 
-class Process():
-    def __init__(self, name, unit_id, action):
+class Action():
+    def __init__(self, name, unit_id, action_type, target, affliated_id=None):
         self.name = name
         self.unit_id = unit_id
-        self.action = action
+        self.action_type = action_type
+        self.affliated_id = affliated_id
+        self.target = target
         self.terminated = False
+
+
+class Action_Manager():
+    def __init__(self):
+        self.action_list = []
+
+    def add_action(self, action):
+        self.action_list.append(action)
+
+    def update(self):
+        for action in self.action_list:
+            if not action.terminated:
+                if action.action_type == "attack":
+                    attack(action.unit_id, action.target)
+                elif action.action_type == "move":
+                    global_move(action.unit_id, action.target)
 
 
 class SeaWarEnv(Env):
@@ -35,7 +54,7 @@ class SeaWarEnv(Env):
         self.device_table = Device(game_config['device_path'])
         self.scenario = Scenario(game_config['scenario_path'])
 
-        self.action_list = []
+        self.action_manager = Action_Manager()
 
     def reset_game(self):
         self.current_step = 0
@@ -61,15 +80,11 @@ class SeaWarEnv(Env):
             side = Side(color)
             side.set_entities(self.game_data.get_player_unit_ids(color))
             self.sides[color] = side
-            units = self.game_data.get_player_unit_ids()
         return self.sides
 
-    def detect_compute(self, entity_id, detection_range):
-        if entity_id not in self.entities:
-            return {}
-        current_position = np.array(self.entities[entity_id]['position'])
+    def detect_compute(self):
         visible_entities = {}
-        for other_id, data in self.entities.items():
+        for data in self.game_data.units.items():
             if other_id != entity_id:
                 other_position = np.array(data['position'])
                 if np.linalg.norm(current_position - other_position) <= detection_range:
@@ -125,7 +140,7 @@ class SeaWarEnv(Env):
                 ):
                     print(f"Entity {entity_id} out of map bounds")
 
-    def attack_compute(self):
+    def destroy_compute(self):
         pass
 
     def com_compute(self):
@@ -139,9 +154,9 @@ class SeaWarEnv(Env):
             entity_data['position'] = entity_position
             self.entities[entity_id] = entity_data
 
-    def update_state(self, actions):
+    def update(self, actions):
 
-        for entity_id, action in actions.items():
+        for action in actions:
             if action == 'move':
                 # Example move direction
                 self.global_move()
@@ -149,9 +164,12 @@ class SeaWarEnv(Env):
             elif action == 'attack':
                 self.game_data.units[entity_id]
 
-        self.detect_compute()()
+        # 过程计算
+        self.action_manager.update()
+
+        # 状态计算
+        self.detect_compute()
         self.com_compute()
-        self.attack_compute()
-        self.pos_compute()
+        self.destroy_compute()
 
         self.current_step += 1

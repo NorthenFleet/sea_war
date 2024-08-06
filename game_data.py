@@ -65,7 +65,7 @@ class GameData:
                 self.player_units[player_id].discard(entity_id)
             self.object_pool.release(entity)  # Return the entity to the pool
 
-    def get_player_unit_ids(self):
+    def get_all_unit_ids(self):
         """返回所有单位的集合的字典"""
         return list(self.units.values())
 

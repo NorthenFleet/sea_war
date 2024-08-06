@@ -10,5 +10,5 @@ class RulePlayer(Player):
         self.units = None
 
     def choose_action(self, state):
-        self.units = self.game_data.get_all_units()
+        self.units = self.game_data.get_all_unit_ids()
         print("我是规则智能体")

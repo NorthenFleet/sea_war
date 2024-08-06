@@ -27,6 +27,7 @@ class Entity:
         self.sensors = {}
         self.launcher = {}
         self.armo = {}
+        self.bullet = []
 
         self.position = np.array(EntityInfo.position)
         self.speed = None

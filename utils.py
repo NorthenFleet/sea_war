@@ -36,3 +36,7 @@ def detect_targets(sensor, targets):
         if distance <= sensor.range:
             detected_targets.append(target)
     return detected_targets
+
+
+def attack(entity, target):
+    pass
