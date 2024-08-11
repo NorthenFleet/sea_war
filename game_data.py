@@ -57,6 +57,9 @@ class GameData:
         self.unit_owner[entity_info.entity_id] = player_id
         return entity
 
+    def get_entity_pos(self, entity_id):
+        return self.units[entity_id].get_position()
+
     def remove_entity(self, entity_id):
         if entity_id in self.units:
             entity = self.units.pop(entity_id)

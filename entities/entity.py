@@ -3,13 +3,15 @@ from device import *
 
 
 class EntityInfo:
-    def __init__(self, side=None, entity_id=None, entity_type=None, position=None, speed=None, direction=None, faction=None, hp=None, weapons=None, equipments=None, sensor=None, launcher=None):
+    def __init__(self, side=None, entity_id=None, entity_type=None, position=None, rcs=None, speed=None, direction=None, faction=None, hp=None, weapons=None, equipments=None, sensor=None, launcher=None):
         self.side = side
         self.entity_id = entity_id
         self.entity_type = entity_type
-        self.position = position
+        self.position = {
+            'x': position["x"], 'y': position["y"], 'z': position["z"]}
         self.speed = speed
         self.direction = direction
+        self.rcs = rcs
         self.faction = faction
         self.hp = hp
         self.weapons = weapons if weapons is not None else []
@@ -29,7 +31,8 @@ class Entity:
         self.armo = {}
         self.bullet = []
 
-        self.position = np.array(EntityInfo.position)
+        self.position = {
+            'x': EntityInfo.position["x"], 'y': EntityInfo.position["y"], 'z': EntityInfo.position["z"]}
         self.speed = None
         self.state = None
         self.alive = True
@@ -37,6 +40,13 @@ class Entity:
         self.com_level = 5
         self.data_chain = {"Alliance": {}, "Enemy": {}}
         self.detect_entities = {}
+
+    def set_position(self, position):
+        self.position = {
+            'x': position["x"], 'y': position["y"], 'z': position["z"]}
+
+    def get_position(self):
+        return self.position
 
     def add_weapon(self, weapon):
         self.weapons.append(weapon)

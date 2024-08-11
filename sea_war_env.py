@@ -4,6 +4,7 @@ from env import Env
 from game_data import GameData
 from init import Map, Device, Side, Scenario
 from entities.entity import EntityInfo
+from init import Grid, QuadTree
 from utils import *
 # 定义为游戏的战术层，从战术层面对游戏过程进行解析
 
@@ -55,6 +56,8 @@ class SeaWarEnv(Env):
         self.scenario = Scenario(game_config['scenario_path'])
 
         self.action_manager = Action_Manager()
+        self.grid = Grid(1000, 100)
+        self.quad_tree = QuadTree([0, 0, 1000, 1000], 4)
 
     def reset_game(self):
         self.current_step = 0
@@ -69,7 +72,8 @@ class SeaWarEnv(Env):
                 entity_info = EntityInfo(
                     entity_id=unit['id'],
                     entity_type=unit['entity_type'],
-                    position=(unit['x'], unit['y']),
+                    position={"x": unit['x'], "y": unit['y'], "z": unit['z']},
+                    rcs=unit['rcs'],
                     speed=unit['speed'],
                     direction=unit['course'],
                     hp=unit['health'],
@@ -83,13 +87,48 @@ class SeaWarEnv(Env):
         return self.sides
 
     def detect_compute(self):
-        visible_entities = {}
-        for data in self.game_data.units.items():
-            if other_id != entity_id:
-                other_position = np.array(data['position'])
-                if np.linalg.norm(current_position - other_position) <= detection_range:
-                    visible_entities[other_id] = data
-        return visible_entities
+        distances = self.distances_compute()
+
+
+    def distances_compute(self):
+        distances = {}
+        for color, unit_ids in self.game_data.player_units.items():
+            distances[color] = {}
+            for unit1_id in unit_ids:
+                distances[color][unit1_id] = {}
+                for other_color, other_unit_ids in self.game_data.player_units.items():
+                    if color != other_color:  # 避免计算同一个玩家之间的距离
+                        for unit2_id in other_unit_ids:
+                            distance = calculate_distance(
+                                unit1_id, unit2_id, self.game_data)
+                            distances[color][unit1_id][unit2_id] = distance
+                            
+
+        return distances
+
+    def detect_compute_grid(self):
+        # 待验证
+        # Update entity positions
+        for entity in self.game_data.units:
+            old_position = entity.position.copy()
+            new_position = entity.update_position(
+                np.random.rand(2) * 100)  # Random move
+            self.grid.remove_entity(entity, old_position)
+            self.grid.add_entity(entity)
+            # You'd actually need to remove it first
+            self.quadtree.insert(entity)
+
+        # Vision checks
+        for entity in self.game_data.units:
+            nearby_entities = self.grid.get_nearby_entities(entity)
+            visible_entities = self.quadtree.query_range([entity.position[0] - entity.detection_range,
+                                                          entity.position[1] -
+                                                          entity.detection_range,
+                                                          entity.detection_range * 2,
+                                                          entity.detection_range * 2])
+            # Update entity's visible entities list
+            entity.visible_entities = [
+                e for e in visible_entities if e.id != entity.id]
 
     def data_chain_compute(self, entity_id):
         pass

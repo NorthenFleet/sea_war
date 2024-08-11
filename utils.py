@@ -1,4 +1,3 @@
-
 import math
 
 ma = 340
@@ -40,3 +39,16 @@ def detect_targets(sensor, targets):
 
 def attack(entity, target):
     pass
+
+
+def calculate_distance(unit1_id, unit2_id, game_data):
+    # 获取 unit1 和 unit2 的坐标
+    unit1_pos = game_data.units[unit1_id].position
+    unit2_pos = game_data.units[unit2_id].position
+
+    # 计算距离
+    distance = math.sqrt((unit1_pos['x'] - unit2_pos['x']) ** 2 +
+                         (unit1_pos['y'] - unit2_pos['y']) ** 2 +
+                         (unit1_pos['z'] - unit2_pos['z']) ** 2)
+
+    return distance
