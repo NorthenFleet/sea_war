@@ -89,7 +89,7 @@ class DistributedGameEnv:
                 self.players[name] = player_class(config)
             else:
                 self.players[name] = player_class()
-
+ 
     def run_episode(self):
         obs = self.game_env.reset_game(self.config["game_config"])
         done = False

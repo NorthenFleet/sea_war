@@ -63,10 +63,10 @@ class SeaWarEnv(Env):
         self.current_step = 0
         self.game_over = False
         self.game_data.reset()
-        sides = self.load_scenario(self.device_table, self.scenario)
+        sides = self.load_scenario(self.scenario)
         return self.game_data, sides
 
-    def load_scenario(self, device, scenario):
+    def load_scenario(self, scenario):
         for color, unit_list in scenario.data.items():
             for unitid, unit in unit_list.items():
                 entity_info = EntityInfo(
@@ -80,7 +80,7 @@ class SeaWarEnv(Env):
                     weapons=[w['type'] for w in unit['weapons']],
                     sensor=[s['type'] for s in unit['sensor']]
                 )
-                self.game_data.add_entity(entity_info, device, color)
+                self.game_data.add_entity(entity_info, color)
             side = Side(color)
             side.set_entities(self.game_data.get_player_unit_ids(color))
             self.sides[color] = side
@@ -88,7 +88,6 @@ class SeaWarEnv(Env):
 
     def detect_compute(self):
         distances = self.distances_compute()
-
 
     def distances_compute(self):
         distances = {}
@@ -102,7 +101,6 @@ class SeaWarEnv(Env):
                             distance = calculate_distance(
                                 unit1_id, unit2_id, self.game_data)
                             distances[color][unit1_id][unit2_id] = distance
-                            
 
         return distances
 
