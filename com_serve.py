@@ -2,6 +2,7 @@ import threading
 import time
 from communication import Communication
 
+
 class CommunicationServer():
     def __init__(self, host='0.0.0.0', port=9999, max_clients=2):
         self.communication = Communication(host, port)
@@ -41,4 +42,4 @@ class CommunicationServer():
 
     def collect_actions(self):
         # Convert actions to a suitable format for sending
-        return str(self.actions)
+        return self.actions

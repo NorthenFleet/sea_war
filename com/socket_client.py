@@ -1,5 +1,4 @@
 import socket
-import struct
 import pickle
 
 
@@ -55,6 +54,8 @@ class Entity:
             })
 
 # 主程序实现多人游戏
+
+
 def main():
     global render_buffer
     render_buffer = RenderBuffer()

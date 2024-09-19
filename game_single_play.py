@@ -5,6 +5,7 @@ from player_human import HumanPlayer
 from player_rule import RulePlayer
 from event_manager import EventManager
 from component_manager import *
+from entities.aircraft import Aircraft
 import time
 
 

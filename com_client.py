@@ -7,7 +7,7 @@ class CommunicationClient:
         self.communication = Communication('0.0.0.0', 0)  # 客户端绑定到任意可用端口
         self.server_address = (server_host, server_port)
         self.action = None
-        self.received_actions = None
+        self.received_actions = {}
 
     def start(self):
         threading.Thread(target=self.receive_data).start()
@@ -20,7 +20,7 @@ class CommunicationClient:
         while True:
             data, _ = self.communication.receive()
             if data:
-                self.received_actions = data
+                self.received_actions.update(data)  # 合并接收到的动作数据
 
     def send_action(self, action):
         self.action = action
