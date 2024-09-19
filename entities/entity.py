@@ -20,7 +20,10 @@ class EntityInfo:
 
 
 class Entity:
-    def __init__(self, EntityInfo):
+    def __init__(self, EntityInfo, event_manager):
+        self.event_manager = event_manager
+        self.event_manager.subscribe('EntityAttacked', self)
+
         self.id = EntityInfo.entity_id
         self.hp = EntityInfo.hp
         self.type = EntityInfo.entity_type
@@ -40,6 +43,21 @@ class Entity:
         self.com_level = 5
         self.data_chain = {"Alliance": {}, "Enemy": {}}
         self.detect_entities = {}
+
+    def handle_event(self, event):
+        if event.type == 'UnitAttacked':
+            print(
+                f"Unit {event.data['target'].id} is attacked for {event.data['damage']} damage.")
+
+    def change_state(self, new_state):
+        if self.state:
+            self.state.on_exit(self)
+        self.state = new_state
+        self.state.on_enter(self)
+
+    def update(self):
+        if self.state:
+            self.state.update(self)
 
     def set_position(self, position):
         self.position = {
