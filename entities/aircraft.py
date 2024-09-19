@@ -1,5 +1,5 @@
 from entity import Entity
-from componet import PositionComponent, HealthComponent, MovementComponent, PathfindingComponent, WeaponComponent
+from component import PositionComponent, HealthComponent, MovementComponent, PathfindingComponent, WeaponComponent
 from state_management import CruisingState
 
 

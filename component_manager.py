@@ -1,4 +1,4 @@
-from componet import *
+from component import *
 from utils import *
 import numpy as np
 
