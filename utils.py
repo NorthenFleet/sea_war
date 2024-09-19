@@ -37,8 +37,12 @@ def detect_targets(sensor, targets):
     return detected_targets
 
 
-def attack(entity, target):
-    pass
+def find_weapon_type(weapon_name, weapon_data):
+    # Helper function to determine the type of weapon (missiles, guns, etc.)
+    for weapon_type, weapons in weapon_data["weapons"].items():
+        if weapon_name in weapons:
+            return weapon_type
+    return None
 
 
 def calculate_distance(unit1_id, unit2_id, game_data):

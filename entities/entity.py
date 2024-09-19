@@ -22,16 +22,17 @@ class EntityInfo:
 class Entity:
     def __init__(self, EntityInfo, event_manager):
         self.event_manager = event_manager
-        self.event_manager.subscribe('EntityAttacked', self)
+        self.components = {}
+        self.state = None
 
         self.id = EntityInfo.entity_id
         self.hp = EntityInfo.hp
         self.type = EntityInfo.entity_type
-        self.carrier = None
-        self.weapons = {}
-        self.sensors = {}
-        self.launcher = {}
-        self.armo = {}
+        self.carrier = []
+        self.weapons = []
+        self.sensors = []
+        self.launcher = []
+        self.armo = []
         self.bullet = []
 
         self.position = {
@@ -44,6 +45,9 @@ class Entity:
         self.data_chain = {"Alliance": {}, "Enemy": {}}
         self.detect_entities = {}
 
+    def initialize(self, **kwargs):
+        self.event_manager.subscribe('EntityAttacked', self)
+
     def handle_event(self, event):
         if event.type == 'UnitAttacked':
             print(
@@ -54,6 +58,24 @@ class Entity:
             self.state.on_exit(self)
         self.state = new_state
         self.state.on_enter(self)
+
+    def add_component(self, component):
+        """
+        添加组件到实体
+        """
+        self.components[type(component)] = component
+
+    def get_component(self, component_type):
+        """
+        获取实体的指定类型的组件
+        """
+        return self.components.get(component_type)
+
+    def add_weapon(self, weapon_name):
+        self.weapons.append(weapon_name)
+
+    def add_sensor(self, sensor_name):
+        self.sensors.append(sensor_name)
 
     def update(self):
         if self.state:
@@ -66,17 +88,15 @@ class Entity:
     def get_position(self):
         return self.position
 
-    def add_weapon(self, weapon):
-        self.weapons.append(weapon)
-
-    def add_sensor(self, sensor):
-        self.sensors.append(sensor)
-
     def reset(self, entity_info, device):
         self.entity_info = entity_info
         self.device = device
         self.weapons.clear()
         self.sensors.clear()
+
+        for component in self.components.values():
+            component.reset()
+        self.state = None
 
     def global_move(self, target_x, target_y, steps):
         self.carrier.global_move(target_x, target_y, steps)

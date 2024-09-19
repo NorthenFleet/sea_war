@@ -9,32 +9,6 @@ from utils import *
 # 定义为游戏的战术层，从战术层面对游戏过程进行解析
 
 
-class Action():
-    def __init__(self, name, unit_id, action_type, target, affliated_id=None):
-        self.name = name
-        self.unit_id = unit_id
-        self.action_type = action_type
-        self.affliated_id = affliated_id
-        self.target = target
-        self.terminated = False
-
-
-class Action_Manager():
-    def __init__(self):
-        self.action_list = []
-
-    def add_action(self, action):
-        self.action_list.append(action)
-
-    def update(self):
-        for action in self.action_list:
-            if not action.terminated:
-                if action.action_type == "attack":
-                    attack(action.unit_id, action.target)
-                elif action.action_type == "move":
-                    global_move(action.unit_id, action.target)
-
-
 class SeaWarEnv(Env):
     def __init__(self, game_config):
         self.name = game_config["name"]

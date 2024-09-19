@@ -8,19 +8,24 @@ class State:
     def update(self, unit):
         pass
 
+    def perform_action(self, entity):
+        pass
+
 
 class MovingState(State):
-    def update(self, unit):
+    def perform_action(self, unit):
         print("Unit is moving.")
         # 实现移动逻辑
 
 
+class CruisingState(State):
+    def perform_action(self, entity):
+        print(f"Entity {entity} is cruising.")
+
+
 class AttackingState(State):
-    def update(self, unit):
-        print("Unit is attacking.")
-        # 实现攻击逻辑
+    def perform_action(self, entity):
+        print(f"Entity {entity} is attacking.")
 
 
 
-
-    
