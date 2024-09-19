@@ -6,7 +6,8 @@ from player_rule import RulePlayer
 from event_manager import EventManager
 from component_manager import *
 from entities.aircraft import Aircraft
-
+from communication import CommunicationClient, CommunicationServer
+from game_data import GameData
 import time
 import threading
 
@@ -14,14 +15,16 @@ import threading
 class Game:
     def __init__(self, game_config, players, is_server=False):
         self.env = SeaWarEnv(game_config)
+        self.game_data = GameData()
         self.players = players
         self.event_manager = EventManager()
         self.entities = []
         self.systems = []
-        self.init_entities()
-        self.init_systems()
         self.current_time = 0.0
         self.fixed_time_step = 1 / 60  # 固定时间步长
+
+        self.init_entities()
+        self.init_systems()
 
         # 初始化通信系统
         if is_server:
@@ -41,9 +44,9 @@ class Game:
 
     def init_systems(self):
         # Initialize systems and add entities to them
-        self.movement_system = MovementSystem()
-        self.attack_system = AttackSystem()
-        self.dot_system = DamageOverTimeSystem()
+        self.movement_system = MovementSystem(self.game_data)
+        self.attack_system = AttackSystem(self.game_data)
+        self.dot_system = DamageOverTimeSystem(self.game_data)
 
         for entity in self.entities:
             self.movement_system.add_entity(entity)
@@ -61,17 +64,17 @@ class Game:
         while not game_over:
             start_time = time.time()
 
-            # 1. 处理输入事件（可以是玩家输入，AI指令等）
+            # 1. 处理输入事件
             self.event_manager.post(Event('FrameStart', {}))
 
-            # 2. 逻辑更新：使用固定时间步长更新游戏逻辑
+            # 2. 逻辑更新
             self.current_time += self.fixed_time_step
             self.update_logic(self.fixed_time_step)
 
-            # 3. 渲染：渲染系统和其他非关键逻辑系统可以在这里更新
+            # 3. 渲染
             self.render_manager.update()
 
-            # 4. 网络处理：处理来自其他客户端或服务器的网络消息
+            # 4. 网络处理
             self.network_update()
 
             # 5. 玩家动作选择并执行
@@ -88,8 +91,19 @@ class Game:
                 self.event_manager.post(Event('GameOver', {}))
                 break
 
-            # 控制帧率（渲染帧和逻辑帧的平衡）
+            # 控制帧率
             self.limit_fps(start_time)
+
+    def network_update(self):
+        if hasattr(self, 'communication_server'):
+            # Server-specific logic, e.g., broadcasting collected actions
+            pass
+        if hasattr(self, 'communication_client'):
+            # Client-specific logic, e.g., sending and receiving actions
+            if self.communication_client.received_actions:
+                # 处理接收到的动作，例如通过事件系统传递给其他系统
+                self.event_manager.post(
+                    Event('NetworkActionsReceived', self.communication_client.received_actions))
 
     def update_logic(self, delta_time):
         # Update all systems and entities
@@ -99,10 +113,6 @@ class Game:
         # Update all entities' state machines
         for entity in self.entities:
             entity.update(delta_time)
-
-    def network_update(self):
-        # Process network messages and commands
-        pass
 
     def limit_fps(self, start_time):
         # 控制帧率，例如每秒 60 帧
