@@ -6,11 +6,13 @@ from player_rule import RulePlayer
 from event_manager import EventManager
 from component_manager import *
 from entities.aircraft import Aircraft
+
 import time
+import threading
 
 
 class Game:
-    def __init__(self, game_config, players):
+    def __init__(self, game_config, players, is_server=False):
         self.env = SeaWarEnv(game_config)
         self.players = players
         self.event_manager = EventManager()
@@ -20,6 +22,15 @@ class Game:
         self.init_systems()
         self.current_time = 0.0
         self.fixed_time_step = 1 / 60  # 固定时间步长
+
+        # 初始化通信系统
+        if is_server:
+            self.communication_server = CommunicationServer()
+            self.communication_server.start()
+        else:
+            self.communication_client = CommunicationClient(
+                'server_host', 9999)
+            threading.Thread(target=self.communication_client.start).start()
 
     def init_entities(self):
         # Initialize entities and add to the list
