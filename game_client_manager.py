@@ -4,10 +4,9 @@ import threading
 from env import Env
 from player_human import HumanPlayer
 from player_AI import AIPlayer
-from com_client import CommunicationClient
-from render.render_manager import Render
+from render.render_manager import RenderManager
 from init import Map, Weapon, Scenario
-from sea_war_env import EnvTank
+from sea_war_env import 
 
 
 class GameConfig:
@@ -45,7 +44,7 @@ class Game:
         self.game_env = EnvTank(self.config.env_config) if not net else Env(
             name="SC2Env", player_config=config['player_config'])
         self.current_step = None
-        self.render = Render()
+        self.render = RenderManager()
         self.max_step = self.config.max_step
         self.net = net
 

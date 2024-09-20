@@ -6,6 +6,7 @@ from init import Map, Device, Side, Scenario
 from entities.entity import EntityInfo
 from init import Grid, QuadTree
 from utils import *
+from component_manager import *
 # 定义为游戏的战术层，从战术层面对游戏过程进行解析
 
 
@@ -39,6 +40,15 @@ class SeaWarEnv(Env):
             self.game_data, self.quad_tree, self.grid)
         self.collision_system = CollisionSystem(self.game_data, self.map)
         self.pathfinding_system = PathfindingSystem(self.game_data)
+
+        # 组件系统注册到一个列表中，便于统一管理
+        self.systems = [
+            self.movement_system,
+            self.attack_system,
+            self.detection_system,
+            self.collision_system,
+            self.pathfinding_system
+        ]
 
     def load_scenario(self, scenario):
         """

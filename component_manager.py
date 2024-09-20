@@ -1,24 +1,22 @@
-from component import *
-from utils import *
 import numpy as np
 
 
 class System:
     def __init__(self, game_data):
-        self.game_data = game_data
-        self.entities = []
+        self.game_data = game_data  # 保存game_data的引用
 
-    def add_entity(self, entity):
-        self.entities.append(entity)
+    def get_all_entities(self):
+        """获取游戏数据中的所有实体。"""
+        return self.game_data.get_all_entities()
 
     def update(self, delta_time):
         raise NotImplementedError
 
-    def get_all_entities(self):
-        return self.game_data.get_all_entities()
-
 
 class MovementSystem(System):
+    def __init__(self, game_data):
+        super().__init__(game_data)
+
     def update(self, delta_time):
         for entity in self.get_all_entities():
             position = entity.get_component(PositionComponent)
@@ -43,6 +41,9 @@ class MovementSystem(System):
 
 
 class PathfindingSystem(System):
+    def __init__(self, game_data):
+        super().__init__(game_data)
+
     def update(self, delta_time):
         for entity in self.get_all_entities():
             position = entity.get_component(PositionComponent)
@@ -58,7 +59,32 @@ class PathfindingSystem(System):
                 self.game_data.add_entity(entity.id, entity)
 
 
+class DetectionSystem(System):
+    def __init__(self, game_data, quad_tree, grid):
+        super().__init__(game_data)
+        self.quad_tree = quad_tree
+        self.grid = grid
+
+    def update(self, delta_time):
+        for entity in self.get_all_entities():
+            position = entity.get_component(PositionComponent)
+            detection = entity.get_component(DetectionComponent)
+            if position and detection:
+                # 检测是否有敌人
+                for other_entity in self.get_all_entities():
+                    if other_entity.id == entity.id:
+                        continue
+                    other_position = other_entity.get_component(
+                        PositionComponent)
+                    if other_position and np.linalg.norm(other_position.position - position.position) <= detection.radius:
+                        # 触发检测事件
+                        detection.on_detected(other_entity)
+
+
 class AttackSystem(System):
+    def __init__(self, game_data):
+        super().__init__(game_data)
+
     def update(self, delta_time):
         weapon_data = self.game_data.weapon_data
         for entity in self.get_all_entities():
@@ -71,6 +97,9 @@ class AttackSystem(System):
 
 
 class DamageOverTimeSystem(System):
+    def __init__(self, game_data):
+        super().__init__(game_data)
+
     def update(self, delta_time):
         for entity in self.get_all_entities():
             dot = entity.get_component(DamageOverTimeComponent)
@@ -96,3 +125,28 @@ class DamageOverTimeSystem(System):
             health.current_health -= damage
             print(
                 f"Entity {entity.id} took {damage} damage, remaining health {health.current_health}")
+
+
+class CollisionSystem(System):
+    def __init__(self, game_data, game_map):
+        super().__init__(game_data)
+        self.game_map = game_map
+
+    def update(self, delta_time):
+        for entity in self.get_all_entities():
+            position = entity.get_component(PositionComponent)
+            collision = entity.get_component(CollisionComponent)
+            if position and collision:
+                # 检测是否有碰撞
+                for other_entity in self.get_all_entities():
+                    if other_entity.id == entity.id:
+                        continue
+                    other_position = other_entity.get_component(
+                        PositionComponent)
+                    if other_position and np.linalg.norm(other_position.position - position.position) <= collision.radius:
+                        # 触发碰撞事件
+                        collision.on_collide(other_entity)
+
+                # 检查是否与地图障碍物碰撞
+                if self.game_map[int(position.position[0]), int(position.position[1])] == 1:
+                    collision.on_collide_map()

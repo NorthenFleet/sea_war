@@ -4,8 +4,7 @@ from player_AI import AIPlayer
 from player_human import HumanPlayer
 from player_rule import RulePlayer
 from event_manager import EventManager
-from component_manager import *
-from entities.aircraft import Aircraft
+from component_manager import Event
 from communication import CommunicationClient, CommunicationServer
 from game_data import GameData
 import time
@@ -15,7 +14,6 @@ import threading
 class Game:
     def __init__(self, game_config, players, is_server=False):
         self.env = SeaWarEnv(game_config)
-        self.game_data = GameData()
         self.players = players
         self.event_manager = EventManager()
         self.current_time = 0.0
