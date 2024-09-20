@@ -61,7 +61,9 @@ class SeaWarEnv(Env):
                     weapons=[w['type'] for w in unit['weapons']],
                     sensor=[s['type'] for s in unit['sensor']]
                 )
+                # 将实体添加到 game_data 中
                 self.game_data.add_entity(entity_info, color)
+            # 创建玩家的 Side 对象
             side = Side(color)
             side.set_entities(self.game_data.get_player_unit_ids(color))
             self.sides[color] = side
