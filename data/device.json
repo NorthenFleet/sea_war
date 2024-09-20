@@ -28,7 +28,7 @@
         {
             "name": "Radar2",
             "detection_range": 10,
-            "rcs_level": 3
+            "accurate": 3
         }
     ]
 }

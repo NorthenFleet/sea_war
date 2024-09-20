@@ -29,7 +29,7 @@ class SeaWarEnv(Env):
         self.device_table = Device(game_config['device_path'])
         self.scenario = Scenario(game_config['scenario_path'])
 
-        self.action_manager = Action_Manager()
+        # self.action_manager = Action_Manager()
         self.grid = Grid(1000, 100)
         self.quad_tree = QuadTree([0, 0, 1000, 1000], 4)
 
@@ -176,7 +176,7 @@ class SeaWarEnv(Env):
                 self.game_data.units[entity_id]
 
         # 过程计算
-        self.action_manager.update()
+        # self.action_manager.update()
 
         # 状态计算
         self.detect_compute()

@@ -23,7 +23,7 @@ class Game:
         self.current_time = 0.0
         self.fixed_time_step = 1 / 60  # 固定时间步长
 
-        self.init_entities()
+        # self.init_entities()
         self.init_systems()
 
         # 初始化通信系统
@@ -135,12 +135,12 @@ if __name__ == '__main__':
     red_player = RulePlayer("red")
     blue_player = RulePlayer("blue")
 
-    player = {
+    players = {
         "red": red_player,
         "blue": blue_player
         # "blue": ("RulePlayer", HumanPlayer),
         # "green": ("HumanPlayer", RulePlayer)
     }
 
-    game = Game(game_config, player)
+    game = Game(game_config, players)
     game.run()

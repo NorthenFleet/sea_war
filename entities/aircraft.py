@@ -1,11 +1,11 @@
-from entity import Entity
+from entities.entity import Entity
 from component import PositionComponent, HealthComponent, MovementComponent, PathfindingComponent, WeaponComponent
 from state_management import CruisingState
 
 
 class Aircraft(Entity):
-    def __init__(self, event_manager):
-        super().__init__()
+    def __init__(self, EntityInfo, event_manager):
+        super().__init__(EntityInfo, event_manager)
         self.state = CruisingState()
         self.event_manager = event_manager
         self.position = None
