@@ -40,14 +40,12 @@ class SeaWarEnv(Env):
         self.collision_system = CollisionSystem(self.game_data, self.map)
         self.pathfinding_system = PathfindingSystem(self.game_data)
 
-    def reset_game(self):
-        self.current_step = 0
-        self.game_over = False
-        self.game_data.reset()
-        sides = self.load_scenario(self.scenario)
-        return self.game_data, sides
-
     def load_scenario(self, scenario):
+        """
+        Load the scenario into GameData and return the updated GameData object.
+        """
+        game_data = GameData()  # Initialize a new GameData instance
+
         for color, unit_list in scenario.data.items():
             for unitid, unit in unit_list.items():
                 entity_info = EntityInfo(
@@ -61,13 +59,25 @@ class SeaWarEnv(Env):
                     weapons=[w['type'] for w in unit['weapons']],
                     sensor=[s['type'] for s in unit['sensor']]
                 )
-                # 将实体添加到 game_data 中
-                self.game_data.add_entity(entity_info, color)
-            # 创建玩家的 Side 对象
+                # Add entity to game_data
+                # device=None for now
+                game_data.add_entity(entity_info, None, color)
+
+            # Create the player side (e.g., for blue/red teams)
             side = Side(color)
-            side.set_entities(self.game_data.get_player_unit_ids(color))
+            side.set_entities(game_data.get_player_unit_ids(color))
             self.sides[color] = side
-        return self.sides
+
+        # Return the populated game_data object
+        return game_data
+
+    def reset_game(self):
+        self.current_step = 0
+        self.game_over = False
+        self.game_data.reset()
+        # Load the scenario and update GameData
+        self.game_data = self.load_scenario(self.scenario)
+        return self.game_data, self.sides
 
     def update(self, actions):
         # 处理玩家动作
@@ -81,5 +91,12 @@ class SeaWarEnv(Env):
         self.pathfinding_system.update(1 / 60)
         self.detection_system.update(1 / 60)
         self.collision_system.update(1 / 60)
+        # Update all systems and entities
+        for system in self.systems:
+            system.update(delta_time)
+
+        # Update all entities' state machines
+        for entity in self.entities:
+            entity.update(delta_time)
 
         self.current_step += 1
