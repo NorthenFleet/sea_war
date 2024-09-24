@@ -10,7 +10,7 @@ class PositionComponent(Component):
     def __init__(self, x, y):
         self.x = x
         self.y = y
-
+    
 
 class MovementComponent(Component):
     def __init__(self, speed):
@@ -37,6 +37,10 @@ class PathfindingComponent(Component):
         if self.path:
             self.current_goal = self.path.pop(0)  # 移除起始点
 
+
+class DetectionComponent(Component):
+    def __init__(self, detection_range):
+        self.detection_range = detection_range
 
 class WeaponComponent(Component):
     def __init__(self, damage, range):
