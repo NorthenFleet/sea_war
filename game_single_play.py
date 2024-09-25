@@ -13,12 +13,12 @@ import threading
 
 class Game:
     def __init__(self, game_config, players, is_server=False):
+        self.event_manager = EventManager()
         self.env = SeaWarEnv(game_config)
         self.players = players
-        self.event_manager = EventManager()
         self.current_time = 0.0
         self.fixed_time_step = 1 / 60  # 固定时间步长
-        self.render_manager = RenderManager()
+        self.render_manager = RenderManager(self.env)
 
         # 初始化通信系统
         if is_server:
