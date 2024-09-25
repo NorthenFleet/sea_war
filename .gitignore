@@ -1,6 +1,8 @@
 *.log       # 忽略所有 .log 文件
 *.tmp       # 忽略所有 .tmp 文件
 *.pyc       # 忽略所有 .pyc 文件
+*.png
+*.jpg
 
 /__pycache__/          # 忽略 dist 目录
 

@@ -40,10 +40,22 @@ class Scenario(DataLoader):
 class Map(DataLoader):
     def __init__(self, path):
         super().__init__(path)
-        pass
+        self.grid = None  # 初始化 grid 属性
+        self.width = 0
+        self.height = 0
+        self.load_map(path)
+
+    def load_map(self, path):
+        """从 json 文件中加载地图数据"""
+        with open(path, 'r') as f:
+            data = json.load(f)
+            self.width = data['map_info']['width']
+            self.height = data['map_info']['height']
+            self.grid = data['map_data']  # 将地图数据存储到 grid 属性中
 
     def display_map(self):
-        for row in self.data:
+        """打印地图"""
+        for row in self.grid:
             print(" ".join(map(str, row)))
 
 

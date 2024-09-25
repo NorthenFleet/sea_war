@@ -15,11 +15,11 @@ class RenderManager:
         self.sprites = self.load_sprites()  # 加载精灵图
 
     def load_sprites(self):
-        """加载游戏中的精灵图，作为2.5D显示基础"""
+        """加载游戏中图片，作为2.5D显示基础"""
         sprites = {}
         # 示例：加载地形和单位的图片
-        sprites['terrain'] = pygame.image.load('assets/terrain.png')
-        sprites['unit'] = pygame.image.load('assets/unit.png')
+        sprites['terrain'] = pygame.image.load('images/map.jpg')
+        sprites['unit'] = pygame.image.load('images/歼-15.png')
         return sprites
 
     def isometric_transform(self, x, y):

@@ -1,5 +1,5 @@
 from sea_war_env import SeaWarEnv
-from render.render_manager import RenderManager
+from render.single_process import RenderManager
 from player_AI import AIPlayer
 from player_human import HumanPlayer
 from player_rule import RulePlayer
