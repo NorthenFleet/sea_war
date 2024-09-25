@@ -9,15 +9,16 @@ class ObjectPool:
     def acquire(self, *args, **kwargs):
         if self.pool:
             entity = self.pool.pop()
-            # Reset the entity to its initial state using provided args
+            # 重置实体并传入事件管理器
             entity.reset(*args, **kwargs)
             return entity
         else:
+            # 使用传入的参数（包括event_manager）创建实体
             return self.create_func(*args, **kwargs)
 
     def release(self, entity):
-        """Release entity back into the pool after resetting its state."""
-        entity.reset(None, None)  # Optionally reset entity before reuse
+        """释放实体回到对象池中，准备重用。"""
+        entity.reset(None, None, None)  # 在重置时传递空值
         self.pool.append(entity)
 
 
@@ -97,7 +98,7 @@ class GameData:
 
     def create_entity(self, entity_info, device, event_manager):
         """工厂函数，创建一个新实体。"""
-        return Entity(entity_info, device, event_manager)
+        return Entity(entity_info, event_manager)
 
     def configure_entity(self, entity, entity_info, device):
         """配置实体的属性和设备。"""

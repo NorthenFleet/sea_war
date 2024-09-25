@@ -11,12 +11,13 @@ from component_manager import *
 
 
 class SeaWarEnv(Env):
-    def __init__(self, game_config):
+    def __init__(self, game_config, event_manager):
         self.name = game_config["name"]
+        self.event_manager = event_manager
         self.map = None
         self.device_table = None
         self.scenario = None
-        self.game_data = GameData()
+        self.game_data = GameData(self.event_manager)
         self.sides = {}
         self.actions = {}
         self.game_over = False
@@ -54,7 +55,8 @@ class SeaWarEnv(Env):
         """
         Load the scenario into GameData and return the updated GameData object.
         """
-        game_data = GameData()  # Initialize a new GameData instance
+        game_data = GameData(
+            self.game_data)  # Initialize a new GameData instance
 
         for color, unit_list in scenario.data.items():
             for unitid, unit in unit_list.items():

@@ -6,7 +6,6 @@ from player_rule import RulePlayer
 from event_manager import EventManager
 from component_manager import Event
 from communication import CommunicationClient, CommunicationServer
-from game_data import GameData
 import time
 import threading
 
@@ -14,7 +13,7 @@ import threading
 class Game:
     def __init__(self, game_config, players, is_server=False):
         self.event_manager = EventManager()
-        self.env = SeaWarEnv(game_config)
+        self.env = SeaWarEnv(game_config, self.event_manager)
         self.players = players
         self.current_time = 0.0
         self.fixed_time_step = 1 / 60  # 固定时间步长
@@ -36,26 +35,22 @@ class Game:
 
         while not game_over:
             start_time = time.time()
+            # 3. 渲染
+            self.render_manager.update()
 
-            # 1. 处理输入事件
-            self.event_manager.post(Event('FrameStart', {}))
-
-            # 2. 处理玩家动作
+            # 1. 处理玩家动作
             actions = []
             for player, agent in self.players.items():
                 action = agent.choose_action(sides[player])
                 actions.append(action)
 
-            # 3. 更新游戏状态
+            # 2. 更新游戏状态
             self.env.update(actions, self.fixed_time_step)
 
-            # 4. 渲染
-            self.render_manager.update()
-
-            # 5. 网络处理
+            # 4. 网络处理
             self.network_update()
 
-            # 6. 处理游戏结束
+            # 5. 处理游戏结束
             if self.env.game_over:
                 self.event_manager.post(Event('GameOver', {}))
                 break

@@ -3,12 +3,12 @@ from game_data import GameData
 
 
 class RulePlayer(Player):
-    def __init__(self, name, game_data):
+    def __init__(self, name):
         super().__init__()
         self.name = name
-        self.game_data = game_data
+
         self.units = None
 
-    def choose_action(self, state):
-        self.units = self.game_data.get_all_unit_ids()
+    def choose_action(self, game_data):
+        self.units = game_data.get_all_unit_ids()
         print("我是规则智能体")

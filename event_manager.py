@@ -1,6 +1,5 @@
 class Event:
     def __init__(self, name, unit_id, action_type, target, affliated_id=None):
-
         self.name = name
         self.unit_id = unit_id
         self.action_type = action_type
