@@ -54,23 +54,25 @@ class GameData:
             return None
 
         # 从对象池获取实体，并将其添加到游戏数据中
+        # entity = self.object_pool.acquire(
+        #     entity_info, device, self.event_manager)
         entity = self.object_pool.acquire(
-            entity_info, device, self.event_manager)
-        if entity_info["entity_type"] != "shore":
+            entity_info.entity_id, entity_info.entity_type)
+        if entity_info.entity_type != "grand_base" or :
+            entity.add_component(PositionComponent(
+                entity_info.position))
+            entity.add_component(MovementComponent(entity_info["speed"]))
+            entity.add_component(SensorComponent(entity_info["sensor"]))
+            entity.add_component(HealthComponent(
+                entity_info["health"], entity_info["endurance"]))
+        elif entity_info.entity_type == "aircraft":
             entity.add_component(PositionComponent(
                 entity_info["x"], entity_info["y"], entity_info["z"]))
             entity.add_component(MovementComponent(entity_info["speed"]))
             entity.add_component(SensorComponent(entity_info["sensor"]))
             entity.add_component(HealthComponent(
                 entity_info["health"], entity_info["endurance"]))
-        elif entity_info["entity_type"] == "aircraft":
-            entity.add_component(PositionComponent(
-                entity_info["x"], entity_info["y"], entity_info["z"]))
-            entity.add_component(MovementComponent(entity_info["speed"]))
-            entity.add_component(SensorComponent(entity_info["sensor"]))
-            entity.add_component(HealthComponent(
-                entity_info["health"], entity_info["endurance"]))
-        elif entity_info["entity_type"] == "missile":
+        elif entity_info.entity_type == "missile":
             entity.add_component(PositionComponent(
                 entity_info["x"], entity_info["y"], entity_info["z"]))
             entity.add_component(MovementComponent(entity_info["speed"]))
@@ -117,9 +119,9 @@ class GameData:
         """Return the owner player ID of a given entity."""
         return self.unit_owner.get(entity_id, None)
 
-    def create_entity(self, entity_info, event_manager):
+    def create_entity(self, entity_id, entity_type):
         """工厂函数，创建一个新实体。"""
-        return Entity(entity_info["id"], entity_info["entity_type"])
+        return Entity(entity_id, entity_type)
 
     def configure_entity(self, entity, entity_info, device):
         """配置实体的属性和设备。"""

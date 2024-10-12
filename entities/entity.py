@@ -3,17 +3,17 @@ from device import *
 
 
 class EntityInfo:
-    def __init__(self, side=None, entity_id=None, entity_type=None, position=None, rcs=None, speed=None, direction=None, faction=None, hp=None, weapons=None, equipments=None, sensor=None, launcher=None):
+    def __init__(self, side=None, entity_id=None, entity_type=None, position=None, rcs=None, speed=None, heading=None, faction=None, health=None, endurance=None, weapons=None, equipments=None, sensor=None, launcher=None):
         self.side = side
         self.entity_id = entity_id
         self.entity_type = entity_type
-        self.position = {
-            'x': position["x"], 'y': position["y"], 'z': position["z"]}
+        self.position = [position[0], position[1], position[2]]
         self.speed = speed
-        self.direction = direction
+        self.heading = heading
         self.rcs = rcs
         self.faction = faction
-        self.hp = hp
+        self.health = health
+        self.endurance = endurance
         self.weapons = weapons if weapons is not None else []
         self.sensor = sensor if sensor is not None else []
         self.launcher = launcher
@@ -25,13 +25,14 @@ class HealthComponent:
 
 
 class PositionComponent:
-    def __init__(self, x, y, z):
-        self.position = np.array([x, y, z])  # 3D坐标
+    def __init__(self, position):
+        # self.position = np.array([x, y, z])
+        self.position = position
 
 
 class MovementComponent:
     def __init__(self, x, y, z, heading):
-        self.speed = np.array([x, y, z])  # 3D坐标
+        self.speed = np.array([x, y, z])
         self.heading = heading
         self.target_position = None
 

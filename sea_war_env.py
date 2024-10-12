@@ -67,9 +67,7 @@ class SeaWarEnv(Env):
                 entity_info = EntityInfo(
                     entity_id=unit_info["id"],
                     side=unit_info["side"],
-                    x=unit_info["x"],
-                    y=unit_info["y"],
-                    z=unit_info["z"],
+                    position=[unit_info["x"], unit_info["y"], unit_info["z"]],
                     rcs=unit_info["rcs"],
                     entity_type=unit_info["entity_type"],
                     heading=unit_info["heading"],
