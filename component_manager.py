@@ -14,50 +14,133 @@ class System:
         raise NotImplementedError
 
 
-class MovementSystem(System):
-    def __init__(self, game_data):
-        super().__init__(game_data)
+class MovementSystem:
+    def __init__(self, event_manager):
+        self.event_manager = event_manager
 
-    def update(self, delta_time):
-        for entity in self.get_all_entities():
-            position = entity.get_component(PositionComponent)
+    def update(self, entities, delta_time):
+        for entity in entities:
             movement = entity.get_component(MovementComponent)
-            if position and movement and movement.target_position is not None:
+            position = entity.get_component(PositionComponent)
+
+            if movement and position and movement.target_position is not None:
                 # 计算向目标位置的向量
                 direction = movement.target_position - position.position
                 distance = np.linalg.norm(direction)
                 if distance > 0:
                     direction /= distance  # 单位向量
 
-                # 更新位置，确保不会超过目标位置
+                # 移动，确保不会超过目标位置
                 step_distance = min(distance, movement.speed * delta_time)
                 position.position += direction * step_distance
 
-                # 到达目标位置后清除目标
+                # 到达目标位置后，清除目标
                 if np.array_equal(position.position, movement.target_position):
                     movement.target_position = None
 
-                # 更新 game_data 中的实体状态
-                self.game_data.add_entity(entity.id, entity)
+                # 如果完成移动，则触发完成事件
+                if movement.target_position is None:
+                    self.event_manager.post(
+                        Event('MoveCompleteEvent', entity, None))
 
 
-class PathfindingSystem(System):
-    def __init__(self, game_data):
-        super().__init__(game_data)
+class PathfindingSystem:
+    def __init__(self, event_manager, game_map):
+        self.event_manager = event_manager
+        self.game_map = game_map  # 用于路径规划的地图数据
 
-    def update(self, delta_time):
-        for entity in self.get_all_entities():
-            position = entity.get_component(PositionComponent)
+    def a_star(self, start, goal):
+        # A*算法的简单实现，假设地图是网格，0表示可通行，1表示障碍
+        def heuristic(a, b):
+            return np.linalg.norm(a - b)
+
+        open_set = set([start])
+        came_from = {}
+        g_score = {start: 0}
+        f_score = {start: heuristic(start, goal)}
+
+        while open_set:
+            current = min(open_set, key=lambda o: f_score.get(o, float('inf')))
+            if np.array_equal(current, goal):
+                # 还原路径
+                path = []
+                while current in came_from:
+                    path.append(current)
+                    current = came_from[current]
+                path.reverse()
+                return path
+
+            open_set.remove(current)
+            for neighbor in self.get_neighbors(current):
+                tentative_g_score = g_score[current] + \
+                    heuristic(current, neighbor)
+                if tentative_g_score < g_score.get(neighbor, float('inf')):
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g_score
+                    f_score[neighbor] = g_score[neighbor] + \
+                        heuristic(neighbor, goal)
+                    if neighbor not in open_set:
+                        open_set.add(neighbor)
+
+        return []  # 没有路径找到
+
+    def get_neighbors(self, node):
+        # 假设是4方向的网格地图
+        neighbors = [
+            node + np.array([0, 1]),
+            node + np.array([1, 0]),
+            node + np.array([0, -1]),
+            node + np.array([-1, 0])
+        ]
+        # 检查邻居是否在地图范围内且没有障碍
+        valid_neighbors = [n for n in neighbors if self.is_valid_position(n)]
+        return valid_neighbors
+
+    def is_valid_position(self, position):
+        # 检查是否是有效位置（没有障碍物）
+        x, y = position
+        if 0 <= x < self.game_map.width and 0 <= y < self.game_map.height:
+            return self.game_map.grid[y][x] == 0  # 0表示无障碍物
+        return False
+
+    def update(self, entities):
+        for entity in entities:
             pathfinding = entity.get_component(PathfindingComponent)
+            position = entity.get_component(PositionComponent)
             movement = entity.get_component(MovementComponent)
-            if position and pathfinding and movement:
-                if pathfinding.current_goal and np.array_equal(position.position, pathfinding.current_goal):
+
+            if pathfinding and position and movement:
+                if not pathfinding.path and pathfinding.current_goal:
+                    # 计算路径
+                    pathfinding.path = self.a_star(
+                        position.position, pathfinding.current_goal)
                     if pathfinding.path:
                         pathfinding.current_goal = pathfinding.path.pop(0)
-                        movement.set_target(*pathfinding.current_goal)
 
-                # 更新 game_data 中的实体状态
-                self.game_data.add_entity(entity.id, entity)
+                if pathfinding.path:
+                    # 继续处理路径中的目标点
+                    next_goal = pathfinding.path.pop(0)
+                    movement.target_position = next_goal
+                else:
+                    # 路径完成，触发事件
+                    self.event_manager.post(
+                        Event('PathCompleteEvent', entity, None))
+
+
+class CollisionDetectionSystem:
+    def __init__(self, game_map):
+        self.game_map = game_map
+
+    def update(self, entities):
+        for entity in entities:
+            position = entity.get_component(PositionComponent)
+            if position and not self.is_valid_position(position.position):
+                print(f"Entity {entity.id} 碰撞到了障碍物！")
+                # 这里可以处理碰撞后的逻辑，比如重新规划路径
+
+    def is_valid_position(self, position):
+        x, y = position
+        return self.game_map.grid[int(y)][int(x)] == 0  # 0 表示可通行区域
 
 
 class DetectionSystem(System):
@@ -82,19 +165,42 @@ class DetectionSystem(System):
                         detection.on_detected(other_entity)
 
 
-class AttackSystem(System):
-    def __init__(self, game_data):
-        super().__init__(game_data)
+class AttackSystem:
+    def __init__(self, event_manager):
+        self.event_manager = event_manager
 
-    def update(self, delta_time):
-        weapon_data = self.game_data.weapon_data
-        for entity in self.get_all_entities():
-            for weapon_name in entity.weapon_names:
-                weapon_type = find_weapon_type(weapon_name)
-                weapon_params = weapon_data["weapons"][weapon_type][weapon_name]
-                # 使用 weapon_params 执行攻击逻辑
-                print(
-                    f"{entity} attacks with {weapon_name}: Damage {weapon_params['damage']}")
+    def update(self, entities):
+        for entity in entities:
+            weapon = entity.get_component(WeaponComponent)
+            if weapon:  # 这个实体有武器，可以攻击
+                target = self.find_target_in_range(entity)  # 假设有一个找到目标的函数
+                if target:
+                    # 触发攻击事件
+                    event = Event('AttackEvent', source=entity,
+                                  target=target, data=weapon.damage)
+                    self.event_manager.post(event)
+
+    def find_target_in_range(self, entity, target_list):
+        # 找到在射程内的目标（假设实现）
+        return target_list  # 返回目标实体
+
+
+class DamageSystem:
+    def __init__(self, event_manager):
+        self.event_manager = event_manager
+        self.event_manager.register_listener(
+            'AttackEvent', self.on_attack_event)
+
+    def on_attack_event(self, event):
+        target = event.target
+        damage = event.data
+        health = target.get_component(HealthComponent)
+        if health:
+            health.hp -= damage  # 减少目标的生命值
+            print(
+                f"Entity {target.id} took {damage} damage, remaining HP: {health.hp}")
+            if health.hp <= 0:
+                print(f"Entity {target.id} is destroyed!")
 
 
 class DamageOverTimeSystem(System):

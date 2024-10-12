@@ -8,8 +8,12 @@
             "z": 0,
             "rcs": 5,
             "entity_type": "flight",
-            "course": 5,
-            "speed": 3,
+            "heading": 0,
+            "speed": [
+                0,
+                0,
+                0
+            ],
             "health": 100,
             "endurance": 200,
             "weapons": [
@@ -37,8 +41,12 @@
             "z": 0,
             "rcs": 5,
             "entity_type": "flight",
-            "course": 5,
-            "speed": 3,
+            "heading": 0,
+            "speed": [
+                0,
+                0,
+                0
+            ],
             "health": 100,
             "endurance": 200,
             "weapons": [
@@ -68,8 +76,12 @@
             "z": 10,
             "rcs": 1,
             "entity_type": "missile",
-            "course": 231.72,
-            "speed": 0.8,
+            "heading": 0,
+            "speed": [
+                0,
+                0,
+                0
+            ],
             "health": 100,
             "endurance": 200,
             "weapons": [
@@ -97,8 +109,12 @@
             "z": 10,
             "rcs": 1,
             "entity_type": "missile",
-            "course": 231,
-            "speed": 0.8,
+            "heading": 0,
+            "speed": [
+                0,
+                0,
+                0
+            ],
             "health": 100,
             "endurance": 200,
             "weapons": [
@@ -126,8 +142,12 @@
             "z": 10,
             "rcs": 1,
             "entity_type": "missile",
-            "course": 232.97,
-            "speed": 0.8,
+            "heading": 0,
+            "speed": [
+                0,
+                0,
+                0
+            ],
             "health": 100,
             "endurance": 200,
             "weapons": [
@@ -155,8 +175,12 @@
             "z": 10,
             "rcs": 1,
             "entity_type": "missile",
-            "course": 232.12,
-            "speed": 0.8,
+            "heading": 0,
+            "speed": [
+                0,
+                0,
+                0
+            ],
             "health": 100,
             "endurance": 200,
             "weapons": [
@@ -184,8 +208,12 @@
             "z": 10,
             "rcs": 1,
             "entity_type": "missile",
-            "course": 232.35,
-            "speed": 0.8,
+            "heading": 0,
+            "speed": [
+                0,
+                0,
+                0
+            ],
             "health": 100,
             "endurance": 200,
             "weapons": [
@@ -213,8 +241,12 @@
             "z": 10,
             "rcs": 1,
             "entity_type": "missile",
-            "course": 232.1,
-            "speed": 0.8,
+            "heading": 0,
+            "speed": [
+                0,
+                0,
+                0
+            ],
             "health": 100,
             "endurance": 200,
             "weapons": [
@@ -242,8 +274,12 @@
             "z": 10,
             "rcs": 1,
             "entity_type": "missile",
-            "course": 231.04,
-            "speed": 3.2,
+            "heading": 0,
+            "speed": [
+                0,
+                0,
+                0
+            ],
             "health": 100,
             "endurance": 200,
             "weapons": [
@@ -271,8 +307,12 @@
             "z": 10,
             "rcs": 1,
             "entity_type": "missile",
-            "course": 230.27,
-            "speed": 3.2,
+            "heading": 0,
+            "speed": [
+                0,
+                0,
+                0
+            ],
             "health": 100,
             "endurance": 200,
             "weapons": [
@@ -300,8 +340,12 @@
             "z": 10,
             "rcs": 1,
             "entity_type": "missile",
-            "course": 128.48,
-            "speed": 0.8,
+            "heading": 0,
+            "speed": [
+                0,
+                0,
+                0
+            ],
             "health": 100,
             "endurance": 200,
             "weapons": [
@@ -329,8 +373,12 @@
             "z": 10,
             "rcs": 1,
             "entity_type": "missile",
-            "course": 128.26,
-            "speed": 0.8,
+            "heading": 0,
+            "speed": [
+                0,
+                0,
+                0
+            ],
             "health": 100,
             "endurance": 200,
             "weapons": [

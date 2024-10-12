@@ -1,4 +1,4 @@
-from entities.entity import Entity, EntityInfo
+from entities.entity import *
 
 
 class ObjectPool:
@@ -56,6 +56,27 @@ class GameData:
         # 从对象池获取实体，并将其添加到游戏数据中
         entity = self.object_pool.acquire(
             entity_info, device, self.event_manager)
+        if entity_info["entity_type"] != "shore":
+            entity.add_component(PositionComponent(
+                entity_info["x"], entity_info["y"], entity_info["z"]))
+            entity.add_component(MovementComponent(entity_info["speed"]))
+            entity.add_component(SensorComponent(entity_info["sensor"]))
+            entity.add_component(HealthComponent(
+                entity_info["health"], entity_info["endurance"]))
+        elif entity_info["entity_type"] == "aircraft":
+            entity.add_component(PositionComponent(
+                entity_info["x"], entity_info["y"], entity_info["z"]))
+            entity.add_component(MovementComponent(entity_info["speed"]))
+            entity.add_component(SensorComponent(entity_info["sensor"]))
+            entity.add_component(HealthComponent(
+                entity_info["health"], entity_info["endurance"]))
+        elif entity_info["entity_type"] == "missile":
+            entity.add_component(PositionComponent(
+                entity_info["x"], entity_info["y"], entity_info["z"]))
+            entity.add_component(MovementComponent(entity_info["speed"]))
+            entity.add_component(SensorComponent(entity_info["sensor"]))
+            entity.add_component(HealthComponent(
+                entity_info["health"], entity_info["endurance"]))
         self.units[entity_info.entity_id] = entity
 
         # 映射玩家到该实体
@@ -96,9 +117,9 @@ class GameData:
         """Return the owner player ID of a given entity."""
         return self.unit_owner.get(entity_id, None)
 
-    def create_entity(self, entity_info, device, event_manager):
+    def create_entity(self, entity_info, event_manager):
         """工厂函数，创建一个新实体。"""
-        return Entity(entity_info, event_manager)
+        return Entity(entity_info["id"], entity_info["entity_type"])
 
     def configure_entity(self, entity, entity_info, device):
         """配置实体的属性和设备。"""

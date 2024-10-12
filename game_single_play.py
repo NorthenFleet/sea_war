@@ -12,12 +12,27 @@ import threading
 
 class Game:
     def __init__(self, game_config, players, is_server=False):
-        self.event_manager = EventManager()
-        self.env = SeaWarEnv(game_config, self.event_manager)
-        self.players = players
+        self.env = SeaWarEnv(game_config)
         self.current_time = 0.0
         self.fixed_time_step = 1 / 60  # 固定时间步长
         self.render_manager = RenderManager(self.env)
+        self.players = {}
+
+        # 注册系统事件
+        self.event_manager = EventManager()
+        self.event_manager.subscribe('GameOver', self.handle_game_over)
+
+        # 注册 AI 玩家
+        for player, player_type in players.items():
+            if player_type == 'AI':
+                self.players[player] = AIPlayer()
+            elif player_type == 'Human':
+                self.players[player] = HumanPlayer()
+            elif player_type == 'Rule':
+                self.players[player] = RulePlayer(player_type)
+            else:
+                raise ValueError(
+                    f'Invalid player type: {player_type}')
 
         # 初始化通信系统
         if is_server:
@@ -35,39 +50,36 @@ class Game:
 
         while not game_over:
             start_time = time.time()
-            # 3. 渲染
+            # 1. 渲染
             self.render_manager.update()
 
-            # 1. 处理玩家动作
+            # 2. 处理玩家动作
             actions = []
             for player, agent in self.players.items():
                 action = agent.choose_action(sides[player])
                 actions.append(action)
 
-            # 2. 更新游戏状态
-            self.env.update(actions, self.fixed_time_step)
+            # 3. 处理网络数据
+            netactions = self.network_update()
+            actions.append(netactions)
 
-            # 4. 网络处理
-            self.network_update()
+            # 4. 更新游戏状态
+            self.env.update(actions, self.fixed_time_step)
 
             # 5. 处理游戏结束
             if self.env.game_over:
-                self.event_manager.post(Event('GameOver', {}))
+                # self.event_manager.post(Event('GameOver', {}))
+                print('Game Over')
                 break
 
             # 控制帧率
             self.limit_fps(start_time)
 
+    def handle_game_over(self):
+        pass
+
     def network_update(self):
-        if hasattr(self, 'communication_server'):
-            # Server-specific logic, e.g., broadcasting collected actions
-            pass
-        if hasattr(self, 'communication_client'):
-            # Client-specific logic, e.g., sending and receiving actions
-            if self.communication_client.received_actions:
-                # 处理接收到的动作，例如通过事件系统传递给其他系统
-                self.event_manager.post(
-                    Event('NetworkActionsReceived', self.communication_client.received_actions))
+        self.env.network_update()
 
     def limit_fps(self, start_time):
         # 控制帧率，例如每秒 60 帧
@@ -87,12 +99,9 @@ if __name__ == '__main__':
         'map_path': 'data/map.json',
     }
 
-    red_player = RulePlayer("red")
-    blue_player = RulePlayer("blue")
-
     players = {
-        "red": red_player,
-        "blue": blue_player
+        "red": 'Rule',
+        "blue": 'Rule'
         # "blue": ("RulePlayer", HumanPlayer),
         # "green": ("HumanPlayer", RulePlayer)
     }
