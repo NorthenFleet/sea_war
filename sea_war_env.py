@@ -162,7 +162,7 @@ class SeaWarEnv(Env):
         self.game_data = self.load_scenario(self.scenario)
         return self.game_data, self.sides
 
-    def update(self, actions):
+    def update(self, actions, delta_time):
         # 处理玩家动作
         for action in actions:
             if action == 'move':

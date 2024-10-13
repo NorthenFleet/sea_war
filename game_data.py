@@ -60,6 +60,8 @@ class GameData:
             entity_info.entity_id, entity_info.entity_type)
         if entity_info.position:
             entity.add_component(PositionComponent(entity_info.position))
+        if entity_info.entity_type:
+            entity.add_component(EntityTypeComponent(entity_info.entity_type))
         if entity_info.speed:
             entity.add_component(MovementComponent(
                 entity_info.speed, entity_info.heading))

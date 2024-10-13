@@ -3,8 +3,9 @@ from render.single_process import RenderManager
 from player_AI import AIPlayer
 from player_human import HumanPlayer
 from player_rule import RulePlayer
+from player_rule_blue import BluePlayer
+from player_rule_red import RedPlayer
 from event_manager import EventManager
-from system_manager import Event
 from communication import CommunicationClient, CommunicationServer
 import time
 import threading
@@ -15,7 +16,8 @@ class Game:
         self.env = SeaWarEnv(game_config)
         self.current_time = 0.0
         self.fixed_time_step = 1 / 60  # 固定时间步长
-        self.render_manager = RenderManager(self.env)
+        screen_size = (1000, 1200)
+        self.render_manager = RenderManager(self.env, screen_size)
         self.players = {}
 
         # 注册系统事件
@@ -30,6 +32,11 @@ class Game:
                 self.players[player] = HumanPlayer()
             elif player_type == 'Rule':
                 self.players[player] = RulePlayer(player_type)
+            elif player_type == 'Red':
+                self.players[player] = RedPlayer(player_type)
+            elif player_type == 'Blue':
+                self.players[player] = BluePlayer(
+                    player_type, self.env.device_table)
             else:
                 raise ValueError(
                     f'Invalid player type: {player_type}')
@@ -100,8 +107,8 @@ if __name__ == '__main__':
     }
 
     players = {
-        "red": 'Rule',
-        "blue": 'Rule'
+        "red": 'Red',
+        "blue": 'Blue'
         # "blue": ("RulePlayer", HumanPlayer),
         # "green": ("HumanPlayer", RulePlayer)
     }

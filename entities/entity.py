@@ -32,6 +32,11 @@ class PositionComponent:
         self.z = position[2]
 
 
+class EntityTypeComponent:
+    def __init__(self, value):
+        self.value = value
+
+
 class MovementComponent:
     def __init__(self, speed, heading):
         self.speed = speed

@@ -2,7 +2,7 @@ from player import Player
 from game_data import GameData
 
 
-class RulePlayer(Player):
+class RedPlayer(Player):
     def __init__(self, name):
         super().__init__()
         self.name = name
@@ -11,4 +11,4 @@ class RulePlayer(Player):
 
     def choose_action(self, side):
         self.units = side
-        print("我是规则智能体")
+        print("我是红方智能体")
