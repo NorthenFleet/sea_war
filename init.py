@@ -21,6 +21,9 @@ class Side:
     def set_entities(self, entities):
         self.entities = entities
 
+    def add_entity(self, entity):
+        self.entities.append(entity)
+
     def get_entities(self):
         return self.entities
 

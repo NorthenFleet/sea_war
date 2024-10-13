@@ -14,6 +14,21 @@ class System:
         raise NotImplementedError
 
 
+class PositionSystem(System):
+    def __init__(self, game_data):
+        super().__init__(game_data)
+
+    def get_entity_positions(self):
+        """获取所有实体的位置信息"""
+        positions = {}
+        for entity in self.get_all_entities():
+            position = entity.get_component(PositionComponent)
+            if position:
+                # 将实体ID和对应的位置保存到字典中
+                positions[entity.id] = position.position
+        return positions
+
+
 class MovementSystem(System):
     def __init__(self, game_data, event_manager):
         super().__init__(game_data)
@@ -154,8 +169,9 @@ class DetectionSystem(System):
                         detection.on_detected(other_entity)
 
 
-class AttackSystem:
-    def __init__(self, event_manager):
+class AttackSystem(System):
+    def __init__(self, game_data, event_manager):
+        super().__init__(game_data)
         self.event_manager = event_manager
 
     def update(self, entities):

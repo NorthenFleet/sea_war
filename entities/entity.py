@@ -27,7 +27,9 @@ class HealthComponent:
 class PositionComponent:
     def __init__(self, position):
         # self.position = np.array([x, y, z])
-        self.position = position
+        self.x = position[0]
+        self.y = position[1]
+        self.z = position[2]
 
 
 class MovementComponent:
@@ -44,11 +46,8 @@ class PathfindingComponent:
 
 
 class SensorComponent():
-    def __init__(self, type, range, scope, channel=None):
-        self.type = type
-        self.range = range
-        self.scope = scope
-        self.channel = channel
+    def __init__(self, name):
+        self.name = name
 
 
 class Entity:
@@ -62,4 +61,4 @@ class Entity:
         self.components[type(component)] = component
 
     def get_component(self, component_type):
-        return self.components.get(component_type, None)
+        return self.components.get(component_type)

@@ -1,6 +1,6 @@
 import pygame
 import math
-from component import PositionComponent
+from entities.entity import *
 
 
 class RenderManager:
@@ -12,7 +12,7 @@ class RenderManager:
         self.tile_size = tile_size  # 2D 图块的大小
         self.camera_offset = [0, 0]  # 摄像机初始偏移
         self.clock = pygame.time.Clock()
-        self.sprites = self.load_sprites()  # 加载精灵图
+        self.sprites = self.load_sprites()  # 加载图片
 
     def load_sprites(self):
         """加载游戏中图片，作为2.5D显示基础"""
@@ -41,10 +41,11 @@ class RenderManager:
 
     def draw_units(self):
         """绘制单位图层"""
-        for entity in self.game_data.get_all_entities():
+        for entity in self.game_data.get_all_entitys():
             position = entity.get_component(PositionComponent)
             if position:
-                iso_x, iso_y = self.isometric_transform(position.x, position.y)
+                iso_x, iso_y = self.isometric_transform(
+                    position.x, position.y)
                 self.screen.blit(self.sprites['unit'],
                                  (iso_x + self.camera_offset[0],
                                   iso_y + self.camera_offset[1] - 16))  # 偏移用于调整显示

@@ -30,7 +30,6 @@ class SeaWarEnv(Env):
         self.map = Map(game_config['map_path'])
         self.device_table = DeviceTableDict(game_config['device_path'])
         self.scenario = Scenario(game_config['scenario_path'])
-        
 
         self.grid = Grid(1000, 100)
         self.quad_tree = QuadTree([0, 0, 1000, 1000], 4)
@@ -41,13 +40,14 @@ class SeaWarEnv(Env):
         self.game_data = GameData(self.event_manager)
 
         # 初始化系统
-        self.movement_system = MovementSystem(self.event_manager)
-        self.attack_system = AttackSystem(self.event_manager)
-        self.detection_system = DetectionSystem(
-            self.event_manager, self.quad_tree, self.grid)
+        self.movement_system = MovementSystem(
+            self.game_data, self.event_manager)
+        self.attack_system = AttackSystem(self.game_data, self.event_manager)
+        self.detection_system = DetectionSystem(self.game_data,
+                                                self.event_manager, self.device_table, self.quad_tree, self.grid)
 
-        self.pathfinding_system = PathfindingSystem(
-            self.event_manager, self.map)
+        self.pathfinding_system = PathfindingSystem(self.game_data,
+                                                    self.event_manager, self.map)
 
         # 组件系统注册到一个列表中，便于统一管理
         self.systems = [
@@ -62,6 +62,7 @@ class SeaWarEnv(Env):
         从想定文件中加载场景，并初始化 ECS 实体和组件系统。
         """
         for color, units in scenario.data.items():
+            entities = []
             for unit_id, unit_info in units.items():
                 # 根据想定文件构造 EntityInfo
 
@@ -95,10 +96,11 @@ class SeaWarEnv(Env):
                     weapons=unit_info["weapons"],
                     sensors=unit_info["sensors"]
                 )
-                self.game_data.add_entity(entity_info, None, color)
+                entity = self.game_data.add_entity(entity_info, None, color)
+                entities.append(entity)
             # Create the player side (e.g., for blue/red teams)
             side = Side(color)
-            side.set_entities(self.game_data.get_player_unit_ids(color))
+            side.set_entities(entities)
             self.sides[color] = side
 
         return self.game_data

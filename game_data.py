@@ -28,24 +28,24 @@ class GameData:
     def __new__(cls, event_manager, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super(GameData, cls).__new__(cls)
-            cls._instance.initialize(event_manager)  # 初始化所有属性
+            cls._instance.initialize()  # 初始化所有属性
         return cls._instance
 
-    def initialize(self, event_manager):
-        """初始化或重置游戏数据，并保存事件管理器的引用。"""
-        self.units = {}  # 存储所有实体，键为实体ID
-        self.player_units = {}  # 玩家到其单位ID的映射
-        self.unit_owner = {}  # 单位到其玩家的映射
-        self.event_manager = event_manager  # 保存事件管理器引用
+    def initialize(self):
+        """初始化或重置游戏数据。"""
+        self.units = set()  # 全部单位的集合
+        self.player_units = dict()  # 玩家到其单位的映射
+        self.unit_owner = dict()  # 单位到其玩家的映射
+        self.entity_ids = set()  # 存储所有实体的ID
         self.object_pool = ObjectPool(self.create_entity)
 
     def reset(self):
         """重置游戏数据到初始状态。"""
         # 将所有实体释放回对象池
-        for entity in self.units.values():
+        for entity in self.units:
             self.object_pool.release(entity)
         # 重新初始化数据结构
-        self.initialize(self.event_manager)
+        self.initialize()
 
     def add_entity(self, entity_info, device, player_id):
         """通过对象池添加一个新实体到游戏数据。"""
@@ -71,10 +71,13 @@ class GameData:
         # 映射玩家到该实体
         if player_id not in self.player_units:
             self.player_units[player_id] = set()
-        self.player_units[player_id].add(entity_info.entity_id)
+        self.player_units[player_id].add(entity)
+        self.units.add(entity)
 
         # 映射实体到它的所属玩家
         self.unit_owner[entity_info.entity_id] = player_id
+
+        position = entity.get_component(PositionComponent)
 
         return entity
 
@@ -92,15 +95,14 @@ class GameData:
         """Get the position of an entity by its ID."""
         if entity_id in self.units:
             return self.units[entity_id].get_position()
-        return None
 
-    def get_all_unit_ids(self):
+    def get_all_entitys(self):
         """Return a list of all unit IDs."""
-        return list(self.units.keys())
+        return self.units
 
     def get_player_unit_ids(self, player_id):
         """Return a list of unit IDs for a given player."""
-        return list(self.player_units.get(player_id, []))
+        pass
 
     def get_unit_owner(self, entity_id):
         """Return the owner player ID of a given entity."""
