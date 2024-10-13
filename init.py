@@ -59,7 +59,7 @@ class Map(DataLoader):
             print(" ".join(map(str, row)))
 
 
-class Device(DataLoader):
+class DeviceTable(DataLoader):
     def __init__(self, path):
         super().__init__(path)
 
@@ -73,6 +73,52 @@ class Device(DataLoader):
         for sensor_data in self.data['sensors']:
             sensor = Sensor(**sensor_data)
             self.sensors[sensor.name] = sensor
+
+    def get_weapon(self, name):
+        return self.weapons.get(name)
+
+    def get_sensor(self, name):
+        return self.sensors.get(name)
+
+
+class DeviceTableDict(DataLoader):
+    def __init__(self, path):
+        super().__init__(path)
+        self.weapons = {}
+        self.sensors = {}
+        for item in self.data['weapons']:
+            weapon_id = item['name']
+            if 'guidance_method' not in item:
+                item['guidance_method'] = None
+            if 'range_min' not in item:
+                item['range_min'] = None
+            if 'range_max' not in item:
+                item['range_max'] = None
+            if 'height_min' not in item:
+                item['height_min'] = None
+            if 'height_max' not in item:
+                item['height_max'] = None
+            if 'speed' not in item:
+                item['speed'] = None
+            self.weapons[weapon_id] = {
+                'type': item['type'],
+                'guidance_method': item['guidance_method'],
+                'range_min': item['range_min'],
+                'range_max': item['range_max'],
+                'height_min': item['height_min'],
+                'height_max': item['height_max'],
+                'speed': item['speed'],
+                'price': item['price'],
+                'cooldown': item.get('cooldown', 0)
+            }
+        for item in self.data['sensors']:
+            sensor_id = item['name']
+            self.sensors[sensor_id] = {
+                'type': item['type'],
+                'detection_range': item['detection_range'],
+                'height': item.get('height', 0),
+                'accurate': item.get('accurate', 0)
+            }
 
     def get_weapon(self, name):
         return self.weapons.get(name)

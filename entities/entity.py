@@ -3,7 +3,7 @@ from device import *
 
 
 class EntityInfo:
-    def __init__(self, side=None, entity_id=None, entity_type=None, position=None, rcs=None, speed=None, heading=None, faction=None, health=None, endurance=None, weapons=None, equipments=None, sensor=None, launcher=None):
+    def __init__(self, side=None, entity_id=None, entity_type=None, position=None, rcs=None, speed=None, heading=None, faction=None, health=None, endurance=None, weapons=None, equipments=None, sensors=None, launcher=None):
         self.side = side
         self.entity_id = entity_id
         self.entity_type = entity_type
@@ -15,7 +15,7 @@ class EntityInfo:
         self.health = health
         self.endurance = endurance
         self.weapons = weapons if weapons is not None else []
-        self.sensor = sensor if sensor is not None else []
+        self.sensors = sensors if sensors is not None else []
         self.launcher = launcher
 
 
@@ -31,8 +31,8 @@ class PositionComponent:
 
 
 class MovementComponent:
-    def __init__(self, x, y, z, heading):
-        self.speed = np.array([x, y, z])
+    def __init__(self, speed, heading):
+        self.speed = speed
         self.heading = heading
         self.target_position = None
 

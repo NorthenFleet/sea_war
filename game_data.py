@@ -58,28 +58,15 @@ class GameData:
         #     entity_info, device, self.event_manager)
         entity = self.object_pool.acquire(
             entity_info.entity_id, entity_info.entity_type)
-        if entity_info.entity_type != "grand_base" or :
-            entity.add_component(PositionComponent(
-                entity_info.position))
-            entity.add_component(MovementComponent(entity_info["speed"]))
-            entity.add_component(SensorComponent(entity_info["sensor"]))
-            entity.add_component(HealthComponent(
-                entity_info["health"], entity_info["endurance"]))
-        elif entity_info.entity_type == "aircraft":
-            entity.add_component(PositionComponent(
-                entity_info["x"], entity_info["y"], entity_info["z"]))
-            entity.add_component(MovementComponent(entity_info["speed"]))
-            entity.add_component(SensorComponent(entity_info["sensor"]))
-            entity.add_component(HealthComponent(
-                entity_info["health"], entity_info["endurance"]))
-        elif entity_info.entity_type == "missile":
-            entity.add_component(PositionComponent(
-                entity_info["x"], entity_info["y"], entity_info["z"]))
-            entity.add_component(MovementComponent(entity_info["speed"]))
-            entity.add_component(SensorComponent(entity_info["sensor"]))
-            entity.add_component(HealthComponent(
-                entity_info["health"], entity_info["endurance"]))
-        self.units[entity_info.entity_id] = entity
+        if entity_info.position:
+            entity.add_component(PositionComponent(entity_info.position))
+        if entity_info.speed:
+            entity.add_component(MovementComponent(
+                entity_info.speed, entity_info.heading))
+        if entity_info.sensors:
+            entity.add_component(SensorComponent(entity_info.sensors))
+        if entity_info.health:
+            entity.add_component(HealthComponent(entity_info.health))
 
         # 映射玩家到该实体
         if player_id not in self.player_units:

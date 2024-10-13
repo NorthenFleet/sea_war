@@ -4,7 +4,7 @@ from player_AI import AIPlayer
 from player_human import HumanPlayer
 from player_rule import RulePlayer
 from event_manager import EventManager
-from component_manager import Event
+from system_manager import Event
 from communication import CommunicationClient, CommunicationServer
 import time
 import threading
@@ -94,8 +94,8 @@ if __name__ == '__main__':
 
     game_config = {
         'name': 'AirDefense',
-        'device_path': 'data/device.json',
-        'scenario_path': 'data/AirDefense.json',
+        'device_path': 'data/device_new.json',
+        'scenario_path': 'data/air_defense.json',
         'map_path': 'data/map.json',
     }
 

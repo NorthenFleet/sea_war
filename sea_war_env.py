@@ -2,13 +2,13 @@ import numpy as np
 from gym import spaces
 from env import Env
 from game_data import GameData
-from init import Map, Device, Side, Scenario
+from init import Map, DeviceTableDict, Side, Scenario
 from entities.entity import EntityInfo
 from init import Grid, QuadTree
 from utils import *
-from component_manager import *
+from system_manager import *
 from event_manager import EventManager
-from component_manager import Event
+from system_manager import Event
 # 定义为游戏的战术层，从战术层面对游戏过程进行解析
 
 
@@ -16,7 +16,6 @@ class SeaWarEnv(Env):
     def __init__(self, game_config):
         self.name = game_config["name"]
         self.map = None
-        self.device_table = None
         self.scenario = None
 
         self.sides = {}
@@ -29,8 +28,9 @@ class SeaWarEnv(Env):
             low=0, high=1, shape=(1,), dtype=np.float32)
 
         self.map = Map(game_config['map_path'])
-        self.device_table = Device(game_config['device_path'])
+        self.device_table = DeviceTableDict(game_config['device_path'])
         self.scenario = Scenario(game_config['scenario_path'])
+        
 
         self.grid = Grid(1000, 100)
         self.quad_tree = QuadTree([0, 0, 1000, 1000], 4)
@@ -64,6 +64,24 @@ class SeaWarEnv(Env):
         for color, units in scenario.data.items():
             for unit_id, unit_info in units.items():
                 # 根据想定文件构造 EntityInfo
+
+                if "rcs" not in unit_info:
+                    unit_info["rcs"] = None
+                if "heading" not in unit_info:
+                    unit_info["heading"] = None
+                if "rcs" not in unit_info:
+                    unit_info["rcs"] = None
+                if "speed" not in unit_info:
+                    unit_info["speed"] = None
+                if "health" not in unit_info:
+                    unit_info["health"] = None
+                if "endurance" not in unit_info:
+                    unit_info["endurance"] = None
+                if "weapons" not in unit_info:
+                    unit_info["weapons"] = None
+                if "sensors" not in unit_info:
+                    unit_info["sensors"] = None
+
                 entity_info = EntityInfo(
                     entity_id=unit_info["id"],
                     side=unit_info["side"],
@@ -75,7 +93,7 @@ class SeaWarEnv(Env):
                     health=unit_info["health"],
                     endurance=unit_info["endurance"],
                     weapons=unit_info["weapons"],
-                    sensor=unit_info["sensor"]
+                    sensors=unit_info["sensors"]
                 )
                 self.game_data.add_entity(entity_info, None, color)
             # Create the player side (e.g., for blue/red teams)

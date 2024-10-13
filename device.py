@@ -33,6 +33,9 @@ class Sensor:
         self.detection_range = detection_range
         self.accurate = accurate
 
+    def get_range(self):
+        return self.detection_range
+
     def detect(self, targets, position):
         detected_targets = []
         for target in targets:
@@ -104,3 +107,8 @@ class Weapon:
     def reduce_cooldown(self):
         if self.current_cooldown > 0:
             self.current_cooldown -= 1
+
+
+
+    
+    

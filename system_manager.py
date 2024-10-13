@@ -14,8 +14,9 @@ class System:
         raise NotImplementedError
 
 
-class MovementSystem:
-    def __init__(self, event_manager):
+class MovementSystem(System):
+    def __init__(self, game_data, event_manager):
+        super().__init__(game_data)
         self.event_manager = event_manager
 
     def update(self, entities, delta_time):
@@ -44,8 +45,9 @@ class MovementSystem:
                         Event('MoveCompleteEvent', entity, None))
 
 
-class PathfindingSystem:
-    def __init__(self, event_manager, game_map):
+class PathfindingSystem(System):
+    def __init__(self, game_data, event_manager, game_map):
+        super().__init__(game_data)
         self.event_manager = event_manager
         self.game_map = game_map  # 用于路径规划的地图数据
 
@@ -127,27 +129,14 @@ class PathfindingSystem:
                         Event('PathCompleteEvent', entity, None))
 
 
-class CollisionDetectionSystem:
-    def __init__(self, game_map):
-        self.game_map = game_map
-
-    def update(self, entities):
-        for entity in entities:
-            position = entity.get_component(PositionComponent)
-            if position and not self.is_valid_position(position.position):
-                print(f"Entity {entity.id} 碰撞到了障碍物！")
-                # 这里可以处理碰撞后的逻辑，比如重新规划路径
-
-    def is_valid_position(self, position):
-        x, y = position
-        return self.game_map.grid[int(y)][int(x)] == 0  # 0 表示可通行区域
-
-
 class DetectionSystem(System):
-    def __init__(self, game_data, quad_tree, grid):
+    def __init__(self, game_data, event_manager, device_table, quad_tree, grid):
         super().__init__(game_data)
+        self.device_table = device_table
+        self.event_manager = event_manager
         self.quad_tree = quad_tree
         self.grid = grid
+        r = self.device_table.get_sensor("R4")
 
     def update(self, delta_time):
         for entity in self.get_all_entities():
