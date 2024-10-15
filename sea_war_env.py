@@ -162,26 +162,30 @@ class SeaWarEnv(Env):
         self.game_data = self.load_scenario(self.scenario)
         return self.game_data, self.sides
 
-    def update(self, actions, delta_time):
-        # 处理玩家动作
-        for action in actions:
-            if action == 'move':
-                self.movement_system.update(self.game_data, 1 / 60)
-            elif action == 'attack':
-                self.attack_system.update(self.game_data)
+    def process_commands(self, command_list):
+        """处理从玩家收到的指令"""
+        for command in command_list.get_commands():
+            actor = command.actor  # 获取发起指令的实体
+            if command.command_type == 'move':
+                # 调用移动系统更新目标位置
+                movement = actor.get_component(MovementComponent)
+                if movement:
+                    movement.target_position = np.array(command.target)
+            elif command.command_type == 'attack':
+                # 调用攻击系统执行攻击操作
+                self.attack_system.process_attack(
+                    actor, command.target, command.params['weapon'])
 
-        # 调用各个系统更新游戏状态
-        self.pathfinding_system.update(1 / 60)
-        self.detection_system.update(1 / 60)
-        self.collision_system.update(1 / 60)
-        # Update all systems and entities
-        for system in self.systems:
-            system.update(delta_time)
+    def update(self, delta_time):
+        """更新所有系统的状态"""
+        entities = self.game_data.get_all_entities()
 
-        # Update all entities' state machines
-        for entity in self.entities:
-            entity.update(delta_time)
+        # 更新路径规划和移动系统
+        self.pathfinding_system.update(entities)
+        self.movement_system.update(entities, delta_time)
 
+        # 其他系统（如攻击、检测等）更新
+        self.attack_system.update(entities)
         self.current_step += 1
 
     def network_update(self):

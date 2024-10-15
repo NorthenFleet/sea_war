@@ -4,7 +4,7 @@ from game_data import GameData
 
 class RedPlayer(Player):
     def __init__(self, name):
-        super().__init__()
+        super().__init__(name)
         self.name = name
 
         self.units = None

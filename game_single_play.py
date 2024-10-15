@@ -64,16 +64,21 @@ class Game:
             actions = []
             for player, agent in self.players.items():
                 action = agent.choose_action(sides[player])
-                actions.append(action)
+                if action is not None:
+                    actions.append(action)
 
-            # 3. 处理网络数据
+            # 3. 处理网络玩家动作
             netactions = self.network_update()
-            actions.append(netactions)
+            if netactions is not None:
+                actions.append(netactions)
 
-            # 4. 更新游戏状态
+            # # 4. 处理玩家指令
+            # self.game_engine.process_commands(self.command_list)
+
+            # 5. 更新游戏状态
             self.env.update(actions, self.fixed_time_step)
 
-            # 5. 处理游戏结束
+            # 6. 处理游戏结束
             if self.env.game_over:
                 # self.event_manager.post(Event('GameOver', {}))
                 print('Game Over')
