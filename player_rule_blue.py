@@ -44,8 +44,8 @@ class BluePlayer(Player):
         pass
 
     def move(self):
-        actor = self.entities[0]
-        MoveCommand(self.entities[0].entity_id,
+        actor_id = "水面舰S4"
+        MoveCommand(actor_id,
                     target_position=(100, 200), speed=5)
 
     def data_process(self, data):

@@ -58,8 +58,9 @@ class GameData:
         #     entity_info, device, self.event_manager)
         entity = self.object_pool.acquire(
             entity_info.entity_id, entity_info.entity_type)
-        if entity_info.position:
-            entity.add_component(PositionComponent(entity_info.position))
+        
+        entity.add_component(PositionComponent(entity_info.position))
+        
         if entity_info.entity_type:
             entity.add_component(EntityTypeComponent(entity_info.entity_type))
         if entity_info.speed:
@@ -95,10 +96,17 @@ class GameData:
 
     def get_entity_pos(self, entity_id):
         """Get the position of an entity by its ID."""
-        if entity_id in self.units:
-            return self.units[entity_id].get_position()
+        for entity in self.units:
+            if entity.entity_id == entity_id:
+                return entity.get_component(PositionComponent)
 
-    def get_all_entitys(self):
+    def get_entity(self, entity_id):
+        """Get the position of an entity by its ID."""
+        for entity in self.units:
+            if entity.entity_id == entity_id:
+                return entity
+
+    def get_all_entities(self):
         """Return a list of all unit IDs."""
         return self.units
 

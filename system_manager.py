@@ -1,5 +1,6 @@
-from component import *
+from entities.entity import *
 import numpy as np
+from event_manager import Event
 
 
 class System:
@@ -24,9 +25,21 @@ class PositionSystem(System):
         for entity in self.get_all_entities():
             position = entity.get_component(PositionComponent)
             if position:
-                # 将实体ID和对应的位置保存到字典中
                 positions[entity.id] = position.position
         return positions
+
+    def set_position(self, entity_id, new_position):
+        """设置指定实体的新位置"""
+        entity = self.game_data.units.get(entity_id)  # 获取实体
+        if entity:
+            position = entity.get_component(PositionComponent)
+            if position:
+                position.position = new_position
+                print(f"Entity {entity_id} 位置已更新为 {new_position}")
+            else:
+                print(f"Entity {entity_id} 不包含 PositionComponent")
+        else:
+            print(f"实体 {entity_id} 不存在")
 
 
 class MovementSystem(System):
@@ -38,26 +51,41 @@ class MovementSystem(System):
         for entity in entities:
             movement = entity.get_component(MovementComponent)
             position = entity.get_component(PositionComponent)
+            pathfinding = entity.get_component(PathfindingComponent)
 
-            if movement and position and movement.target_position is not None:
-                # 计算向目标位置的向量
-                direction = movement.target_position - position.position
-                distance = np.linalg.norm(direction)
-                if distance > 0:
-                    direction /= distance  # 单位向量
+            if movement and position:
+                # 如果已经设置了最终目标点
+                if movement.target_position:
+                    # 如果有路径规划，并且当前路径中有下一个目标点
+                    if pathfinding and pathfinding.current_goal:
+                        # 计算向当前转向点的向量
+                        direction = pathfinding.current_goal - position.position
+                        distance = np.linalg.norm(direction)
 
-                # 移动，确保不会超过目标位置
-                step_distance = min(distance, movement.speed * delta_time)
-                position.position += direction * step_distance
+                        if distance > 0:
+                            direction /= distance  # 归一化向量
 
-                # 到达目标位置后，清除目标
-                if np.array_equal(position.position, movement.target_position):
-                    movement.target_position = None
+                        # 更新位置，确保不会超过转向点
+                        step_distance = min(
+                            distance, movement.speed * delta_time)
+                        position.position += direction * step_distance
 
-                # 如果完成移动，则触发完成事件
-                if movement.target_position is None:
-                    self.event_manager.post(
-                        Event('MoveCompleteEvent', entity, None))
+                        # 检查是否到达转向点
+                        if np.linalg.norm(position.position - pathfinding.current_goal) < 0.1:
+                            # 如果路径还有剩余转向点，继续移动到下一个转向点
+                            if pathfinding.path:
+                                pathfinding.current_goal = pathfinding.path.pop(
+                                    0)
+                            else:
+                                # 如果路径为空，意味着到达了最终目标
+                                movement.target_position = None
+                                self.event_manager.post(
+                                    Event('MoveCompleteEvent', entity, None))
+
+                    else:
+                        # 如果没有当前路径目标，可能需要重新路径规划
+                        self.event_manager.post(
+                            Event('PathRequestEvent', entity, movement.target_position))
 
 
 class PathfindingSystem(System):
@@ -65,6 +93,7 @@ class PathfindingSystem(System):
         super().__init__(game_data)
         self.event_manager = event_manager
         self.game_map = game_map  # 用于路径规划的地图数据
+        self.last_goal_map = {}  # 记录实体的上次目标，避免重复计算
 
     def a_star(self, start, goal):
         # A*算法的简单实现，假设地图是网格，0表示可通行，1表示障碍
@@ -120,28 +149,39 @@ class PathfindingSystem(System):
             return self.game_map.grid[y][x] == 0  # 0表示无障碍物
         return False
 
+    def handle_path_request(self, entity, target_position):
+        """响应路径规划请求并生成路径"""
+        position = entity.get_component(PositionComponent)
+
+        # 如果目标位置没有变化，避免重新规划路径
+        if entity.id in self.last_goal_map and np.array_equal(self.last_goal_map[entity.id], target_position):
+            return
+
+        # 记录新的目标位置
+        self.last_goal_map[entity.id] = target_position
+
+        if position and target_position:
+            # 执行A*路径规划
+            path = self.a_star(position.position, target_position)
+
+            if path:
+                pathfinding = entity.get_component(PathfindingComponent)
+                if pathfinding:
+                    # 设置新的路径
+                    pathfinding.path = path
+                    pathfinding.current_goal = pathfinding.path.pop(0)
+
     def update(self, entities):
+        # 通过事件机制监听路径请求事件
         for entity in entities:
             pathfinding = entity.get_component(PathfindingComponent)
             position = entity.get_component(PositionComponent)
             movement = entity.get_component(MovementComponent)
 
             if pathfinding and position and movement:
-                if not pathfinding.path and pathfinding.current_goal:
-                    # 计算路径
-                    pathfinding.path = self.a_star(
-                        position.position, pathfinding.current_goal)
-                    if pathfinding.path:
-                        pathfinding.current_goal = pathfinding.path.pop(0)
-
-                if pathfinding.path:
-                    # 继续处理路径中的目标点
-                    next_goal = pathfinding.path.pop(0)
-                    movement.target_position = next_goal
-                else:
-                    # 路径完成，触发事件
-                    self.event_manager.post(
-                        Event('PathCompleteEvent', entity, None))
+                # 检查是否需要路径规划
+                if not pathfinding.path and movement.target_position:
+                    self.handle_path_request(entity, movement.target_position)
 
 
 class DetectionSystem(System):

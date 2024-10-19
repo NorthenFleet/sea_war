@@ -3,12 +3,11 @@ from gym import spaces
 from env import Env
 from game_data import GameData
 from init import Map, DeviceTableDict, Side, Scenario
-from entities.entity import EntityInfo
+from entities.entity import *
 from init import Grid, QuadTree
 from utils import *
 from system_manager import *
 from event_manager import EventManager
-from system_manager import Event
 # 定义为游戏的战术层，从战术层面对游戏过程进行解析
 
 
@@ -162,19 +161,21 @@ class SeaWarEnv(Env):
         self.game_data = self.load_scenario(self.scenario)
         return self.game_data, self.sides
 
-    def process_commands(self, command_list):
+    def process_commands(self, all_command_list):
         """处理从玩家收到的指令"""
-        for command in command_list.get_commands():
-            actor = command.actor  # 获取发起指令的实体
-            if command.command_type == 'move':
-                # 调用移动系统更新目标位置
-                movement = actor.get_component(MovementComponent)
-                if movement:
-                    movement.target_position = np.array(command.target)
-            elif command.command_type == 'attack':
-                # 调用攻击系统执行攻击操作
-                self.attack_system.process_attack(
-                    actor, command.target, command.params['weapon'])
+        for player_command_list in all_command_list:
+            command_list = player_command_list.get_commands()  # 获取发起指令的实体
+            for command in command_list:
+                actor = self.game_data.get_entity(command.actor)
+                if command.command_type == 'move':
+                    # 调用移动系统更新目标位置
+                    movement = actor.get_component(MovementComponent)
+                    if movement:
+                        movement.target_position = np.array(command.target)
+                # elif command.command_type == 'attack':
+                #     # 调用攻击系统执行攻击操作
+                #     self.attack_system.process_attack(
+                #         command.actor, command.target, command.params['weapon'])
 
     def update(self, delta_time):
         """更新所有系统的状态"""

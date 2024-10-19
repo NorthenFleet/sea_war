@@ -58,7 +58,7 @@ class RenderManager:
 
     def draw_units(self):
         """绘制单位图层"""
-        for entity in self.game_data.get_all_entitys():
+        for entity in self.game_data.get_all_entities():
             position = entity.get_component(PositionComponent)
             if position:
                 iso_x, iso_y = self.metric_transform(

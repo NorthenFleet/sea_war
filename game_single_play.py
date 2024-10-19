@@ -61,22 +61,22 @@ class Game:
             self.render_manager.update()
 
             # 2. 处理玩家动作
-            actions = []
+            all_command_list = []
             for player, agent in self.players.items():
                 action = agent.choose_action(sides[player])
                 if action is not None:
-                    actions.append(action)
+                    all_command_list.append(action)
 
             # 3. 处理网络玩家动作
             netactions = self.network_update()
             if netactions is not None:
-                actions.append(netactions)
+                all_command_list.append(netactions)
 
             # # 4. 处理玩家指令
-            # self.game_engine.process_commands(self.command_list)
+            self.env.process_commands(all_command_list)
 
             # 5. 更新游戏状态
-            self.env.update(actions, self.fixed_time_step)
+            self.env.update(self.fixed_time_step)
 
             # 6. 处理游戏结束
             if self.env.game_over:
