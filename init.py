@@ -43,10 +43,10 @@ class Scenario(DataLoader):
 class Map(DataLoader):
     def __init__(self, path):
         super().__init__(path)
-        self.grid = None  # 初始化 grid 属性
+        self.grid = []  # 初始化 grid 属性为空列表
         self.width = 0
         self.height = 0
-        self.load_map(path)
+        self.load_map(path)  # 加载地图
 
     def load_map(self, path):
         """从 json 文件中加载地图数据"""
@@ -60,6 +60,16 @@ class Map(DataLoader):
         """打印地图"""
         for row in self.grid:
             print(" ".join(map(str, row)))
+
+    def is_position_within_bounds(self, x, y):
+        """检查给定的坐标是否在地图范围内"""
+        return 0 <= x < self.width and 0 <= y < self.height
+
+    def is_obstacle(self, x, y):
+        """检查给定坐标是否是障碍物，假设1代表障碍物"""
+        if self.is_position_within_bounds(x, y):
+            return self.grid[int(y)][int(x)] != 0  # 假设0代表无障碍物
+        return True  # 超出边界视为障碍物
 
 
 class DeviceTable(DataLoader):

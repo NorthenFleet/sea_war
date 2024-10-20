@@ -11,9 +11,6 @@ class System:
         """获取游戏数据中的所有实体。"""
         return self.game_data.get_all_entities()
 
-    def update(self, delta_time):
-        raise NotImplementedError
-
 
 class PositionSystem(System):
     def __init__(self, game_data):
@@ -54,134 +51,121 @@ class MovementSystem(System):
             pathfinding = entity.get_component(PathfindingComponent)
 
             if movement and position:
-                # 如果已经设置了最终目标点
-                if movement.target_position:
-                    # 如果有路径规划，并且当前路径中有下一个目标点
-                    if pathfinding and pathfinding.current_goal:
-                        # 计算向当前转向点的向量
-                        direction = pathfinding.current_goal - position.position
-                        distance = np.linalg.norm(direction)
+                # 如果有路径规划，并且当前路径中有转向点
+                if pathfinding and pathfinding.current_goal:
+                    # 计算向当前转向点的向量
+                    direction = pathfinding.current_goal - position.position
+                    distance = np.linalg.norm(direction)
 
-                        if distance > 0:
-                            direction /= distance  # 归一化向量
+                    if distance > 0:
+                        direction /= distance  # 归一化向量
 
-                        # 更新位置，确保不会超过转向点
-                        step_distance = min(
-                            distance, movement.speed * delta_time)
-                        position.position += direction * step_distance
+                    # 更新位置，确保不会超过转向点
+                    step_distance = min(distance, movement.speed * delta_time)
+                    position.position += direction * step_distance
 
-                        # 检查是否到达转向点
-                        if np.linalg.norm(position.position - pathfinding.current_goal) < 0.1:
-                            # 如果路径还有剩余转向点，继续移动到下一个转向点
-                            if pathfinding.path:
-                                pathfinding.current_goal = pathfinding.path.pop(
-                                    0)
-                            else:
-                                # 如果路径为空，意味着到达了最终目标
-                                movement.target_position = None
-                                self.event_manager.post(
-                                    Event('MoveCompleteEvent', entity, None))
-
-                    else:
-                        # 如果没有当前路径目标，可能需要重新路径规划
-                        self.event_manager.post(
-                            Event('PathRequestEvent', entity, movement.target_position))
+                    # 检查是否到达转向点
+                    if np.linalg.norm(position.position - pathfinding.current_goal) < 0.1:
+                        # 如果路径还有剩余转向点，继续移动到下一个转向点
+                        if pathfinding.path:
+                            pathfinding.current_goal = pathfinding.path.pop(0)
+                        else:
+                            # 如果路径为空，意味着到达了最终目标
+                            movement.target_position = None
+                            self.event_manager.post(
+                                Event('MoveCompleteEvent', entity, None))
 
 
 class PathfindingSystem(System):
     def __init__(self, game_data, event_manager, game_map):
         super().__init__(game_data)
         self.event_manager = event_manager
-        self.game_map = game_map  # 用于路径规划的地图数据
+        self.game_map = game_map
         self.last_goal_map = {}  # 记录实体的上次目标，避免重复计算
 
     def a_star(self, start, goal):
-        # A*算法的简单实现，假设地图是网格，0表示可通行，1表示障碍
-        def heuristic(a, b):
-            return np.linalg.norm(a - b)
+        """A*算法路径规划，处理三维坐标，当前只考虑二维路径规划"""
 
-        open_set = set([start])
+        # 提取二维坐标，仅使用 x 和 y 进行路径规划
+        start_2d = np.array(start[:2])
+        goal_2d = np.array(goal[:2])
+
+        def heuristic(a, b):
+            return np.linalg.norm(a - b)  # 使用欧几里得距离作为启发函数
+
+        open_set = set([tuple(start_2d)])
         came_from = {}
-        g_score = {start: 0}
-        f_score = {start: heuristic(start, goal)}
+        g_score = {tuple(start_2d): 0}
+        f_score = {tuple(start_2d): heuristic(start_2d, goal_2d)}
 
         while open_set:
             current = min(open_set, key=lambda o: f_score.get(o, float('inf')))
-            if np.array_equal(current, goal):
-                # 还原路径
+
+            # 如果到达目标，开始还原路径
+            if np.array_equal(np.array(current), goal_2d):
                 path = []
                 while current in came_from:
-                    path.append(current)
+                    path.append(np.array(current))
                     current = came_from[current]
                 path.reverse()
                 return path
 
             open_set.remove(current)
-            for neighbor in self.get_neighbors(current):
+
+            # 遍历当前节点的邻居
+            for neighbor in self.get_neighbors(np.array(current)):
                 tentative_g_score = g_score[current] + \
-                    heuristic(current, neighbor)
-                if tentative_g_score < g_score.get(neighbor, float('inf')):
-                    came_from[neighbor] = current
-                    g_score[neighbor] = tentative_g_score
-                    f_score[neighbor] = g_score[neighbor] + \
-                        heuristic(neighbor, goal)
-                    if neighbor not in open_set:
-                        open_set.add(neighbor)
+                    heuristic(np.array(current), neighbor)
+
+                if tuple(neighbor) not in g_score or tentative_g_score < g_score[tuple(neighbor)]:
+                    came_from[tuple(neighbor)] = current
+                    g_score[tuple(neighbor)] = tentative_g_score
+                    f_score[tuple(neighbor)] = g_score[tuple(
+                        neighbor)] + heuristic(neighbor, goal_2d)
+                    if tuple(neighbor) not in open_set:
+                        open_set.add(tuple(neighbor))
 
         return []  # 没有路径找到
 
     def get_neighbors(self, node):
-        # 假设是4方向的网格地图
+        """返回二维坐标的邻居"""
         neighbors = [
             node + np.array([0, 1]),
             node + np.array([1, 0]),
             node + np.array([0, -1]),
             node + np.array([-1, 0])
         ]
-        # 检查邻居是否在地图范围内且没有障碍
         valid_neighbors = [n for n in neighbors if self.is_valid_position(n)]
         return valid_neighbors
 
     def is_valid_position(self, position):
-        # 检查是否是有效位置（没有障碍物）
+        """检查位置是否有效"""
         x, y = position
         if 0 <= x < self.game_map.width and 0 <= y < self.game_map.height:
             return self.game_map.grid[y][x] == 0  # 0表示无障碍物
         return False
 
     def handle_path_request(self, entity, target_position):
-        """响应路径规划请求并生成路径"""
+        """处理路径规划请求"""
         position = entity.get_component(PositionComponent)
 
-        # 如果目标位置没有变化，避免重新规划路径
-        if entity.id in self.last_goal_map and np.array_equal(self.last_goal_map[entity.id], target_position):
+        # 如果目标位置没有变化，避免重复规划路径
+        if entity.entity_id in self.last_goal_map and np.array_equal(self.last_goal_map[entity.id], target_position):
             return
 
-        # 记录新的目标位置
-        self.last_goal_map[entity.id] = target_position
+        # 更新目标位置
+        self.last_goal_map[entity.entity_id] = target_position
 
-        if position and target_position:
-            # 执行A*路径规划
+        if position is not None and target_position is not None:
+            # 执行路径规划
             path = self.a_star(position.position, target_position)
 
             if path:
                 pathfinding = entity.get_component(PathfindingComponent)
                 if pathfinding:
-                    # 设置新的路径
+                    # 设置新路径和第一个转向点
                     pathfinding.path = path
                     pathfinding.current_goal = pathfinding.path.pop(0)
-
-    def update(self, entities):
-        # 通过事件机制监听路径请求事件
-        for entity in entities:
-            pathfinding = entity.get_component(PathfindingComponent)
-            position = entity.get_component(PositionComponent)
-            movement = entity.get_component(MovementComponent)
-
-            if pathfinding and position and movement:
-                # 检查是否需要路径规划
-                if not pathfinding.path and movement.target_position:
-                    self.handle_path_request(entity, movement.target_position)
 
 
 class DetectionSystem(System):

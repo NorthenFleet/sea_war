@@ -27,10 +27,10 @@ class HealthComponent:
 
 class PositionComponent:
     def __init__(self, position):
-        # self.position = np.array([x, y, z])
-        self.x = position[0]
-        self.y = position[1]
-        self.z = position[2]
+        self.position = position
+        # self.x = position[0]
+        # self.y = position[1]
+        # self.z = position[2]
 
 
 class EntityTypeComponent:
@@ -43,7 +43,6 @@ class MovementComponent:
         self.speed = speed
         self.heading = np.array(heading)
         self.target_position = None
-        
 
 
 class PathfindingComponent:

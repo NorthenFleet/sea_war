@@ -58,9 +58,9 @@ class GameData:
         #     entity_info, device, self.event_manager)
         entity = self.object_pool.acquire(
             entity_info.entity_id, entity_info.entity_type)
-        
+
         entity.add_component(PositionComponent(entity_info.position))
-        
+
         if entity_info.entity_type:
             entity.add_component(EntityTypeComponent(entity_info.entity_type))
         if entity_info.speed:

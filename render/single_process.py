@@ -62,7 +62,7 @@ class RenderManager:
             position = entity.get_component(PositionComponent)
             if position:
                 iso_x, iso_y = self.metric_transform(
-                    position.x, position.y)
+                    position.position[0], position.position[1])
                 self.screen.blit(self.sprites[entity.get_component(EntityTypeComponent).value],
                                  (iso_x + self.camera_offset[0],
                                   iso_y + self.camera_offset[1]))  # 偏移用于调整显示

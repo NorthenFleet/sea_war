@@ -27,6 +27,7 @@ class SeaWarEnv(Env):
             low=0, high=1, shape=(1,), dtype=np.float32)
 
         self.map = Map(game_config['map_path'])
+        self.game_map = self.map_process(self.map, (1000, 1000))  # 地图扩充
         self.device_table = DeviceTableDict(game_config['device_path'])
         self.scenario = Scenario(game_config['scenario_path'])
 
@@ -46,7 +47,7 @@ class SeaWarEnv(Env):
                                                 self.event_manager, self.device_table, self.quad_tree, self.grid)
 
         self.pathfinding_system = PathfindingSystem(self.game_data,
-                                                    self.event_manager, self.map)
+                                                    self.event_manager, self.game_map)
 
         # 组件系统注册到一个列表中，便于统一管理
         self.systems = [
@@ -55,6 +56,26 @@ class SeaWarEnv(Env):
             self.detection_system,
             self.pathfinding_system
         ]
+
+    def map_process(self, original_map, target_size):
+        original_map = np.array(original_map)  # 转换为NumPy数组便于扩展操作
+        original_height, original_width = original_map.shape
+        expanded_map = np.tile(
+            original_map, (target_size[0] // original_height, target_size[1] // original_width))
+
+        # 如果目标大小不是原始大小的倍数，处理剩余部分
+        remaining_height = target_size[0] % original_height
+        remaining_width = target_size[1] % original_width
+
+        if remaining_height > 0:
+            expanded_map = np.vstack(
+                (expanded_map, original_map[:remaining_height, :]))
+
+        if remaining_width > 0:
+            expanded_map = np.hstack(
+                (expanded_map, expanded_map[:, :remaining_width]))
+
+        return expanded_map.tolist()  # 返回扩展后的地图数据
 
     def load_scenario(self, scenario):
         """
@@ -116,7 +137,8 @@ class SeaWarEnv(Env):
                 entity_info = EntityInfo(
                     entity_id=unit['id'],
                     entity_type=unit['entity_type'],
-                    position={"x": unit['x'], "y": unit['y'], "z": unit['z']},
+                    # position={"x": unit['x'], "y": unit['y'], "z": unit['z']},
+                    position=[unit['x'], unit['y'], unit['z']],
                     rcs=unit['rcs'],
                     speed=unit['speed'],
                     direction=unit['course'],
@@ -169,9 +191,21 @@ class SeaWarEnv(Env):
                 actor = self.game_data.get_entity(command.actor)
                 if command.command_type == 'move':
                     # 调用移动系统更新目标位置
+                    if actor.get_component(PathfindingComponent) is None:
+                        actor.add_component(PathfindingComponent())
+
+                    pathfinding = actor.get_component(PathfindingComponent)
                     movement = actor.get_component(MovementComponent)
-                    if movement:
-                        movement.target_position = np.array(command.target)
+                    position = actor.get_component(PositionComponent)
+
+                    if movement and position and pathfinding:
+                        # 目标位置更新，触发路径规划
+                        if not np.array_equal(movement.target_position, command.target):
+                            movement.target_position = np.array(command.target)
+                            # 触发路径规划，只在目标发生变化时进行
+                            self.pathfinding_system.handle_path_request(
+                                actor, movement.target_position)
+
                 # elif command.command_type == 'attack':
                 #     # 调用攻击系统执行攻击操作
                 #     self.attack_system.process_attack(
@@ -182,7 +216,6 @@ class SeaWarEnv(Env):
         entities = self.game_data.get_all_entities()
 
         # 更新路径规划和移动系统
-        self.pathfinding_system.update(entities)
         self.movement_system.update(entities, delta_time)
 
         # 其他系统（如攻击、检测等）更新
