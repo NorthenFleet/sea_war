@@ -37,7 +37,7 @@ class GameData:
         self.player_units = dict()  # 玩家到其单位的映射
         self.unit_owner = dict()  # 单位到其玩家的映射
         self.entity_ids = set()  # 存储所有实体的ID
-        self.distance_table = {} 
+        self.distance_table = {}
         self.object_pool = ObjectPool(self.create_entity)
 
     def reset(self):
@@ -49,9 +49,35 @@ class GameData:
         self.initialize()
 
     def distance_table_compute(self):
-        """计算距离表。"""
-        self.distance_table = {}
-        
+        """计算所有实体之间的距离，并存储到 distance_table 中。"""
+        self.distance_table.clear()  # 每次计算前清空表
+        entity_list = list(self.units)
+        num_entities = len(entity_list)
+
+        for i in range(num_entities):
+            entity1 = entity_list[i]
+            pos1 = entity1.get_component(PositionComponent).position
+            for j in range(i+1, num_entities):
+                entity2 = entity_list[j]
+                pos2 = entity2.get_component(PositionComponent).position
+                distance = np.linalg.norm(pos1 - pos2)  # 计算欧几里得距离
+
+                # 存储到distance_table中
+                if entity1.entity_id not in self.distance_table:
+                    self.distance_table[entity1.entity_id] = {}
+                if entity2.entity_id not in self.distance_table:
+                    self.distance_table[entity2.entity_id] = {}
+
+                self.distance_table[entity1.entity_id][entity2.entity_id] = distance
+                # 距离是对称的
+                self.distance_table[entity2.entity_id][entity1.entity_id] = distance
+
+    def query_distance(self, entity_id1, entity_id2):
+        """查询任意两个实体之间的距离。"""
+        if entity_id1 in self.distance_table and entity_id2 in self.distance_table[entity_id1]:
+            return self.distance_table[entity_id1][entity_id2]
+        else:
+            return None  # 返回None表示这两个实体之间的距离尚未计算
 
     def add_entity(self, entity_info, device, player_id):
         """通过对象池添加一个新实体到游戏数据。"""
