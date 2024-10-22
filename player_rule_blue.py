@@ -46,9 +46,9 @@ class BluePlayer(Player):
     def move(self):
         actor_id = "水面舰S4"
         MoveCommand(actor_id,
-                    target_position=(100, 200), speed=5)
+                    target_position=(5, 8), speed=5)
 
     def data_process(self, data):
         for entity in self.entities:
-            entity_type = entity.get_component(EntityTypeComponent)
+            entity_type = entity.entity_type
             position = entity.get_component(PositionComponent)

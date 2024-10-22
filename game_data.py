@@ -37,6 +37,7 @@ class GameData:
         self.player_units = dict()  # 玩家到其单位的映射
         self.unit_owner = dict()  # 单位到其玩家的映射
         self.entity_ids = set()  # 存储所有实体的ID
+        self.distance_table = {} 
         self.object_pool = ObjectPool(self.create_entity)
 
     def reset(self):
@@ -46,6 +47,11 @@ class GameData:
             self.object_pool.release(entity)
         # 重新初始化数据结构
         self.initialize()
+
+    def distance_table_compute(self):
+        """计算距离表。"""
+        self.distance_table = {}
+        
 
     def add_entity(self, entity_info, device, player_id):
         """通过对象池添加一个新实体到游戏数据。"""
@@ -61,13 +67,13 @@ class GameData:
 
         entity.add_component(PositionComponent(entity_info.position))
 
-        if entity_info.entity_type:
-            entity.add_component(EntityTypeComponent(entity_info.entity_type))
         if entity_info.speed:
             entity.add_component(MovementComponent(
                 entity_info.speed, entity_info.heading))
         if entity_info.sensors:
-            entity.add_component(SensorComponent(entity_info.sensors))
+            for sensor in entity_info.sensors:
+                entity.add_component(SensorComponent(
+                    sensor["sensor_type"]))
         if entity_info.health:
             entity.add_component(HealthComponent(entity_info.health))
 

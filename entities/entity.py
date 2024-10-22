@@ -20,29 +20,54 @@ class EntityInfo:
         self.launcher = launcher
 
 
-class HealthComponent:
-    def __init__(self, hp):
-        self.hp = hp
+class Component:
+    def __init__(self, **kwargs):
+        self.params = kwargs
+
+    def get_param(self, key):
+        return self.params.get(key, None)
+
+    def set_param(self, key, value):
+        self.params[key] = value
 
 
-class PositionComponent:
+class Component:
+    def __init__(self, **kwargs):
+        self.params = kwargs
+
+    def get_param(self, key):
+        return self.params.get(key, None)
+
+    def set_param(self, key, value):
+        self.params[key] = value
+
+
+class HealthComponent(Component):
+    def __init__(self, max_health):
+        super().__init__(max_health=max_health, current_health=max_health)
+
+    def take_damage(self, damage):
+        current_health = self.get_param('current_health')
+        self.set_param('current_health', max(0, current_health - damage))
+
+    def is_alive(self):
+        return self.get_param('current_health') > 0
+
+
+class PositionComponent(Component):
     def __init__(self, position):
-        self.position = position
+        super().__init__(position=np.array(position))
         # self.x = position[0]
         # self.y = position[1]
         # self.z = position[2]
 
 
-class EntityTypeComponent:
-    def __init__(self, value):
-        self.value = value
-
-
-class MovementComponent:
+class MovementComponent(Component):
     def __init__(self, speed, heading):
-        self.speed = speed
-        self.heading = np.array(heading)
-        self.target_position = None
+        super().__init__(speed=speed, heading=np.array(heading), target_position=None)
+
+    def set_target_position(self, target_position):
+        self.set_param('target_position', np.array(target_position))
 
 
 class PathfindingComponent:
@@ -51,9 +76,21 @@ class PathfindingComponent:
         self.current_goal = None  # 当前移动的目标点
 
 
-class SensorComponent():
-    def __init__(self, name):
-        self.name = name
+class SensorComponent(Component):
+    def __init__(self, sensor_type, detected_targets=None):
+        super().__init__(sensor_type=sensor_type, detected_targets=detected_targets)
+
+
+# 指控系统组件（目标威胁排序和目标分配）
+class CommandControlComponent(Component):
+    def __init__(self, fire_channels, threaten_priority=None, assigned_targets=None):
+        super().__init__(fire_channels=fire_channels,
+                         threaten_priority=threaten_priority, assigned_targets=assigned_targets)
+
+
+class LauncherComponent(Component):
+    def __init__(self, weapon_type, ammo_count):
+        super().__init__(weapon_type=weapon_type, ammo_count=ammo_count)
 
 
 class Entity:
@@ -70,27 +107,10 @@ class Entity:
         return self.components.get(component_type)
 
 
-class DetectionComponent():
-    def __init__(self, detection_range):
-        self.detection_range = detection_range
-
-
-class WeaponComponent():
-    def __init__(self, damage, range):
-        self.damage = damage
-        self.range = range
-
-
 class AttackComponent():
     def __init__(self, damage, range):
         self.damage = damage
         self.range = range
-
-
-class HealthComponent():
-    def __init__(self, max_health):
-        self.max_health = max_health
-        self.current_health = max_health
 
 
 class DamageOverTimeComponent():

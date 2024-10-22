@@ -26,8 +26,9 @@ class SeaWarEnv(Env):
         self.observation_space = spaces.Box(
             low=0, high=1, shape=(1,), dtype=np.float32)
 
-        self.map = Map(game_config['map_path'])
-        self.game_map = self.map_process(self.map, (1000, 1000))  # 地图扩充
+        self.game_map = Map(game_config['map_path'])
+        # self.game_map = self.map_process(self.map, (1000, 1000))  # 地图扩充
+
         self.device_table = DeviceTableDict(game_config['device_path'])
         self.scenario = Scenario(game_config['scenario_path'])
 
@@ -45,7 +46,6 @@ class SeaWarEnv(Env):
         self.attack_system = AttackSystem(self.game_data, self.event_manager)
         self.detection_system = DetectionSystem(self.game_data,
                                                 self.event_manager, self.device_table, self.quad_tree, self.grid)
-
         self.pathfinding_system = PathfindingSystem(self.game_data,
                                                     self.event_manager, self.game_map)
 
@@ -57,25 +57,34 @@ class SeaWarEnv(Env):
             self.pathfinding_system
         ]
 
-    def map_process(self, original_map, target_size):
-        original_map = np.array(original_map)  # 转换为NumPy数组便于扩展操作
-        original_height, original_width = original_map.shape
-        expanded_map = np.tile(
-            original_map, (target_size[0] // original_height, target_size[1] // original_width))
+    def map_process(self, original_map, target_size=(1000, 1000)):
+        """
+        将地图数据从较小的尺寸扩展到目标尺寸 target_size
+        :param original_map: 包含地图数据的字典，结构为 {"map_info": ..., "map_data": ...}
+        :param target_size: 目标尺寸，默认为(1000, 1000)
+        :return: 更新后的 original_map，地图数据已扩展
+        """
 
-        # 如果目标大小不是原始大小的倍数，处理剩余部分
-        remaining_height = target_size[0] % original_height
-        remaining_width = target_size[1] % original_width
+        # 提取地图矩阵
+        map_data = original_map.grid
+        original_map_matrix = np.array(map_data)  # 将地图矩阵转换为NumPy数组
+        original_height, original_width = original_map_matrix.shape
 
-        if remaining_height > 0:
-            expanded_map = np.vstack(
-                (expanded_map, original_map[:remaining_height, :]))
+        # 使用 np.tile 函数来扩展地图
+        repeat_factor_height = target_size[0] // original_height
+        repeat_factor_width = target_size[1] // original_width
 
-        if remaining_width > 0:
-            expanded_map = np.hstack(
-                (expanded_map, expanded_map[:, :remaining_width]))
+        # 扩展地图
+        expanded_map = np.tile(original_map_matrix,
+                               (repeat_factor_height, repeat_factor_width))
 
-        return expanded_map.tolist()  # 返回扩展后的地图数据
+        # 修剪到目标尺寸（1000x1000），确保边缘对齐
+        expanded_map = expanded_map[:target_size[0], :target_size[1]]
+
+        # 更新 original_map 中的 'map_data'
+        original_map.grid = expanded_map.tolist()  # 更新地图数据
+
+        return original_map  # 返回更新后的 original_map
 
     def load_scenario(self, scenario):
         """
@@ -200,7 +209,7 @@ class SeaWarEnv(Env):
 
                     if movement and position and pathfinding:
                         # 目标位置更新，触发路径规划
-                        if not np.array_equal(movement.target_position, command.target):
+                        if not np.array_equal(movement.get_param("target_position"), command.target):
                             movement.target_position = np.array(command.target)
                             # 触发路径规划，只在目标发生变化时进行
                             self.pathfinding_system.handle_path_request(

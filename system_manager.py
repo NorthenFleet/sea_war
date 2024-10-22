@@ -52,20 +52,27 @@ class MovementSystem(System):
 
             if movement and position:
                 # 如果有路径规划，并且当前路径中有转向点
-                if pathfinding and pathfinding.current_goal:
+                if pathfinding is not None and pathfinding.current_goal is not None:
+
                     # 计算向当前转向点的向量
-                    direction = pathfinding.current_goal - position.position
+                    direction = pathfinding.current_goal - \
+                        position.get_param("position")[:2]
                     distance = np.linalg.norm(direction)
 
                     if distance > 0:
-                        direction /= distance  # 归一化向量
+                        # 将 direction 转换为浮点类型，以防止除法引发数据类型冲突
+                        direction = direction.astype(np.float64) / distance
 
                     # 更新位置，确保不会超过转向点
-                    step_distance = min(distance, movement.speed * delta_time)
-                    position.position += direction * step_distance
+                    step_distance = min(
+                        distance, movement.get_param("speed") * delta_time)
+                    position.get_param("position")[
+                        0] += direction[0] * step_distance
+                    position.get_param("position")[
+                        1] += direction[1] * step_distance
 
                     # 检查是否到达转向点
-                    if np.linalg.norm(position.position - pathfinding.current_goal) < 0.1:
+                    if np.linalg.norm(position.get_param("position")[:2] - pathfinding.current_goal) < 0.1:
                         # 如果路径还有剩余转向点，继续移动到下一个转向点
                         if pathfinding.path:
                             pathfinding.current_goal = pathfinding.path.pop(0)
@@ -85,18 +92,17 @@ class PathfindingSystem(System):
 
     def a_star(self, start, goal):
         """A*算法路径规划，处理三维坐标，当前只考虑二维路径规划"""
-
-        # 提取二维坐标，仅使用 x 和 y 进行路径规划
-        start_2d = np.array(start[:2])
-        goal_2d = np.array(goal[:2])
+        start_2d = tuple(np.array(start[:2]))  # 使用二维坐标
+        goal_2d = tuple(np.array(goal[:2]))
 
         def heuristic(a, b):
-            return np.linalg.norm(a - b)  # 使用欧几里得距离作为启发函数
+            """启发函数，计算两个点的距离"""
+            return np.linalg.norm(np.array(a) - np.array(b))  # 欧几里得距离
 
-        open_set = set([tuple(start_2d)])
+        open_set = set([start_2d])
         came_from = {}
-        g_score = {tuple(start_2d): 0}
-        f_score = {tuple(start_2d): heuristic(start_2d, goal_2d)}
+        g_score = {start_2d: 0}
+        f_score = {start_2d: heuristic(start_2d, goal_2d)}
 
         while open_set:
             current = min(open_set, key=lambda o: f_score.get(o, float('inf')))
@@ -142,7 +148,7 @@ class PathfindingSystem(System):
         """检查位置是否有效"""
         x, y = position
         if 0 <= x < self.game_map.width and 0 <= y < self.game_map.height:
-            return self.game_map.grid[y][x] == 0  # 0表示无障碍物
+            return self.game_map.grid[int(y)][int(x)] == 0  # 0表示无障碍物
         return False
 
     def handle_path_request(self, entity, target_position):
@@ -150,7 +156,7 @@ class PathfindingSystem(System):
         position = entity.get_component(PositionComponent)
 
         # 如果目标位置没有变化，避免重复规划路径
-        if entity.entity_id in self.last_goal_map and np.array_equal(self.last_goal_map[entity.id], target_position):
+        if entity.entity_id in self.last_goal_map and np.array_equal(self.last_goal_map[entity.entity_id], target_position):
             return
 
         # 更新目标位置
@@ -158,7 +164,7 @@ class PathfindingSystem(System):
 
         if position is not None and target_position is not None:
             # 执行路径规划
-            path = self.a_star(position.position, target_position)
+            path = self.a_star(position.get_param("position"), target_position)
 
             if path:
                 pathfinding = entity.get_component(PathfindingComponent)
