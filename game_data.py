@@ -1,4 +1,5 @@
 from entities.entity import *
+from utils import *
 
 
 class ObjectPool:
@@ -56,10 +57,12 @@ class GameData:
 
         for i in range(num_entities):
             entity1 = entity_list[i]
-            pos1 = entity1.get_component(PositionComponent).position
+            pos1 = entity1.get_component(
+                PositionComponent).get_param("position")[:DD]
             for j in range(i+1, num_entities):
                 entity2 = entity_list[j]
-                pos2 = entity2.get_component(PositionComponent).position
+                pos2 = entity2.get_component(
+                    PositionComponent).get_param("position")[:DD]
                 distance = np.linalg.norm(pos1 - pos2)  # 计算欧几里得距离
 
                 # 存储到distance_table中

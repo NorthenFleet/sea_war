@@ -2,6 +2,8 @@ import math
 
 ma = 340
 
+DD = 2
+
 
 def global_move(entity, target_x, target_y, steps):
     path = []

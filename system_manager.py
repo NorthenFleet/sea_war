@@ -1,6 +1,7 @@
 from entities.entity import *
 import numpy as np
 from event_manager import Event
+from utils import *
 
 
 class System:
@@ -56,7 +57,7 @@ class MovementSystem(System):
 
                     # 计算向当前转向点的向量
                     direction = pathfinding.current_goal - \
-                        position.get_param("position")[:2]
+                        position.get_param("position")[:DD]
                     distance = np.linalg.norm(direction)
 
                     if distance > 0:
@@ -183,20 +184,27 @@ class DetectionSystem(System):
         self.grid = grid
         r = self.device_table.get_sensor("R4")
 
-    def update(self, delta_time):
+    def update(self):
         for entity in self.get_all_entities():
-            position = entity.get_component(PositionComponent)
-            detection = entity.get_component(DetectionComponent)
-            if position and detection:
+            position = entity.get_component(
+                PositionComponent).get_param("position")[:DD]
+
+            sensor = entity.get_component(SensorComponent)
+            if sensor:
+                sensor_type = sensor.get_param("sensor_type")
+                detection_range = self.device_table.get_sensor(sensor_type)
+            else:
+                detection_range = None
+            if position is not None and detection_range is not None:
                 # 检测是否有敌人
                 for other_entity in self.get_all_entities():
-                    if other_entity.id == entity.id:
+                    if other_entity.entity_id == entity.entity_id:
                         continue
                     other_position = other_entity.get_component(
-                        PositionComponent)
-                    if other_position and np.linalg.norm(other_position.position - position.position) <= detection.radius:
+                        PositionComponent).get_param("position")[:DD]
+                    if other_position and np.linalg.norm(other_position - position) <= detection.radius:
                         # 触发检测事件
-                        detection.on_detected(other_entity)
+                        detection_range.on_detected(other_entity)
 
 
 class AttackSystem(System):
@@ -206,7 +214,7 @@ class AttackSystem(System):
 
     def update(self, entities):
         for entity in entities:
-            weapon = entity.get_component(WeaponComponent)
+            weapon = entity.get_component(LauncherComponent)
             if weapon:  # 这个实体有武器，可以攻击
                 target = self.find_target_in_range(entity)  # 假设有一个找到目标的函数
                 if target:

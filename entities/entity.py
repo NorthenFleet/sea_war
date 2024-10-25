@@ -93,6 +93,11 @@ class LauncherComponent(Component):
         super().__init__(weapon_type=weapon_type, ammo_count=ammo_count)
 
 
+class CollisionComponent(Component):
+    def __init__(self, entity, target):
+        super().__init__(entity=entity, target=target)
+
+
 class Entity:
     # 船、飞机、导弹、密集阵、潜艇、
     def __init__(self, entity_id, entity_type):

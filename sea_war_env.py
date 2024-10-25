@@ -175,8 +175,8 @@ class SeaWarEnv(Env):
         for entity_id, entity in game_data.entities.items():
             position = PositionComponent(
                 entity_id, entity.position['x'], entity.position['y'], entity.position['z'])
-            detection = DetectionComponent(
-                entity_id, entity.rcs, entity.sensor)
+            detection = SensorComponent(
+                entity.entity_type, entity.sensor)
             movement = MovementComponent(
                 entity_id, entity.speed, entity.direction)
             attack = AttackComponent(entity_id, entity.weapons)
@@ -226,6 +226,10 @@ class SeaWarEnv(Env):
 
         # 更新路径规划和移动系统
         self.movement_system.update(entities, delta_time)
+        self.game_data.distance_table_compute()
+
+        # 更新探测系统
+        self.detection_system.update()
 
         # 其他系统（如攻击、检测等）更新
         self.attack_system.update(entities)
