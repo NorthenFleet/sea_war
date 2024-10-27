@@ -149,7 +149,8 @@ class PathfindingSystem(System):
         """检查位置是否有效"""
         x, y = position
         if 0 <= x < self.game_map.width and 0 <= y < self.game_map.height:
-            return self.game_map.grid[int(y)][int(x)] == 0  # 0表示无障碍物
+            # return self.game_map.grid[int(y)][int(x)] == 0  # 0表示无障碍物
+            return True
         return False
 
     def handle_path_request(self, entity, target_position):
@@ -192,19 +193,19 @@ class DetectionSystem(System):
             sensor = entity.get_component(SensorComponent)
             if sensor:
                 sensor_type = sensor.get_param("sensor_type")
-                detection_range = self.device_table.get_sensor(sensor_type)
+                detection = self.device_table.get_sensor(sensor_type)
             else:
-                detection_range = None
-            if position is not None and detection_range is not None:
+                detection = None
+            if position is not None and detection is not None:
                 # 检测是否有敌人
                 for other_entity in self.get_all_entities():
                     if other_entity.entity_id == entity.entity_id:
                         continue
                     other_position = other_entity.get_component(
                         PositionComponent).get_param("position")[:DD]
-                    if other_position and np.linalg.norm(other_position - position) <= detection.radius:
+                    if other_position is not None and np.linalg.norm(other_position - position) <= detection["detection_range"]:
                         # 触发检测事件
-                        detection_range.on_detected(other_entity)
+                        detection.on_detected(other_entity)
 
 
 class AttackSystem(System):

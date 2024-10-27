@@ -1,7 +1,7 @@
 {
     "map_info": {
-        "width": 10,
-        "height": 10
+        "width": 1000,
+        "height": 1600
     },
     "map_data": [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

@@ -210,10 +210,11 @@ class SeaWarEnv(Env):
                     if movement and position and pathfinding:
                         # 目标位置更新，触发路径规划
                         if not np.array_equal(movement.get_param("target_position"), command.target):
-                            movement.target_position = np.array(command.target)
+                            movement.set_param("target_position", np.array(
+                                command.target))
                             # 触发路径规划，只在目标发生变化时进行
                             self.pathfinding_system.handle_path_request(
-                                actor, movement.target_position)
+                                actor, movement.get_param("target_position"))
 
                 # elif command.command_type == 'attack':
                 #     # 调用攻击系统执行攻击操作
