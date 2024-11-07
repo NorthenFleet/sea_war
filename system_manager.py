@@ -92,66 +92,128 @@ class PathfindingSystem(System):
         self.last_goal_map = {}  # 记录实体的上次目标，避免重复计算
 
     def a_star(self, start, goal):
-        """A*算法路径规划，处理三维坐标，当前只考虑二维路径规划"""
-        start_2d = tuple(np.array(start[:2]))  # 使用二维坐标
-        goal_2d = tuple(np.array(goal[:2]))
+        """A*算法路径规划，结合分层地图结构"""
 
+        # 全局路径规划
+        start_global, start_local = self.game_map.get_global_position(
+            *start[:2])
+        goal_global, goal_local = self.game_map.get_global_position(*goal[:2])
+
+        if start_global != goal_global:
+            global_path = self.a_star_global(start_global, goal_global)
+            if not global_path:
+                return []  # 如果全局路径不可达，返回空路径
+
+            path = []
+            for block in global_path:
+                # 在每个块中进行局部规划
+                local_start = start_local if block == start_global else (0, 0)
+                local_goal = goal_local if block == goal_global else (self.game_map.local_block_size - 1,
+                                                                      self.game_map.local_block_size - 1)
+                local_grid = self.game_map.get_local_grid(*block)
+                local_path = self.a_star_local(
+                    local_start, local_goal, local_grid)
+
+                if not local_path:
+                    return []  # 如果局部路径不可达，返回空路径
+
+                path.extend([(block[0] * self.game_map.local_block_size + lp[0],
+                              block[1] * self.game_map.local_block_size + lp[1]) for lp in local_path])
+        else:
+            # 如果在同一个块内，则直接进行局部规划
+            local_grid = self.game_map.get_local_grid(*start_global)
+            path = self.a_star_local(start_local, goal_local, local_grid)
+
+        return path
+
+    def a_star_global(self, start_global, goal_global):
+        """全局路径规划：只计算跨越的区域块"""
         def heuristic(a, b):
-            """启发函数，计算两个点的距离"""
-            return np.linalg.norm(np.array(a) - np.array(b))  # 欧几里得距离
+            return np.linalg.norm(np.array(a) - np.array(b))
 
-        open_set = set([start_2d])
+        open_set = set([start_global])
         came_from = {}
-        g_score = {start_2d: 0}
-        f_score = {start_2d: heuristic(start_2d, goal_2d)}
+        g_score = {start_global: 0}
+        f_score = {start_global: heuristic(start_global, goal_global)}
 
         while open_set:
             current = min(open_set, key=lambda o: f_score.get(o, float('inf')))
-
-            # 如果到达目标，开始还原路径
-            if np.array_equal(np.array(current), goal_2d):
+            if current == goal_global:
                 path = []
                 while current in came_from:
-                    path.append(np.array(current))
+                    path.append(current)
                     current = came_from[current]
                 path.reverse()
                 return path
 
             open_set.remove(current)
-
-            # 遍历当前节点的邻居
-            for neighbor in self.get_neighbors(np.array(current)):
+            for neighbor in self.get_global_neighbors(current):
                 tentative_g_score = g_score[current] + \
-                    heuristic(np.array(current), neighbor)
+                    heuristic(current, neighbor)
+                if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g_score
+                    f_score[neighbor] = g_score[neighbor] + \
+                        heuristic(neighbor, goal_global)
+                    open_set.add(neighbor)
 
-                if tuple(neighbor) not in g_score or tentative_g_score < g_score[tuple(neighbor)]:
-                    came_from[tuple(neighbor)] = current
-                    g_score[tuple(neighbor)] = tentative_g_score
-                    f_score[tuple(neighbor)] = g_score[tuple(
-                        neighbor)] + heuristic(neighbor, goal_2d)
-                    if tuple(neighbor) not in open_set:
-                        open_set.add(tuple(neighbor))
+        return []
 
-        return []  # 没有路径找到
+    def a_star_local(self, start, goal, grid):
+        """局部路径规划，在每个区域块中寻找路径"""
+        def heuristic(a, b):
+            return np.linalg.norm(np.array(a) - np.array(b))
 
-    def get_neighbors(self, node):
-        """返回二维坐标的邻居"""
+        open_set = set([start])
+        came_from = {}
+        g_score = {start: 0}
+        f_score = {start: heuristic(start, goal)}
+
+        while open_set:
+            current = min(open_set, key=lambda o: f_score.get(o, float('inf')))
+            if current == goal:
+                path = []
+                while current in came_from:
+                    path.append(current)
+                    current = came_from[current]
+                path.reverse()
+                return path
+
+            open_set.remove(current)
+            for neighbor in self.get_local_neighbors(current, grid):
+                tentative_g_score = g_score[current] + \
+                    heuristic(current, neighbor)
+                if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g_score
+                    f_score[neighbor] = g_score[neighbor] + \
+                        heuristic(neighbor, goal)
+                    open_set.add(neighbor)
+
+        return []
+
+    def get_global_neighbors(self, node):
+        """获取全局区域块的邻居"""
         neighbors = [
-            node + np.array([0, 1]),
-            node + np.array([1, 0]),
-            node + np.array([0, -1]),
-            node + np.array([-1, 0])
+            (node[0], node[1] + 1),
+            (node[0] + 1, node[1]),
+            (node[0], node[1] - 1),
+            (node[0] - 1, node[1])
         ]
-        valid_neighbors = [n for n in neighbors if self.is_valid_position(n)]
-        return valid_neighbors
+        return [n for n in neighbors if self.game_map.is_position_within_bounds(n[0], n[1])]
 
-    def is_valid_position(self, position):
-        """检查位置是否有效"""
-        x, y = position
-        if 0 <= x < self.game_map.width and 0 <= y < self.game_map.height:
-            # return self.game_map.grid[int(y)][int(x)] == 0  # 0表示无障碍物
-            return True
-        return False
+    def get_local_neighbors(self, node, grid):
+        """获取局部地图中节点的邻居"""
+        neighbors = [
+            (node[0], node[1] + 1),
+            (node[0] + 1, node[1]),
+            (node[0], node[1] - 1),
+            (node[0] - 1, node[1])
+        ]
+        valid_neighbors = [
+            n for n in neighbors if 0 <= n[0] < len(grid[0]) and 0 <= n[1] < len(grid) and grid[n[1]][n[0]] == 0
+        ]
+        return valid_neighbors
 
     def handle_path_request(self, entity, target_position):
         """处理路径规划请求"""
@@ -171,7 +233,6 @@ class PathfindingSystem(System):
             if path:
                 pathfinding = entity.get_component(PathfindingComponent)
                 if pathfinding:
-                    # 设置新路径和第一个转向点
                     pathfinding.path = path
                     pathfinding.current_goal = pathfinding.path.pop(0)
 
