@@ -40,36 +40,68 @@ class Scenario(DataLoader):
         self.path = path
 
 
-class Map(DataLoader):
+class Map:
     def __init__(self, path):
-        super().__init__(path)
-        self.grid = []  # 初始化 grid 属性为空列表
-        self.width = 0
-        self.height = 0
-        self.load_map(path)  # 加载地图
+        self.global_width = 0
+        self.global_height = 0
+        self.local_block_size = 0
+        self.map_data = []  # 存储所有的局部地图数据
+        self.load_map(path)  # 加载地图数据
 
     def load_map(self, path):
         """从 json 文件中加载地图数据"""
         with open(path, 'r') as f:
             data = json.load(f)
-            self.width = data['map_info']['width']
-            self.height = data['map_info']['height']
-            self.grid = data['map_data']  # 将地图数据存储到 grid 属性中
+            self.global_width = data['map_info']['global_width']
+            self.global_height = data['map_info']['global_height']
+            self.local_block_size = data['map_info']['local_block_size']
+            self.map_data = data['map_data']  # 加载局部地图数据
 
-    def display_map(self):
-        """打印地图"""
-        for row in self.grid:
-            print(" ".join(map(str, row)))
+    def get_local_grid(self, global_x, global_y):
+        """根据全局坐标获取局部地图"""
+        for block in self.map_data:
+            if block['global_position'] == [global_x, global_y]:
+                return block['local_grid']
+        return None  # 如果找不到对应的局部块，则返回 None
 
     def is_position_within_bounds(self, x, y):
-        """检查给定的坐标是否在地图范围内"""
-        return 0 <= x < self.width and 0 <= y < self.height
+        """检查给定的全局坐标是否在地图范围内"""
+        return 0 <= x < self.global_width * self.local_block_size and \
+            0 <= y < self.global_height * self.local_block_size
+
+    def get_global_position(self, x, y):
+        """根据全局坐标计算所属的大格子坐标和小格子内的局部坐标"""
+        global_x = x // self.local_block_size
+        global_y = y // self.local_block_size
+        local_x = x % self.local_block_size
+        local_y = y % self.local_block_size
+        return (global_x, global_y), (local_x, local_y)
 
     def is_obstacle(self, x, y):
-        """检查给定坐标是否是障碍物，假设1代表障碍物"""
-        if self.is_position_within_bounds(x, y):
-            return self.grid[int(y)][int(x)] != 0  # 假设0代表无障碍物
-        return True  # 超出边界视为障碍物
+        """
+        检查给定全局坐标是否是障碍物
+        """
+        if not self.is_position_within_bounds(x, y):
+            return True  # 超出边界视为障碍物
+
+        (global_x, global_y), (local_x, local_y) = self.get_global_position(x, y)
+        local_grid = self.get_local_grid(global_x, global_y)
+
+        if local_grid is not None:
+            return local_grid[local_y][local_x] != 0  # 假设0表示通行，非0表示障碍物
+        return True  # 如果没有找到局部块数据，视为障碍物
+
+    def display_map(self):
+        """打印全局地图的概览"""
+        print(f"Map Size: {self.global_width} x {self.global_height} (Blocks)")
+        print(
+            f"Each Block Size: {self.local_block_size} x {self.local_block_size}")
+        for block in self.map_data:
+            global_pos = block["global_position"]
+            print(f"Block at {global_pos}:")
+            for row in block["local_grid"]:
+                print(" ".join(map(str, row)))
+            print()  # 空行分隔不同的块
 
 
 class DeviceTable(DataLoader):
