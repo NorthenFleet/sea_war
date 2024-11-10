@@ -1,0 +1,17 @@
+{
+    "name": "sea_war Container",
+    "image": "python:3.11",
+    "workspaceFolder": "/Users/sunyi/Documents/WorkSpace/Simulation/UnmanedClusterAI",
+    "settings": {
+        "python.pythonPath": "/usr/local/bin/python",
+        "python.autoComplete.addBrackets": true
+    },
+    "extensions": [
+        "ms-python.python"
+    ],
+    "forwardPorts": [
+        5003,
+        7070,
+        3000
+    ]
+}
