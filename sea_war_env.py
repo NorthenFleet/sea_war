@@ -201,6 +201,7 @@ class SeaWarEnv(Env):
                 if command.command_type == 'move':
                     # 调用移动系统更新目标位置
                     if actor.get_component(PathfindingComponent) is None:
+                        
                         actor.add_component(PathfindingComponent())
 
                     pathfinding = actor.get_component(PathfindingComponent)
