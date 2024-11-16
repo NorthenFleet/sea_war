@@ -1,4 +1,4 @@
-import json
+import json,os
 from device import *
 
 
@@ -8,8 +8,19 @@ class DataLoader:
 
     @staticmethod
     def load_json(path):
-        with open(path, 'r') as file:
-            return json.load(file)
+        # 获取当前脚本的绝对路径
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        # 组合完整的文件路径
+        full_path = os.path.join(script_dir, path)
+        try:
+            with open(full_path, 'r') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            print(f"Error: File {full_path} not found.")
+            return None
+        except json.JSONDecodeError:
+            print(f"Error: Failed to parse JSON file {full_path}.")
+            return None
 
 
 class Side:
@@ -50,12 +61,21 @@ class Map:
 
     def load_map(self, path):
         """从 json 文件中加载地图数据"""
-        with open(path, 'r') as f:
-            data = json.load(f)
-            self.global_width = data['map_info']['global_width']
-            self.global_height = data['map_info']['global_height']
-            self.local_block_size = data['map_info']['local_block_size']
-            self.map_data = data['map_data']  # 加载局部地图数据
+        # 获取当前脚本的绝对路径
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        # 组合完整的文件路径
+        full_path = os.path.join(script_dir, path)
+        try:
+            with open(full_path, 'r') as f:
+                data = json.load(f)
+                self.global_width = data['map_info']['global_width']
+                self.global_height = data['map_info']['global_height']
+                self.local_block_size = data['map_info']['local_block_size']
+                self.map_data = data['map_data']  # 加载局部地图数据
+        except FileNotFoundError:
+            print(f"Error: File {full_path} not found.")
+        except json.JSONDecodeError:
+            print(f"Error: Failed to parse JSON file {full_path}.")
 
     def get_local_grid(self, global_x, global_y):
         """根据全局坐标获取局部地图"""

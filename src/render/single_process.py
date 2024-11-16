@@ -1,5 +1,5 @@
 import pygame
-import math
+import os, sys
 from entities.entity import *
 
 
@@ -18,18 +18,28 @@ class RenderManager:
 
     def load_sprites(self):
         """加载游戏中图片，作为2.5D显示基础"""
+        base_path = os.path.join(os.getcwd(), 'src')  # 假设 src 文件夹在当前工作目录下
+        image_paths = {
+            'terrain': os.path.join(base_path, 'images', 'map.jpg'),
+            'ship': os.path.join(base_path, 'images', 'ship.png'),
+            'submarine': os.path.join(base_path, 'images', 'submarine.png'),
+            'missile': os.path.join(base_path, 'images', 'missile.png'),
+            'ground_based_platforms': os.path.join(base_path, 'images', 'air_defense.png'),
+            'airport': os.path.join(base_path, 'images', 'airport.png'),
+            'bomber': os.path.join(base_path, 'images', 'bomber.png')
+        }
+
         sprites = {}
-        # 示例：加载地形和单位的图片
-        sprites['terrain'] = pygame.image.load('images/map.jpg')
-        sprites['ship'] = pygame.image.load('images/ship.png')
-        sprites['submarine'] = pygame.image.load('images/submarine.png')
-        sprites['missile'] = pygame.image.load('images/missile.png')
-        sprites['ground_based_platforms'] = pygame.image.load(
-            'images/air_defense.png')
-        sprites['airport'] = pygame.image.load('images/airport.png')
-        sprites['bomber'] = pygame.image.load('images/bomber.png')
-        sprites['bomber'] = pygame.transform.scale(
-            sprites['bomber'], (40, 40))
+        for key, path in image_paths.items():
+            try:
+                sprite = pygame.image.load(path).convert_alpha()
+                if key == 'bomber':
+                    sprite = pygame.transform.scale(sprite, (40, 40))
+                sprites[key] = sprite
+            except pygame.error as e:
+                print(f"Error loading image {path}: {e}")
+                sprites[key] = None  # 或者使用默认图像
+
         return sprites
 
     def isometric_transform(self, x, y):
