@@ -1,46 +1,25 @@
-<<<<<<< HEAD
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-dockerfile
-{
-	"name": "Existing Dockerfile",
-	"build": {
-		// Sets the run context to one level up instead of the .devcontainer folder.
-		"context": "..",
-		// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-		"dockerfile": "../Dockerfile"
-	}
-
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	// Uncomment the next line to run commands after the container is created.
-	// "postCreateCommand": "cat /etc/os-release",
-
-	// Configure tool-specific properties.
-	// "customizations": {},
-
-	// Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "devcontainer"
-}
-=======
 {
     "name": "sea_war Container",
-    "image": "python:3.11",
-    "workspaceFolder": "/Users/sunyi/Documents/WorkSpace/Simulation/UnmanedClusterAI",
-    "settings": {
-        "python.pythonPath": "/usr/local/bin/python",
-        "python.autoComplete.addBrackets": true
-    },
+    "context": "..",  // 指定 Dockerfile 的上下文目录，默认为 .devcontainer 目录的父目录
+    "dockerFile": "../Dockerfile",  // 指定 Dockerfile 的路径
     "extensions": [
-        "ms-python.python"
+        "ms-python.python",  // 安装 Python 扩展
+        "ms-vscode-remote.vscode-remote-extensionpack"  // 安装 Remote Development 扩展包
     ],
-    "forwardPorts": [
-        5003,
-        7070,
-        3000
-    ]
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"  // 设置默认终端
+    },
+    "mounts": [
+        "source=${localWorkspaceFolder}/data,target=/workspace/data,type=bind"  // 挂载本地数据目录到容器
+    ],
+    "postCreateCommand": "pip install -r /workspace/requirements.txt",  // 容器创建后执行的命令
+    "forwardPorts": [5000],  // 转发端口，注意这里重复了5000端口，只需要一个即可
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.vscode-pylance"  // 安装 Pylance 扩展
+            ]
+        }
+    },
+    "features": {}  // 可以在这里添加预定义的功能
 }
->>>>>>> 578912b2fc229d1cca77221c78fb5fe65afde931
