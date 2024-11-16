@@ -1,0 +1,334 @@
+{
+    "weapons": [
+        {
+            "name": "FG-01",
+            "type": "cruise missile",
+            "damage": 1,
+            "range": 400,
+            "height": 0.03,
+            "speed": 800,
+            "probability": 0.75,
+            "price": 100,
+            "cooldown": 0
+        },
+        {
+            "name": "FG-02",
+            "type": "cruise missile",
+            "damage": 1,
+            "range": 800,
+            "height": 10,
+            "speed": 750,
+            "probability": 0.75,
+            "price": 120,
+            "cooldown": 0
+        },
+        {
+            "name": "FG-03",
+            "type": "cruise missile",
+            "damage": 2,
+            "range": 1200,
+            "height": 30,
+            "speed": 5000,
+            "probability": 0.85,
+            "price": 180,
+            "cooldown": 0
+        },
+        {
+            "name": "FG-04",
+            "type": "cruise missile",
+            "damage": 1,
+            "range": 500,
+            "height": 0.01,
+            "speed": 750,
+            "probability": 0.85,
+            "price": 150,
+            "cooldown": 0
+        },
+        {
+            "name": "FG-05",
+            "type": "cruise missile",
+            "damage": 1,
+            "range": 300,
+            "height": 0.025,
+            "speed": 800,
+            "probability": 0.80,
+            "price": 100,
+            "cooldown": 0
+        },
+        {
+            "name": "FG-06",
+            "type": "cruise missile",
+            "damage": 1,
+            "range": 400,
+            "height": 0.02,
+            "speed": 900,
+            "probability": 0.75,
+            "price": 120,
+            "cooldown": 0
+        },
+        {
+            "name": "FG-07",
+            "type": "cruise missile",
+            "damage": 1,
+            "range": 500,
+            "height": 0.02,
+            "speed": 850,
+            "probability": 0.80,
+            "price": 120,
+            "cooldown": 0
+        },
+        {
+            "name": "FG-08",
+            "type": "cruise missile",
+            "damage": 1,
+            "range": 800,
+            "height": 0.015,
+            "speed": 900,
+            "probability": 0.80,
+            "price": 150,
+            "cooldown": 0
+        },
+        {
+            "name": "FG-09",
+            "type": "cruise missile",
+            "damage": 1,
+            "range": 500,
+            "height": 0.02,
+            "speed": 850,
+            "probability": 0.75,
+            "price": 130,
+            "cooldown": 0
+        },
+        {
+            "name": "FG-10",
+            "type": "cruise missile",
+            "damage": 1,
+            "range": 800,
+            "height": 8,
+            "speed": 950,
+            "probability": 0.80,
+            "price": 150,
+            "cooldown": 0
+        },
+        {
+            "name": "FG-11",
+            "type": "cruise missile",
+            "damage": 2,
+            "range": 1500,
+            "height": 20,
+            "speed": 2500,
+            "probability": 0.90,
+            "price": 200,
+            "cooldown": 0
+        },
+        {
+            "name": "FG-12",
+            "type": "ballistic missile",
+            "damage": 3,
+            "range_min": 400,
+            "range_max": 2000,
+            "height": 200,
+            "speed": 7000,
+            "probability": 0.85,
+            "price": 250,
+            "cooldown": 0
+        },
+        {
+            "name": "FG-13",
+            "type": "ballistic missile",
+            "damage": 3,
+            "range_min": 800,
+            "range_max": 3000,
+            "height": 250,
+            "speed": 9000,
+            "probability": 0.85,
+            "price": 300,
+            "cooldown": 0
+        },
+        {
+            "name": "FK-5",
+            "type": "Anti-aircraft missiles",
+            "guidance_method": "Semi-active guidance",
+            "range_min": 15,
+            "range_max": 120,
+            "height_min": 0,
+            "height_max": 35,
+            "speed": 3600,
+            "price": 300,
+            "cooldown": 0
+        },
+        {
+            "name": "FK-6",
+            "type": "Anti-aircraft missiles",
+            "guidance_method": "Active guidance",
+            "range_min": 15,
+            "range_max": 370,
+            "height_min": 0,
+            "height_max": 40,
+            "speed": 4200,
+            "price": 600,
+            "cooldown": 0
+        },
+        {
+            "name": "FK-7",
+            "type": "Anti-aircraft missiles",
+            "guidance_method": "Active guidance",
+            "range_min": 200,
+            "range_max": 1200,
+            "height_min": 80,
+            "height_max": 300,
+            "speed": 9600,
+            "price": 1000,
+            "cooldown": 0
+        },
+        {
+            "name": "FK-8",
+            "type": "Anti-aircraft missiles",
+            "guidance_method": "Semi-active guidance",
+            "range_min": 15,
+            "range_max": 80,
+            "height_min": 0,
+            "height_max": 30,
+            "speed": 4900,
+            "price": 150,
+            "cooldown": 0
+        },
+        {
+            "name": "MJZ-1",
+            "type": "mjz",
+            "range": 5,
+            "speed": 1000,
+            "price": 3
+        },
+        {
+            "name": "MJZ-2",
+            "type": "mjz",
+            "range": 5,
+            "speed": 1000,
+            "price": 3
+        },
+        {
+            "name": "MJZ-3",
+            "type": "mjz",
+            "range": 5,
+            "speed": 1000,
+            "price": 3
+        },
+        {
+            "name": "MJZ-4",
+            "type": "mjz",
+            "range": 5,
+            "speed": 1000,
+            "price": 3
+        },
+        {
+            "name": "GR-W",
+            "type": "grd",
+            "range": 15,
+            "price": 10,
+            "time": 0.033333
+        },
+        {
+            "name": "GR-Y",
+            "type": "grd",
+            "range": 15,
+            "price": 15,
+            "time": 0.016667
+        }
+    ],
+    "sensors": [
+        {
+            "name": "R-boomer",
+            "type": "radar",
+            "detection_range": 300
+        },
+        {
+            "name": "R0",
+            "type": "detection radar",
+            "detection_range": 500,
+            "height": 0.03,
+            "accurate": 1
+        },
+        {
+            "name": "R1",
+            "type": "guidance radar",
+            "detection_range": 200,
+            "Fire channels": 4,
+            "min_angle": -60,
+            "max_angle": 60,
+            "accurate": 1
+        },
+        {
+            "name": "R2",
+            "type": "guidance radar",
+            "detection_range": 200,
+            "Fire channels": 4,
+            "min_angle": 60,
+            "max_angle": 180,
+            "accurate": 1
+        },
+        {
+            "name": "R3",
+            "type": "guidance radar",
+            "detection_range": 200,
+            "Fire channels": 4,
+            "min_angle": 180,
+            "max_angle": -60,
+            "accurate": 1
+        },
+        {
+            "name": "R4",
+            "type": "guidance radar",
+            "detection_range": 200,
+            "Fire channels": 4,
+            "min_angle": -60,
+            "max_angle": 60,
+            "accurate": 1
+        },
+        {
+            "name": "R5",
+            "type": "guidance radar",
+            "detection_range": 200,
+            "Fire channels": 4,
+            "min_angle": 60,
+            "max_angle": 180,
+            "accurate": 1
+        },
+        {
+            "name": "R6",
+            "type": "guidance radar",
+            "detection_range": 200,
+            "Fire channels": 4,
+            "min_angle": 180,
+            "max_angle": -60,
+            "accurate": 1
+        },
+        {
+            "name": "R7",
+            "type": "guidance radar",
+            "detection_range": 200,
+            "Fire channels": 4,
+            "min_angle": -60,
+            "max_angle": 60,
+            "accurate": 1
+        },
+        {
+            "name": "R8",
+            "type": "guidance radar",
+            "detection_range": 200,
+            "Fire channels": 4,
+            "min_angle": 60,
+            "max_angle": 180,
+            "accurate": 1
+        },
+        {
+            "name": "R9",
+            "type": "guidance radar",
+            "detection_range": 200,
+            "Fire channels": 4,
+            "min_angle": 180,
+            "max_angle": -60,
+            "accurate": 1
+        }
+    ]
+}
