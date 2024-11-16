@@ -5,7 +5,7 @@ FROM ubuntu:20.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # 更新包列表并安装必要的依赖
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     curl \
     bzip2 \
@@ -31,11 +31,11 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
 # 创建 Conda 环境，包含 Python 3.10
 RUN conda create -y -n myenv python=3.10
 
-# 激活环境并安装项目中的 requirements.txt 文件中的依赖
+# 激活 Conda 环境并安装项目中的依赖
 COPY requirements.txt /workspace/
 RUN /bin/bash -c "source ${CONDA_DIR}/etc/profile.d/conda.sh && \
     conda activate myenv && \
-    pip install -r /workspace/requirements.txt"
+    pip install --no-cache-dir -r /workspace/requirements.txt"
 
 # 设置工作目录
 WORKDIR /workspace
