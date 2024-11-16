@@ -46,42 +46,39 @@ class MovementSystem(System):
         self.event_manager = event_manager
 
     def update(self, entities, delta_time):
+        """更新实体的移动状态"""
         for entity in entities:
             movement = entity.get_component(MovementComponent)
             position = entity.get_component(PositionComponent)
             pathfinding = entity.get_component(PathfindingComponent)
 
             if movement and position:
-                # 如果有路径规划，并且当前路径中有转向点
-                if pathfinding is not None and pathfinding.current_goal is not None:
+                # 如果路径规划中有目标点，处理移动
+                if pathfinding and pathfinding.current_goal:
+                    self.move_towards_goal(entity, position, movement, pathfinding, delta_time)
 
-                    # 计算向当前转向点的向量
-                    direction = pathfinding.current_goal - \
-                        position.get_param("position")[:DD]
-                    distance = np.linalg.norm(direction)
+    def move_towards_goal(self, entity, position, movement, pathfinding, delta_time):
+        """执行移动逻辑，处理路径中的当前目标点"""
+        direction = pathfinding.current_goal - np.array(position.get_param("position")[:2])
+        distance = np.linalg.norm(direction)
 
-                    if distance > 0:
-                        # 将 direction 转换为浮点类型，以防止除法引发数据类型冲突
-                        direction = direction.astype(np.float64) / distance
+        if distance > 0:
+            direction = direction.astype(np.float64) / distance  # 归一化方向向量
 
-                    # 更新位置，确保不会超过转向点
-                    step_distance = min(
-                        distance, movement.get_param("speed") * delta_time)
-                    position.get_param("position")[
-                        0] += direction[0] * step_distance
-                    position.get_param("position")[
-                        1] += direction[1] * step_distance
+        step_distance = min(distance, movement.get_param("speed") * delta_time)
+        position.set_param("position", [
+            position.get_param("position")[0] + direction[0] * step_distance,
+            position.get_param("position")[1] + direction[1] * step_distance,
+            position.get_param("position")[2]  # 保持 z 轴不变
+        ])
 
-                    # 检查是否到达转向点
-                    if np.linalg.norm(position.get_param("position")[:2] - pathfinding.current_goal) < 0.1:
-                        # 如果路径还有剩余转向点，继续移动到下一个转向点
-                        if pathfinding.path:
-                            pathfinding.current_goal = pathfinding.path.pop(0)
-                        else:
-                            # 如果路径为空，意味着到达了最终目标
-                            movement.target_position = None
-                            self.event_manager.post(
-                                Event('MoveCompleteEvent', entity, None))
+        # 检查是否到达当前目标点
+        if np.linalg.norm(position.get_param("position")[:2] - pathfinding.current_goal) < 0.1:
+            if pathfinding.path:  # 还有更多路径点
+                pathfinding.current_goal = pathfinding.path.pop(0)
+            else:  # 路径结束，完成移动
+                movement.target_position = None
+                self.event_manager.post(Event('MoveCompleteEvent', entity.entity_id, "move_complete"))
 
 
 class PathfindingSystem(System):
@@ -91,76 +88,11 @@ class PathfindingSystem(System):
         self.game_map = game_map
         self.last_goal_map = {}  # 记录实体的上次目标，避免重复计算
 
-    def a_star(self, start, goal):
-        """A*算法路径规划，结合分层地图结构"""
+    def a_star(self, start, goal, grid):
+        """A*算法路径规划"""
+        start = tuple(map(int, start[:2]))
+        goal = tuple(map(int, goal[:2]))
 
-        # 全局路径规划
-        start_global, start_local = self.game_map.get_global_position(
-            *start[:2])
-        goal_global, goal_local = self.game_map.get_global_position(*goal[:2])
-
-        if start_global != goal_global:
-            global_path = self.a_star_global(start_global, goal_global)
-            if not global_path:
-                return []  # 如果全局路径不可达，返回空路径
-
-            path = []
-            for block in global_path:
-                # 在每个块中进行局部规划
-                local_start = start_local if block == start_global else (0, 0)
-                local_goal = goal_local if block == goal_global else (self.game_map.local_block_size - 1,
-                                                                      self.game_map.local_block_size - 1)
-                local_grid = self.game_map.get_local_grid(*block)
-                local_path = self.a_star_local(
-                    local_start, local_goal, local_grid)
-
-                if not local_path:
-                    return []  # 如果局部路径不可达，返回空路径
-
-                path.extend([(block[0] * self.game_map.local_block_size + lp[0],
-                              block[1] * self.game_map.local_block_size + lp[1]) for lp in local_path])
-        else:
-            # 如果在同一个块内，则直接进行局部规划
-            local_grid = self.game_map.get_local_grid(*start_global)
-            path = self.a_star_local(start_local, goal_local, local_grid)
-
-        return path
-
-    def a_star_global(self, start_global, goal_global):
-        """全局路径规划：只计算跨越的区域块"""
-        def heuristic(a, b):
-            return np.linalg.norm(np.array(a) - np.array(b))
-
-        open_set = set([start_global])
-        came_from = {}
-        g_score = {start_global: 0}
-        f_score = {start_global: heuristic(start_global, goal_global)}
-
-        while open_set:
-            current = min(open_set, key=lambda o: f_score.get(o, float('inf')))
-            if current == goal_global:
-                path = []
-                while current in came_from:
-                    path.append(current)
-                    current = came_from[current]
-                path.reverse()
-                return path
-
-            open_set.remove(current)
-            for neighbor in self.get_global_neighbors(current):
-                tentative_g_score = g_score[current] + \
-                    heuristic(current, neighbor)
-                if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
-                    came_from[neighbor] = current
-                    g_score[neighbor] = tentative_g_score
-                    f_score[neighbor] = g_score[neighbor] + \
-                        heuristic(neighbor, goal_global)
-                    open_set.add(neighbor)
-
-        return []
-
-    def a_star_local(self, start, goal, grid):
-        """局部路径规划，在每个区域块中寻找路径"""
         def heuristic(a, b):
             return np.linalg.norm(np.array(a) - np.array(b))
 
@@ -180,30 +112,18 @@ class PathfindingSystem(System):
                 return path
 
             open_set.remove(current)
-            for neighbor in self.get_local_neighbors(current, grid):
-                tentative_g_score = g_score[current] + \
-                    heuristic(current, neighbor)
+            for neighbor in self.get_neighbors(current, grid):
+                tentative_g_score = g_score[current] + heuristic(current, neighbor)
                 if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g_score
-                    f_score[neighbor] = g_score[neighbor] + \
-                        heuristic(neighbor, goal)
+                    f_score[neighbor] = g_score[neighbor] + heuristic(neighbor, goal)
                     open_set.add(neighbor)
 
         return []
 
-    def get_global_neighbors(self, node):
-        """获取全局区域块的邻居"""
-        neighbors = [
-            (node[0], node[1] + 1),
-            (node[0] + 1, node[1]),
-            (node[0], node[1] - 1),
-            (node[0] - 1, node[1])
-        ]
-        return [n for n in neighbors if self.game_map.is_position_within_bounds(n[0], n[1])]
-
-    def get_local_neighbors(self, node, grid):
-        """获取局部地图中节点的邻居"""
+    def get_neighbors(self, node, grid):
+        """获取邻居节点"""
         neighbors = [
             (node[0], node[1] + 1),
             (node[0] + 1, node[1]),
@@ -211,7 +131,8 @@ class PathfindingSystem(System):
             (node[0] - 1, node[1])
         ]
         valid_neighbors = [
-            n for n in neighbors if 0 <= n[0] < len(grid[0]) and 0 <= n[1] < len(grid) and grid[n[1]][n[0]] == 0
+            n for n in neighbors
+            if 0 <= n[0] < len(grid[0]) and 0 <= n[1] < len(grid) and grid[n[1]][n[0]] == 0
         ]
         return valid_neighbors
 
@@ -219,7 +140,7 @@ class PathfindingSystem(System):
         """处理路径规划请求"""
         position = entity.get_component(PositionComponent)
 
-        # 如果目标位置没有变化，避免重复规划路径
+        # 避免重复路径规划
         if entity.entity_id in self.last_goal_map and np.array_equal(self.last_goal_map[entity.entity_id], target_position):
             return
 
@@ -227,14 +148,104 @@ class PathfindingSystem(System):
         self.last_goal_map[entity.entity_id] = target_position
 
         if position is not None and target_position is not None:
-            # 执行路径规划
-            path = self.a_star(position.get_param("position"), target_position)
+            # 全局路径规划
+            start = position.get_param("position")
+            path = self.plan_path(start, target_position)
 
+            # 设置路径规划结果
             if path:
                 pathfinding = entity.get_component(PathfindingComponent)
                 if pathfinding:
                     pathfinding.path = path
                     pathfinding.current_goal = pathfinding.path.pop(0)
+
+    def a_star_global(self, start_global, goal_global):
+        """全局路径规划：只计算跨越的区域块"""
+        def heuristic(a, b):
+            return np.linalg.norm(np.array(a) - np.array(b))
+
+        open_set = set([start_global])
+        came_from = {}
+        g_score = {start_global: 0}
+        f_score = {start_global: heuristic(start_global, goal_global)}
+
+        while open_set:
+            current = min(open_set, key=lambda o: f_score.get(o, float('inf')))
+
+            # 如果到达目标区域块
+            if current == goal_global:
+                path = []
+                while current in came_from:
+                    path.append(current)
+                    current = came_from[current]
+                path.reverse()
+                return path
+
+            open_set.remove(current)
+
+            # 遍历当前节点的邻居区域块
+            for neighbor in self.get_global_neighbors(current):
+                tentative_g_score = g_score[current] + heuristic(current, neighbor)
+                if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g_score
+                    f_score[neighbor] = g_score[neighbor] + heuristic(neighbor, goal_global)
+                    open_set.add(neighbor)
+
+        return []  # 如果没有路径找到
+
+    def get_global_neighbors(self, block):
+        """获取区域块的邻居"""
+        neighbors = [
+            (block[0], block[1] + 1),  # 上
+            (block[0] + 1, block[1]),  # 右
+            (block[0], block[1] - 1),  # 下
+            (block[0] - 1, block[1])   # 左
+        ]
+        return [
+            neighbor for neighbor in neighbors
+            if self.game_map.is_global_position_within_bounds(*neighbor)
+        ]
+
+
+    def plan_path(self, start, goal):
+        """结合分层地图的路径规划"""
+        # 全局路径规划
+        start_global, start_local = self.game_map.get_global_position(*start[:2])
+        goal_global, goal_local = self.game_map.get_global_position(*goal[:2])
+    
+        if start_global != goal_global:
+            global_path = self.a_star_global(start_global, goal_global)
+            if not global_path:
+                return []  # 全局路径不可达
+    
+            path = []
+            for i in range(len(global_path) - 1):
+                block = global_path[i]
+                next_block = global_path[i + 1]
+    
+                # 获取当前块和下一个块的组合地图
+                local_grid = self.game_map.get_combined_grid(block, next_block)
+    
+                # 在组合地图中进行局部路径规划
+                local_start = start_local if i == 0 else (0, 0)
+                local_goal = goal_local if i == len(global_path) - 2 else (self.game_map.local_block_size - 1,
+                                                                           self.game_map.local_block_size - 1)
+    
+                local_path = self.a_star_local(local_start, local_goal, local_grid)
+                if not local_path:
+                    return []  # 局部路径不可达
+    
+                # 将局部路径转换为全局路径
+                path.extend([(block[0] * self.game_map.local_block_size + lp[0],
+                              block[1] * self.game_map.local_block_size + lp[1]) for lp in local_path])
+        else:
+            # 如果起点和终点在同一个块内
+            local_grid = self.game_map.get_local_grid(start_global)
+            path = self.a_star_local(start_local, goal_local, local_grid)
+    
+        return path
+
 
 
 class DetectionSystem(System):

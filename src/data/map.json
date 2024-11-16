@@ -1,7 +1,7 @@
 {
     "map_info": {
-        "global_width": 10,
-        "global_height": 10,
+        "global_width": 1000,
+        "global_height": 1200,
         "local_block_size": 10
     },
     "map_data": [

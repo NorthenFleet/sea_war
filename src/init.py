@@ -110,6 +110,45 @@ class Map:
         if local_grid is not None:
             return local_grid[local_y][local_x] != 0  # 假设0表示通行，非0表示障碍物
         return True  # 如果没有找到局部块数据，视为障碍物
+    
+    def is_global_position_within_bounds(self, x, y):
+        """检查全局区域块是否在地图边界内"""
+        return 0 <= x < self.global_width and 0 <= y < self.global_height
+
+    def get_global_position(self, x, y):
+        """根据局部坐标计算全局区域块索引和局部相对坐标"""
+        block_x = x // self.local_block_size
+        block_y = y // self.local_block_size
+        local_x = x % self.local_block_size
+        local_y = y % self.local_block_size
+        return (block_x, block_y), (local_x, local_y)
+    
+    def _extract_local_block(self, start_x, start_y):
+        """提取局部块数据"""
+        end_x = min(start_x + self.local_block_size, self.global_width)
+        end_y = min(start_y + self.local_block_size, self.global_height)
+        return [row[start_x:end_x] for row in self.grid[start_y:end_y]]
+
+    def get_combined_grid(self, block, next_block):
+        """获取当前块和邻近块组合后的地图"""
+        combined_grid = []
+
+        # 当前块和下一个块的范围
+        x1, y1 = block
+        x2, y2 = next_block
+
+        # 确定组合区域的起点和终点（包含当前块及其邻近块）
+        start_x = min(x1, x2) * self.local_block_size
+        start_y = min(y1, y2) * self.local_block_size
+        end_x = (max(x1, x2) + 1) * self.local_block_size
+        end_y = (max(y1, y2) + 1) * self.local_block_size
+
+        # 提取组合区域的数据
+        for y in range(start_y, min(end_y, self.global_height)):
+            combined_grid.append(self.grid[y][start_x:min(end_x, self.global_width)])
+
+        return combined_grid
+
 
     def display_map(self):
         """打印全局地图的概览"""
