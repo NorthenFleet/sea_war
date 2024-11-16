@@ -136,6 +136,10 @@ class PathfindingSystem(System):
         ]
         return valid_neighbors
 
+    def a_star_local(self, start, goal, local_grid):
+        """局部路径规划"""
+        return self.a_star(start, goal, local_grid)
+
     def handle_path_request(self, entity, target_position):
         """处理路径规划请求"""
         position = entity.get_component(PositionComponent)
@@ -204,47 +208,47 @@ class PathfindingSystem(System):
         ]
         return [
             neighbor for neighbor in neighbors
-            if self.game_map.is_global_position_within_bounds(*neighbor)
+            if self.game_map.is_position_within_bounds(*neighbor)
         ]
-
 
     def plan_path(self, start, goal):
         """结合分层地图的路径规划"""
         # 全局路径规划
         start_global, start_local = self.game_map.get_global_position(*start[:2])
         goal_global, goal_local = self.game_map.get_global_position(*goal[:2])
-    
+
         if start_global != goal_global:
             global_path = self.a_star_global(start_global, goal_global)
             if not global_path:
                 return []  # 全局路径不可达
-    
+
             path = []
             for i in range(len(global_path) - 1):
                 block = global_path[i]
                 next_block = global_path[i + 1]
-    
+
                 # 获取当前块和下一个块的组合地图
                 local_grid = self.game_map.get_combined_grid(block, next_block)
-    
+
                 # 在组合地图中进行局部路径规划
                 local_start = start_local if i == 0 else (0, 0)
                 local_goal = goal_local if i == len(global_path) - 2 else (self.game_map.local_block_size - 1,
                                                                            self.game_map.local_block_size - 1)
-    
+
                 local_path = self.a_star_local(local_start, local_goal, local_grid)
                 if not local_path:
                     return []  # 局部路径不可达
-    
+
                 # 将局部路径转换为全局路径
                 path.extend([(block[0] * self.game_map.local_block_size + lp[0],
                               block[1] * self.game_map.local_block_size + lp[1]) for lp in local_path])
         else:
             # 如果起点和终点在同一个块内
-            local_grid = self.game_map.get_local_grid(start_global)
+            local_grid = self.game_map.get_local_grid(*start_global)
             path = self.a_star_local(start_local, goal_local, local_grid)
-    
+
         return path
+
 
 
 
