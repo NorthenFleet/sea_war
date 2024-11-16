@@ -20,7 +20,7 @@ class RenderManager:
         """加载游戏中图片，作为2.5D显示基础"""
         base_path = os.path.join(os.getcwd(), 'src')  # 假设 src 文件夹在当前工作目录下
         image_paths = {
-            'terrain': os.path.join(base_path, 'images', 'map.jpg'),
+            'terrain': os.path.join(base_path, 'images', 'ground_small.jpg'),
             'ship': os.path.join(base_path, 'images', 'ship.png'),
             'submarine': os.path.join(base_path, 'images', 'submarine.png'),
             'missile': os.path.join(base_path, 'images', 'missile.png'),
