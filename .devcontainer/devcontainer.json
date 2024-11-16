@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-dockerfile
 {
@@ -24,3 +25,22 @@
 	// Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "devcontainer"
 }
+=======
+{
+    "name": "sea_war Container",
+    "image": "python:3.11",
+    "workspaceFolder": "/Users/sunyi/Documents/WorkSpace/Simulation/UnmanedClusterAI",
+    "settings": {
+        "python.pythonPath": "/usr/local/bin/python",
+        "python.autoComplete.addBrackets": true
+    },
+    "extensions": [
+        "ms-python.python"
+    ],
+    "forwardPorts": [
+        5003,
+        7070,
+        3000
+    ]
+}
+>>>>>>> 578912b2fc229d1cca77221c78fb5fe65afde931
