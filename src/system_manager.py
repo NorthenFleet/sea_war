@@ -86,11 +86,68 @@ class PathfindingSystem(System):
         self.event_manager = event_manager
         self.game_map = game_map
 
-    def a_star(self, start, goal, grid):
-        """通用的 A* 路径规划算法"""
-        start = tuple(map(int, start))
-        goal = tuple(map(int, goal))
+    def handle_path_request(self, entity, target_position):
+        """
+        处理路径规划请求：从当前位置到目标位置的路径规划。
+        """
+        position = entity.get_component(PositionComponent)
+        if position is None or target_position is None:
+            return
 
+        # 获取起点和目标点
+        start = position.get_param("position")
+        path = self.plan_path(start, target_position)
+
+        # 更新到 PathfindingComponent
+        pathfinding = entity.get_component(PathfindingComponent)
+        if pathfinding:
+            pathfinding.path = path
+            if path:
+                pathfinding.current_goal = pathfinding.path.pop(0)
+
+    def plan_path(self, start, goal):
+        """
+        根据起始点和终点规划路径，适配大小地图。
+        """
+        start_global, start_local = self.game_map.get_global_position(*start[:2])
+        goal_global, goal_local = self.game_map.get_global_position(*goal[:2])
+
+        if start_global != goal_global:
+            # 小地图路径规划
+            global_path = self.a_star(start_global, goal_global, self.game_map.compressed_map)
+            if not global_path:
+                return []
+
+            full_path = []
+            for i in range(len(global_path) - 1):
+                block = global_path[i]
+                next_block = global_path[i + 1]
+
+                # 提取局部地图组合
+                local_grid = self.game_map.get_combined_grid(block, next_block)
+                local_start = start_local if i == 0 else (0, 0)
+                local_goal = goal_local if i == len(global_path) - 2 else (
+                    self.game_map.local_block_size - 1, self.game_map.local_block_size - 1)
+
+                # 在局部地图中规划路径
+                local_path = self.a_star(local_start, local_goal, local_grid)
+                if not local_path:
+                    return []
+
+                # 转换为全局路径坐标
+                full_path.extend([(block[0] * self.game_map.local_block_size + lp[0],
+                                   block[1] * self.game_map.local_block_size + lp[1]) for lp in local_path])
+
+            return full_path
+        else:
+            # 在同一个块中，直接局部规划
+            local_grid = self.game_map.get_combined_grid(start_global, goal_global)
+            return self.a_star(start_local, goal_local, local_grid)
+
+    def a_star(self, start, goal, grid):
+        """
+        通用A*算法，支持小地图和局部大地图。
+        """
         def heuristic(a, b):
             return np.linalg.norm(np.array(a) - np.array(b))
 
@@ -121,44 +178,14 @@ class PathfindingSystem(System):
         return []
 
     def get_neighbors(self, node, grid):
-        """获取邻居节点"""
+        """获取当前节点的邻居"""
         neighbors = [
             (node[0], node[1] + 1),
             (node[0] + 1, node[1]),
             (node[0], node[1] - 1),
             (node[0] - 1, node[1])
         ]
-        valid_neighbors = [
-            n for n in neighbors
-            if 0 <= n[0] < len(grid[0]) and 0 <= n[1] < len(grid) and grid[n[1]][n[0]] == 0
-        ]
-        return valid_neighbors
-
-    def plan_global_path(self, start, goal):
-        """在小地图上进行全局路径规划"""
-        small_grid = self.game_map.compressed_map
-        small_start = (
-            start[0] // self.game_map.local_block_size,
-            start[1] // self.game_map.local_block_size
-        )
-        small_goal = (
-            goal[0] // self.game_map.local_block_size,
-            goal[1] // self.game_map.local_block_size
-        )
-        return self.a_star(small_start, small_goal, small_grid)
-
-    def plan_local_path(self, start, goal):
-        """在大地图局部矩形区域进行路径规划"""
-        min_x = min(start[0], goal[0])
-        min_y = min(start[1], goal[1])
-        max_x = max(start[0], goal[0])
-        max_y = max(start[1], goal[1])
-
-        local_grid = self.game_map.get_local_map((min_x, min_y), (max_x, max_y))
-        local_start = (start[0] - min_x, start[1] - min_y)
-        local_goal = (goal[0] - min_x, goal[1] - min_y)
-
-        return self.a_star(local_start, local_goal, local_grid)
+        return [n for n in neighbors if 0 <= n[0] < len(grid[0]) and 0 <= n[1] < len(grid) and grid[n[1]][n[0]] == 0]
 
 
 class PathfindingSystem_back(System):
@@ -328,8 +355,6 @@ class PathfindingSystem_back(System):
             path = self.a_star_local(start_local, goal_local, local_grid)
 
         return path
-
-
 
 
 class DetectionSystem(System):
