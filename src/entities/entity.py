@@ -72,8 +72,9 @@ class MovementComponent(Component):
 
 class PathfindingComponent:
     def __init__(self):
-        self.path = []  # 路径上的点
-        self.current_goal = None  # 当前移动的目标点
+        self.global_path = []  # 小地图上的路径节点
+        self.local_path = []   # 大地图局部路径的具体点
+        self.current_goal = None  # 当前移动目标点
 
 
 class SensorComponent(Component):

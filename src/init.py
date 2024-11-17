@@ -50,13 +50,71 @@ class Scenario(DataLoader):
         super().__init__(path)
         self.path = path
 
-
 class Map:
     def __init__(self, path):
         self.global_width = 0
         self.global_height = 0
         self.local_block_size = 0
-        self.map_data = []  # 存储所有的局部地图数据
+        self.map_data = []  # 大地图数据
+        self.compressed_map = []  # 小地图（压缩后生成）
+        self.load_map(path)
+        self.compress_map()  # 初始化时生成小地图
+
+    def load_map(self, path):
+        """从 json 文件中加载大地图数据"""
+        full_path = os.path.abspath(path)
+        try:
+            with open(full_path, 'r') as f:
+                data = json.load(f)
+                self.global_width = data['map_info']['global_width']
+                self.global_height = data['map_info']['global_height']
+                self.local_block_size = data['map_info']['local_block_size']
+                self.map_data = data['map_data']
+        except FileNotFoundError:
+            print(f"Error: File {full_path} not found.")
+        except json.JSONDecodeError:
+            print(f"Error: Failed to parse JSON file {full_path}.")
+
+    def compress_map(self):
+        """压缩生成小地图，每个块用数字表示"""
+        small_width = self.global_width // self.local_block_size
+        small_height = self.global_height // self.local_block_size
+        compressed = []
+
+        for y in range(small_height):
+            row = []
+            for x in range(small_width):
+                # 提取对应大地图的局部块数据
+                start_x = x * self.local_block_size
+                start_y = y * self.local_block_size
+                block = [
+                    self.map_data[py][start_x:start_x + self.local_block_size]
+                    for py in range(start_y, start_y + self.local_block_size)
+                ]
+                # 如果块中任何位置为1，则视为障碍物
+                is_obstacle = any(cell == 1 for row in block for cell in row)
+                row.append(1 if is_obstacle else 0)
+            compressed.append(row)
+        self.compressed_map = compressed
+
+    def get_local_map(self, start, end):
+        """提取大地图的局部矩形区域"""
+        start_x, start_y = start
+        end_x, end_y = end
+        return [row[start_x:end_x + 1] for row in self.map_data[start_y:end_y + 1]]
+
+    def display_map(self):
+        """打印小地图（压缩地图）"""
+        for row in self.compressed_map:
+            print(" ".join(map(str, row)))
+
+
+class Map_back:
+    def __init__(self, path):
+        self.global_width = 0
+        self.global_height = 0
+        self.local_block_size = 0
+        self.map_data = []  # 存储整体地图数据
         self.load_map(path)  # 加载地图数据
 
     def load_map(self, path):
@@ -71,45 +129,56 @@ class Map:
                 self.global_width = data['map_info']['global_width']
                 self.global_height = data['map_info']['global_height']
                 self.local_block_size = data['map_info']['local_block_size']
-                self.map_data = data['map_data']  # 加载局部地图数据
+                self.map_data = data['map_data']  # 整体地图数据
         except FileNotFoundError:
-            print(f"Error: File {full_path} not found.")
+            print(f"Error: File {path} not found.")
         except json.JSONDecodeError:
-            print(f"Error: Failed to parse JSON file {full_path}.")
+            print(f"Error: Failed to parse JSON file {path}.")
 
     def get_local_grid(self, global_x, global_y):
         """根据全局块坐标获取局部地图"""
-        for block in self.map_data:
-            if block['global_position'] == [global_x, global_y]:
-                return block['local_grid']
-        return None  # 如果找不到对应的局部块，则返回 None
+        start_x = global_x * self.local_block_size
+        start_y = global_y * self.local_block_size
+        end_x = start_x + self.local_block_size
+        end_y = start_y + self.local_block_size
 
-    def is_position_within_bounds(self, x, y):
-        """检查给定的全局坐标是否在地图范围内"""
-        return 0 <= x < self.global_width * self.local_block_size and \
-            0 <= y < self.global_height * self.local_block_size
+        if not self.is_global_position_within_bounds(global_x, global_y):
+            return None
+
+        # 提取局部地图数据
+        return [
+            row[start_x:end_x]
+            for row in self.map_data[start_y:end_y]
+        ]
+
+    def is_global_position_within_bounds(self, x, y):
+        """检查全局块坐标是否在地图边界内"""
+        return 0 <= x < self.global_width and 0 <= y < self.global_height
 
     def get_global_position(self, x, y):
-        """根据全局坐标计算所属的大格子坐标和小格子内的局部坐标"""
+        """根据全局坐标计算所属的大格子坐标和局部格子内的坐标"""
         global_x = x // self.local_block_size
         global_y = y // self.local_block_size
         local_x = x % self.local_block_size
         local_y = y % self.local_block_size
         return (global_x, global_y), (local_x, local_y)
 
+    def is_position_within_bounds(self, x, y):
+        """检查全局坐标是否在地图范围内"""
+        return 0 <= x < self.global_width * self.local_block_size and \
+               0 <= y < self.global_height * self.local_block_size
+
     def is_obstacle(self, x, y):
-        """
-        检查给定全局坐标是否是障碍物
-        """
+        """检查全局坐标是否是障碍物"""
         if not self.is_position_within_bounds(x, y):
             return True  # 超出边界视为障碍物
 
         (global_x, global_y), (local_x, local_y) = self.get_global_position(x, y)
         local_grid = self.get_local_grid(global_x, global_y)
 
-        if local_grid is not None:
+        if local_grid:
             return local_grid[local_y][local_x] != 0  # 假设0表示通行，非0表示障碍物
-        return True  # 如果没有找到局部块数据，视为障碍物
+        return True  # 如果找不到局部块数据，视为障碍物
 
     def get_combined_grid(self, block, next_block):
         """获取当前块和邻近块组合后的地图"""
@@ -119,17 +188,16 @@ class Map:
         x1, y1 = block
         x2, y2 = next_block
 
-        # 确定组合区域的起点和终点（包含当前块及其邻近块）
+        # 确定组合区域的起点和终点
         start_x = min(x1, x2) * self.local_block_size
         start_y = min(y1, y2) * self.local_block_size
         end_x = (max(x1, x2) + 1) * self.local_block_size
         end_y = (max(y1, y2) + 1) * self.local_block_size
 
         # 构建组合区域
-        for global_y in range(start_y, min(end_y, self.global_height * self.local_block_size)):
+        for global_y in range(start_y, min(end_y, len(self.map_data))):
             row = []
-            for global_x in range(start_x, min(end_x, self.global_width * self.local_block_size)):
-                # 判断所在的全局块和局部块内的坐标
+            for global_x in range(start_x, min(end_x, len(self.map_data[0]))):
                 (block_x, block_y), (local_x, local_y) = self.get_global_position(global_x, global_y)
                 local_grid = self.get_local_grid(block_x, block_y)
                 if local_grid:
@@ -143,14 +211,14 @@ class Map:
     def display_map(self):
         """打印全局地图的概览"""
         print(f"Map Size: {self.global_width} x {self.global_height} (Blocks)")
-        print(
-            f"Each Block Size: {self.local_block_size} x {self.local_block_size}")
-        for block in self.map_data:
-            global_pos = block["global_position"]
-            print(f"Block at {global_pos}:")
-            for row in block["local_grid"]:
-                print(" ".join(map(str, row)))
-            print()  # 空行分隔不同的块
+        print(f"Each Block Size: {self.local_block_size} x {self.local_block_size}")
+        for global_y in range(self.global_height):
+            for global_x in range(self.global_width):
+                local_grid = self.get_local_grid(global_x, global_y)
+                print(f"Block at ({global_x}, {global_y}):")
+                for row in local_grid:
+                    print(" ".join(map(str, row)))
+                print()  # 空行分隔不同的块
 
 
 class DeviceTable(DataLoader):

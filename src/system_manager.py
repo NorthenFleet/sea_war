@@ -80,8 +80,88 @@ class MovementSystem(System):
                 movement.target_position = None
                 self.event_manager.post(Event('MoveCompleteEvent', entity.entity_id, "move_complete"))
 
-
 class PathfindingSystem(System):
+    def __init__(self, game_data, event_manager, game_map):
+        super().__init__(game_data)
+        self.event_manager = event_manager
+        self.game_map = game_map
+
+    def a_star(self, start, goal, grid):
+        """通用的 A* 路径规划算法"""
+        start = tuple(map(int, start))
+        goal = tuple(map(int, goal))
+
+        def heuristic(a, b):
+            return np.linalg.norm(np.array(a) - np.array(b))
+
+        open_set = set([start])
+        came_from = {}
+        g_score = {start: 0}
+        f_score = {start: heuristic(start, goal)}
+
+        while open_set:
+            current = min(open_set, key=lambda o: f_score.get(o, float('inf')))
+            if current == goal:
+                path = []
+                while current in came_from:
+                    path.append(current)
+                    current = came_from[current]
+                path.reverse()
+                return path
+
+            open_set.remove(current)
+            for neighbor in self.get_neighbors(current, grid):
+                tentative_g_score = g_score[current] + heuristic(current, neighbor)
+                if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g_score
+                    f_score[neighbor] = g_score[neighbor] + heuristic(neighbor, goal)
+                    open_set.add(neighbor)
+
+        return []
+
+    def get_neighbors(self, node, grid):
+        """获取邻居节点"""
+        neighbors = [
+            (node[0], node[1] + 1),
+            (node[0] + 1, node[1]),
+            (node[0], node[1] - 1),
+            (node[0] - 1, node[1])
+        ]
+        valid_neighbors = [
+            n for n in neighbors
+            if 0 <= n[0] < len(grid[0]) and 0 <= n[1] < len(grid) and grid[n[1]][n[0]] == 0
+        ]
+        return valid_neighbors
+
+    def plan_global_path(self, start, goal):
+        """在小地图上进行全局路径规划"""
+        small_grid = self.game_map.compressed_map
+        small_start = (
+            start[0] // self.game_map.local_block_size,
+            start[1] // self.game_map.local_block_size
+        )
+        small_goal = (
+            goal[0] // self.game_map.local_block_size,
+            goal[1] // self.game_map.local_block_size
+        )
+        return self.a_star(small_start, small_goal, small_grid)
+
+    def plan_local_path(self, start, goal):
+        """在大地图局部矩形区域进行路径规划"""
+        min_x = min(start[0], goal[0])
+        min_y = min(start[1], goal[1])
+        max_x = max(start[0], goal[0])
+        max_y = max(start[1], goal[1])
+
+        local_grid = self.game_map.get_local_map((min_x, min_y), (max_x, max_y))
+        local_start = (start[0] - min_x, start[1] - min_y)
+        local_goal = (goal[0] - min_x, goal[1] - min_y)
+
+        return self.a_star(local_start, local_goal, local_grid)
+
+
+class PathfindingSystem_back(System):
     def __init__(self, game_data, event_manager, game_map):
         super().__init__(game_data)
         self.event_manager = event_manager
