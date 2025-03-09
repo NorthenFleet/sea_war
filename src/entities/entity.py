@@ -31,16 +31,6 @@ class Component:
         self.params[key] = value
 
 
-class Component:
-    def __init__(self, **kwargs):
-        self.params = kwargs
-
-    def get_param(self, key):
-        return self.params.get(key, None)
-
-    def set_param(self, key, value):
-        self.params[key] = value
-
 
 class HealthComponent(Component):
     def __init__(self, max_health):
