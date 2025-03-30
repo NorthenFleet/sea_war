@@ -50,15 +50,15 @@ class Game:
             self.communication_server = CommunicationServer(port=server_port)
             self.communication_server.start()
             # 服务器模式下启动UE通信服务
-            self.ue_communication = UECommunicationServer(port=9998)
+            # self.ue_communication = UECommunicationServer(port=9998)
             self.ue_communication.start()
         else:
             self.communication_client = CommunicationClient(
                 server_host, server_port)
             threading.Thread(target=self.communication_client.start, daemon=True).start()
             # 客户端模式下启动UE通信客户端
-            self.ue_communication = UECommunicationClient(port=9998)
-            threading.Thread(target=self.ue_communication.start, daemon=True).start()
+            # self.ue_communication = UECommunicationClient(port=9998)
+            # threading.Thread(target=self.ue_communication.start, daemon=True).start()
 
     def run(self):
         game_data, sides = self.env.reset_game()
