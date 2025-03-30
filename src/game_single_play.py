@@ -78,9 +78,9 @@ class Game:
                     all_command_list.append(action)
 
             # 3. 处理网络玩家动作
-            net_actions = self.network_update()
-            if net_actions:
-                all_command_list.extend(net_actions)
+            # net_actions = self.network_update()
+            # if net_actions:
+            #     all_command_list.extend(net_actions)
                 
             # 4. 处理UE输入的指令
             ue_commands = self.get_ue_commands()
