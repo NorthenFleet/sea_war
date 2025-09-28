@@ -55,11 +55,13 @@ class MovementSystem(System):
             if movement and position:
                 # 如果路径规划中有目标点，处理移动
                 if pathfinding and pathfinding.current_goal:
-                    self.move_towards_goal(entity, position, movement, pathfinding, delta_time)
+                    self.move_towards_goal(
+                        entity, position, movement, pathfinding, delta_time)
 
     def move_towards_goal(self, entity, position, movement, pathfinding, delta_time):
         """执行移动逻辑，处理路径中的当前目标点"""
-        direction = pathfinding.current_goal - np.array(position.get_param("position")[:2])
+        direction = pathfinding.current_goal - \
+            np.array(position.get_param("position")[:2])
         distance = np.linalg.norm(direction)
 
         if distance > 0:
@@ -78,7 +80,9 @@ class MovementSystem(System):
                 pathfinding.current_goal = pathfinding.path.pop(0)
             else:  # 路径结束，完成移动
                 movement.target_position = None
-                self.event_manager.post(Event('MoveCompleteEvent', entity.entity_id, "move_complete"))
+                self.event_manager.post(
+                    Event('MoveCompleteEvent', entity.entity_id, "move_complete"))
+
 
 class PathfindingSystem(System):
     def __init__(self, game_data, event_manager, game_map):
@@ -109,12 +113,14 @@ class PathfindingSystem(System):
         """
         根据起始点和终点规划路径，适配大小地图。
         """
-        start_global, start_local = self.game_map.get_global_position(*start[:2])
+        start_global, start_local = self.game_map.get_global_position(
+            *start[:2])
         goal_global, goal_local = self.game_map.get_global_position(*goal[:2])
 
         if start_global != goal_global:
             # 小地图路径规划
-            global_path = self.a_star(start_global, goal_global, self.game_map.compressed_map)
+            global_path = self.a_star(
+                start_global, goal_global, self.game_map.compressed_map)
             if not global_path:
                 return []
 
@@ -141,7 +147,8 @@ class PathfindingSystem(System):
             return full_path
         else:
             # 在同一个块中，直接局部规划
-            local_grid = self.game_map.get_combined_grid(start_global, goal_global)
+            local_grid = self.game_map.get_combined_grid(
+                start_global, goal_global)
             return self.a_star(start_local, goal_local, local_grid)
 
     def a_star(self, start, goal, grid):
@@ -168,11 +175,13 @@ class PathfindingSystem(System):
 
             open_set.remove(current)
             for neighbor in self.get_neighbors(current, grid):
-                tentative_g_score = g_score[current] + heuristic(current, neighbor)
+                tentative_g_score = g_score[current] + \
+                    heuristic(current, neighbor)
                 if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g_score
-                    f_score[neighbor] = g_score[neighbor] + heuristic(neighbor, goal)
+                    f_score[neighbor] = g_score[neighbor] + \
+                        heuristic(neighbor, goal)
                     open_set.add(neighbor)
 
         return []
@@ -220,11 +229,13 @@ class PathfindingSystem_back(System):
 
             open_set.remove(current)
             for neighbor in self.get_neighbors(current, grid):
-                tentative_g_score = g_score[current] + heuristic(current, neighbor)
+                tentative_g_score = g_score[current] + \
+                    heuristic(current, neighbor)
                 if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g_score
-                    f_score[neighbor] = g_score[neighbor] + heuristic(neighbor, goal)
+                    f_score[neighbor] = g_score[neighbor] + \
+                        heuristic(neighbor, goal)
                     open_set.add(neighbor)
 
         return []
@@ -296,11 +307,13 @@ class PathfindingSystem_back(System):
 
             # 遍历当前节点的邻居区域块
             for neighbor in self.get_global_neighbors(current):
-                tentative_g_score = g_score[current] + heuristic(current, neighbor)
+                tentative_g_score = g_score[current] + \
+                    heuristic(current, neighbor)
                 if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g_score
-                    f_score[neighbor] = g_score[neighbor] + heuristic(neighbor, goal_global)
+                    f_score[neighbor] = g_score[neighbor] + \
+                        heuristic(neighbor, goal_global)
                     open_set.add(neighbor)
 
         return []  # 如果没有路径找到
@@ -321,7 +334,8 @@ class PathfindingSystem_back(System):
     def plan_path(self, start, goal):
         """结合分层地图的路径规划"""
         # 全局路径规划
-        start_global, start_local = self.game_map.get_global_position(*start[:2])
+        start_global, start_local = self.game_map.get_global_position(
+            *start[:2])
         goal_global, goal_local = self.game_map.get_global_position(*goal[:2])
 
         if start_global != goal_global:
@@ -342,7 +356,8 @@ class PathfindingSystem_back(System):
                 local_goal = goal_local if i == len(global_path) - 2 else (self.game_map.local_block_size - 1,
                                                                            self.game_map.local_block_size - 1)
 
-                local_path = self.a_star_local(local_start, local_goal, local_grid)
+                local_path = self.a_star_local(
+                    local_start, local_goal, local_grid)
                 if not local_path:
                     return []  # 局部路径不可达
 

@@ -17,19 +17,19 @@
                                        |
                                        |
                                        v
-                              +---------------------+
-                              |      Player         |
-                              +---------------------+
-                              | - name: str         |
-                              | - agent: Agent      |
-                              | - player_type:      |
-                              |       PlayerType    |
-                              | - communication:    |
-                              |       Communication |
-                              | - input_event_      |
-                              |       listener: func|
-                              +---------------------+
-                              | + set_input_event_  |
++---------------------+       +---------------------+       +---------------------+
+|    Renderer         |<----->|      Player         |<----->|    UserInterface    |
++---------------------+       +---------------------+       +---------------------+
+| - camera            |       | - name: str         |       | - current_screen    |
+| - scene             |       | - agent: Agent      |       | - ui_elements       |
+| - entities_sprites  |       | - player_type:      |       | - input_handler     |
+| - effects           |       |       PlayerType    |       | - theme             |
+| - animation_manager |       | - communication:    |       | - layout_manager    |
+|                     |       |       Communication |       |                     |
+| + render_scene()    |       | - input_event_      |       | + handle_events()   |
+| + update_sprites()  |       |       listener: func|       | + render_ui()       |
+| + create_effect()   |       +---------------------+       | + update_elements() |
++---------------------+       | + set_input_event_  |       +---------------------+
                               |     listener()      |
                               | + handle_input_     |
                               |     event()         |
@@ -61,3 +61,33 @@
                     +---------------------+       +---------------------+
                     | + select_action()   |       | + select_action()   |
                     +---------------------+       +---------------------+
+
++---------------------+       +---------------------+       +---------------------+
+|   UIComponent       |       |    InputHandler     |       |    SceneManager     |
++---------------------+       +---------------------+       +---------------------+
+| - id                |       | - event_queue       |       | - current_scene     |
+| - position          |       | - key_bindings      |       | - scenes            |
+| - size              |       | - mouse_state       |       | - transition_effects|
+| - visible           |       | - touch_state       |       | - camera            |
+| - parent            |       |                     |       |                     |
+| - children          |       | + process_events()  |       | + load_scene()      |
+|                     |       | + register_handler()|       | + change_scene()    |
+| + render()          |       | + get_input_state() |       | + update_scene()    |
+| + handle_event()    |       +---------------------+       +---------------------+
+| + update()          |               ^                             ^
++---------------------+               |                             |
+        ^                             |                             |
+        |                             |                             |
+        v                             v                             |
++---------------------+       +---------------------+               |
+|    UIElements       |       |    EventSystem      |               |
++---------------------+       +---------------------+               |
+| - Button            |       | - event_types       |               |
+| - Panel             |       | - listeners         |               |
+| - Label             |       | - event_queue       |               |
+| - Image             |       |                     |<--------------+
+| - Slider            |       | + dispatch_event()  |
+| - TextField         |       | + register_listener()|
+| - Map               |       | + remove_listener() |
+| - EntityInfo        |       +---------------------+
++---------------------+
