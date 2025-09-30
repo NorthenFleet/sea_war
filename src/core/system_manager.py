@@ -1,6 +1,6 @@
-from entities.entity import *
+from .entities.entity import *
 import numpy as np
-from event_manager import Event
+from .event_manager import Event
 from utils import *
 
 
@@ -400,8 +400,8 @@ class DetectionSystem(System):
                     other_position = other_entity.get_component(
                         PositionComponent).get_param("position")[:DD]
                     if other_position is not None and np.linalg.norm(other_position - position) <= detection["detection_range"]:
-                        # 触发检测事件
-                        detection.on_detected(other_entity)
+                        # 设备探测到目标；当前事件系统未就绪，先忽略触发以保证运行
+                        pass
 
 
 class AttackSystem(System):

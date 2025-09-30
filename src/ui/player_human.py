@@ -1,5 +1,5 @@
 from pynput import keyboard, mouse
-from player import Player
+from .player import Player
 
 
 class HumanPlayer(Player):

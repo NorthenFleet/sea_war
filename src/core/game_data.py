@@ -1,4 +1,4 @@
-from entities.entity import *
+from .entities.entity import *
 from utils import *
 
 

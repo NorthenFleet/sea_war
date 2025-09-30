@@ -1,6 +1,6 @@
 import numpy as np
-from device import *
-from event_manager import *
+from ..device import *
+from ..event_manager import *
 
 
 class EntityInfo:

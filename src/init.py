@@ -1,5 +1,5 @@
 import json,os
-from device import *
+from core.device import *
 
 
 class DataLoader:

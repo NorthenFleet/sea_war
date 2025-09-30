@@ -1,8 +1,8 @@
 import torch.nn as nn
-from models.ppo import PPO
-from models.dqn import DQN
-from models.actor_critic import ActorCritic
-from models.ddpg import DDPG
+from .models.ppo import PPO
+from .models.dqn import DQN
+from .models.actor_critic import ActorCritic
+from .models.ddpg import DDPG
 
 # def configure_network(config):
 #     input_dim = config.get("input_dim", 4)

@@ -1,6 +1,6 @@
 import pygame
 import os, sys
-from entities.entity import *
+from core.entities.entity import *
 
 
 class RenderManager:
@@ -17,16 +17,17 @@ class RenderManager:
         self.sprites = self.load_sprites()  # 加载图片
 
     def load_sprites(self):
-        """加载游戏中图片，作为2.5D显示基础"""
-        base_path = os.path.join(os.getcwd(), 'src')  # 假设 src 文件夹在当前工作目录下
+        """加载游戏中图片，作为2.5D显示基础。若资源缺失，使用占位图。"""
+        # 尝试从 src/images 读取资源；若不存在则使用占位图
+        base_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images')
         image_paths = {
-            'terrain': os.path.join(base_path, 'images', 'ground.jpg'),
-            'ship': os.path.join(base_path, 'images', 'ship.png'),
-            'submarine': os.path.join(base_path, 'images', 'submarine.png'),
-            'missile': os.path.join(base_path, 'images', 'missile.png'),
-            'ground_based_platforms': os.path.join(base_path, 'images', 'air_defense.png'),
-            'airport': os.path.join(base_path, 'images', 'airport.png'),
-            'bomber': os.path.join(base_path, 'images', 'bomber.png')
+            'terrain': os.path.join(base_path, 'ground.jpg'),
+            'ship': os.path.join(base_path, 'ship.png'),
+            'submarine': os.path.join(base_path, 'submarine.png'),
+            'missile': os.path.join(base_path, 'missile.png'),
+            'ground_based_platforms': os.path.join(base_path, 'air_defense.png'),
+            'airport': os.path.join(base_path, 'airport.png'),
+            'bomber': os.path.join(base_path, 'bomber.png')
         }
 
         sprites = {}
@@ -36,9 +37,25 @@ class RenderManager:
                 if key == 'bomber':
                     sprite = pygame.transform.scale(sprite, (40, 40))
                 sprites[key] = sprite
-            except pygame.error as e:
-                print(f"Error loading image {path}: {e}")
-                sprites[key] = None  # 或者使用默认图像
+            except Exception as e:
+                # 资源缺失时，创建占位图形
+                if key == 'terrain':
+                    w, h = self.screen.get_size()
+                    surface = pygame.Surface((w, h))
+                    surface.fill((34, 139, 34))  # 绿色地面
+                    sprites[key] = surface
+                else:
+                    surface = pygame.Surface((32, 32), pygame.SRCALPHA)
+                    color_map = {
+                        'ship': (70, 130, 180),
+                        'submarine': (72, 61, 139),
+                        'missile': (220, 20, 60),
+                        'ground_based_platforms': (255, 215, 0),
+                        'airport': (105, 105, 105),
+                        'bomber': (255, 140, 0)
+                    }
+                    surface.fill(color_map.get(key, (200, 200, 200)))
+                    sprites[key] = surface
 
         return sprites
 

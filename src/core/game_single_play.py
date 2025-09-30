@@ -1,12 +1,11 @@
-from sea_war_env import SeaWarEnv
+from .sea_war_env import SeaWarEnv
 from render.single_process import RenderManager
-from player_AI import AIPlayer
-from player_human import HumanPlayer
-from player_rule import RulePlayer
-from player_rule_blue import BluePlayer
-from player_rule_red import RedPlayer
-from event_manager import EventManager
-from communication import CommunicationClient, CommunicationServer
+from ui.player_human import HumanPlayer
+from ai.player_rule import RulePlayer
+from ai.player_rule_blue import BluePlayer
+from ai.player_rule_red import RedPlayer
+from .event_manager import EventManager
+from .communication import CommunicationClient, CommunicationServer
 import time
 import threading
 
@@ -27,6 +26,7 @@ class Game:
         # 注册 AI 玩家
         for player, player_type in players.items():
             if player_type == 'AI':
+                from ai.player_AI import AIPlayer
                 self.players[player] = AIPlayer()
             elif player_type == 'Human':
                 self.players[player] = HumanPlayer()
@@ -106,9 +106,9 @@ if __name__ == '__main__':
 
     game_config = {
         'name': 'AirDefense',
-        'device_path': 'data/device_new.json',
-        'scenario_path': 'data/air_defense_1.json',
-        'map_path': 'data/map.json',
+        'device_path': 'core/data/device_new.json',
+        'scenario_path': 'core/data/air_defense_1.json',
+        'map_path': 'core/data/map.json',
     }
 
     players = {

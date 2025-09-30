@@ -1,10 +1,10 @@
-from player import Player
+from ui.player import Player
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import random
-from model_select import *
+from .model_select import *
 
 
 class AIPlayer(Player):

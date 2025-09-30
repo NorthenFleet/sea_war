@@ -1,5 +1,5 @@
-from player import Player
-from game_data import GameData
+from ui.player import Player
+from core.game_data import GameData
 
 
 class RedPlayer(Player):

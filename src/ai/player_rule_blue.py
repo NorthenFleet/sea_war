@@ -1,5 +1,5 @@
-from player import *
-from entities.entity import *
+from ui.player import *
+from core.entities.entity import *
 
 
 class BluePlayer(Player):
