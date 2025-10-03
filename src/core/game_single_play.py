@@ -9,6 +9,7 @@ from .event_manager import EventManager
 from .communication import CommunicationClient, CommunicationServer
 import time
 import threading
+import argparse
 
 
 class Game:
@@ -133,8 +134,13 @@ class Game:
 
 # 使用示例
 if __name__ == '__main__':
-    # 定义全局配置字典
+    parser = argparse.ArgumentParser(description='Sea War 单人模式入口')
+    parser.add_argument('--skip-menu', action='store_true', help='跳过启动菜单，直接进入游戏')
+    parser.add_argument('--terrain', type=str, default=None, help='指定地形图片文件名（位于 src/render/map/）')
+    parser.add_argument('--auto-select-timeout', type=float, default=1.0, help='启动菜单自动选择/跳过的超时时间（秒）')
+    args = parser.parse_args()
 
+    # 定义全局配置字典
     game_config = {
         'name': 'AirDefense',
         'device_path': 'core/data/device_new.json',
@@ -145,14 +151,20 @@ if __name__ == '__main__':
     players = {
         "red": 'Red',
         "blue": 'Blue'
-        # "blue": ("RulePlayer", HumanPlayer),
-        # "green": ("HumanPlayer", RulePlayer)
     }
 
     game = Game(game_config, players)
-    # 先展示启动菜单选择地图
-    menu = StartMenu()
-    selected_map = menu.run(screen_size=(1280, 800), auto_select_timeout=1.0)  # 返回文件名或 None
+
+    selected_map = None
+    if not args.skip_menu:
+        # 展示启动菜单选择地图；在无候选时根据超时返回 None 跳过
+        menu = StartMenu()
+        selected_map = menu.run(screen_size=(1280, 800), auto_select_timeout=args.auto_select_timeout)
+
+    # CLI参数优先级：显式传入的 --terrain 覆盖菜单选择
+    if args.terrain:
+        selected_map = args.terrain
+
     try:
         game.run(terrain_override=selected_map)
     except KeyboardInterrupt:

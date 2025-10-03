@@ -32,6 +32,13 @@ class AttackCommand(Command):
         super().__init__('attack', actor=actor,
                          target=target, params={'weapon': weapon})
 
+# 停止指令
+
+
+class StopCommand(Command):
+    def __init__(self, actor):
+        super().__init__('stop', actor=actor)
+
 # 指令列表，用于管理智能体生成的所有指令
 
 
