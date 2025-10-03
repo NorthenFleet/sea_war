@@ -2,10 +2,10 @@ import numpy as np
 from gym import spaces
 from .env import Env
 from .game_data import GameData
-from init import Map, DeviceTableDict, Side, Scenario
+from ..init import Map, DeviceTableDict, Side, Scenario
 from .entities.entity import *
-from init import Grid, QuadTree
-from utils import *
+from ..init import Grid, QuadTree
+from ..utils import *
 from .system_manager import *
 from .event_manager import EventManager
 # 定义为游戏的战术层，从战术层面对游戏过程进行解析

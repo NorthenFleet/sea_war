@@ -4,8 +4,8 @@ import threading
 from env import Env
 from player_human import HumanPlayer
 from player_AI import AIPlayer
-from render.render_manager import RenderManager
-from init import Map, Weapon, Scenario
+from ..render.render_manager import RenderManager
+from ..init import Map, Weapon, Scenario
 from sea_war_env import 
 
 

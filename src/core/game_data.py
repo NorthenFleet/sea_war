@@ -1,5 +1,5 @@
 from .entities.entity import *
-from utils import *
+from ..utils import *
 
 
 class ObjectPool:

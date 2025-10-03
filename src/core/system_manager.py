@@ -1,7 +1,7 @@
 from .entities.entity import *
 import numpy as np
 from .event_manager import Event
-from utils import *
+from ..utils import *
 
 
 class System:

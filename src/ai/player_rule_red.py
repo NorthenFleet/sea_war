@@ -1,6 +1,6 @@
-from ui.player import Player, CommandList, Command, MoveCommand
-from core.entities.entity import PositionComponent, MovementComponent
-from core.game_data import GameData
+from ..ui.player import Player, CommandList, Command, MoveCommand
+from ..core.entities.entity import PositionComponent, MovementComponent
+from ..core.game_data import GameData
 import numpy as np
 
 

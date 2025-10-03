@@ -9,8 +9,8 @@ class StartMenu:
         self.clock = pygame.time.Clock()
         self.font_big = load_cn_font(48)
         self.font_small = load_cn_font(22)
-        # 搜索可选地图文件
-        self.images_dir = os.path.join(os.path.dirname(__file__), '..', 'render', 'images')
+        # 搜索可选地图文件（已迁移到 render/map）
+        self.images_dir = os.path.join(os.path.dirname(__file__), '..', 'render', 'map')
         self.images_dir = os.path.abspath(self.images_dir)
         self.candidates = self._find_candidates()
         self.selected_index = 0 if self.candidates else -1
@@ -39,9 +39,21 @@ class StartMenu:
             try:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
+                        try:
+                            pygame.display.quit()
+                            pygame.event.clear()
+                            pygame.quit()
+                        except Exception:
+                            pass
                         return None
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
+                            try:
+                                pygame.display.quit()
+                                pygame.event.clear()
+                                pygame.quit()
+                            except Exception:
+                                pass
                             return None
                         if self.candidates:
                             if event.key in (pygame.K_UP, pygame.K_w):
@@ -50,13 +62,35 @@ class StartMenu:
                                 self.selected_index = min(len(self.candidates) - 1, self.selected_index + 1)
                             elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
                                 selected_name = self.candidates[self.selected_index]
+                                try:
+                                    pygame.display.quit()
+                                    pygame.event.clear()
+                                    pygame.quit()
+                                except Exception:
+                                    pass
                                 return selected_name
 
                 # 自动选择（用于自动化验证）
-                if auto_select_timeout is not None and self.candidates:
+                if auto_select_timeout is not None:
                     elapsed = (pygame.time.get_ticks() - start_ms) / 1000.0
                     if elapsed >= auto_select_timeout:
-                        return self.candidates[self.selected_index]
+                        # 候选存在则返回选中项，否则返回 None（跳过菜单）
+                        if self.candidates:
+                            try:
+                                pygame.display.quit()
+                                pygame.event.clear()
+                                pygame.quit()
+                            except Exception:
+                                pass
+                            return self.candidates[self.selected_index]
+                        else:
+                            try:
+                                pygame.display.quit()
+                                pygame.event.clear()
+                                pygame.quit()
+                            except Exception:
+                                pass
+                            return None
 
                 screen.fill((20, 30, 40))
                 title = self.font_big.render('海战模拟 - 启动菜单', True, (230, 230, 230))
@@ -93,6 +127,12 @@ class StartMenu:
 
             except KeyboardInterrupt:
                 # 优雅中断
+                try:
+                    pygame.display.quit()
+                    pygame.event.clear()
+                    pygame.quit()
+                except Exception:
+                    pass
                 return None
 
         return selected_name

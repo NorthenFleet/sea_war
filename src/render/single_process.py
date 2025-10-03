@@ -1,9 +1,9 @@
 import pygame
 import os, sys
-from ui.font_loader import load_cn_font
-from core.entities.entity import *
-from init import Map
-from ui.player import CommandList, Command, MoveCommand
+from ..ui.font_loader import load_cn_font
+from ..core.entities.entity import *
+from ..init import Map
+from ..ui.player import CommandList, Command, MoveCommand
 
 
 class RenderManager:
@@ -53,9 +53,11 @@ class RenderManager:
             self.terrain_filename = None
 
     def load_sprites(self):
-        """加载资源：优先从 render/images 目录读取；缺失时生成占位并保存。"""
-        base_path = os.path.join(os.path.dirname(__file__), 'images')
-        os.makedirs(base_path, exist_ok=True)
+        """加载资源：地形从 render/map 读取，其余单位从 render/images。"""
+        images_dir = os.path.join(os.path.dirname(__file__), 'images')
+        map_dir = os.path.join(os.path.dirname(__file__), 'map')
+        os.makedirs(images_dir, exist_ok=True)
+        os.makedirs(map_dir, exist_ok=True)
 
         # 地图图片候选：如果存在则优先作为地形贴图
         terrain_candidates = [
@@ -69,27 +71,27 @@ class RenderManager:
         terrain_path = None
         # 优先使用外部指定
         if self.terrain_override:
-            override_path = os.path.join(base_path, self.terrain_override)
+            override_path = os.path.join(map_dir, self.terrain_override)
             if os.path.exists(override_path):
                 terrain_path = override_path
         # 其次使用候选列表（当未选择或不存在时）
         if terrain_path is None:
             for name in terrain_candidates:
-                p = os.path.join(base_path, name)
+                p = os.path.join(map_dir, name)
                 if os.path.exists(p):
                     terrain_path = p
                     break
         if terrain_path is None:
-            terrain_path = os.path.join(base_path, 'ground.png')
+            terrain_path = os.path.join(map_dir, 'ground.png')
 
         image_paths = {
             'terrain': terrain_path,
-            'ship': os.path.join(base_path, 'ship.png'),
-            'submarine': os.path.join(base_path, 'submarine.png'),
-            'missile': os.path.join(base_path, 'missile.png'),
-            'ground_based_platforms': os.path.join(base_path, 'air_defense.png'),
-            'airport': os.path.join(base_path, 'airport.png'),
-            'bomber': os.path.join(base_path, 'bomber.png')
+            'ship': os.path.join(images_dir, 'ship.png'),
+            'submarine': os.path.join(images_dir, 'submarine.png'),
+            'missile': os.path.join(images_dir, 'missile.png'),
+            'ground_based_platforms': os.path.join(images_dir, 'air_defense.png'),
+            'airport': os.path.join(images_dir, 'airport.png'),
+            'bomber': os.path.join(images_dir, 'bomber.png')
         }
 
         target_sizes = {

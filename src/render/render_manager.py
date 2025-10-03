@@ -1,6 +1,6 @@
 import threading
 import pygame
-from render.render_thread import RenderThread
+from .render_thread import RenderThread
 
 
 class RenderManager:

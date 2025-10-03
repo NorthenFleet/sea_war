@@ -5,7 +5,7 @@ import torch.optim as optim
 from collections import deque
 import random
 from env import Env
-from init import Map, Weapon, Scenario
+from ..init import Map, Weapon, Scenario
 import numpy as np
 from replay_bufer import ReplayBuffer
 

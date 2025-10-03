@@ -1,10 +1,10 @@
 from .sea_war_env import SeaWarEnv
-from render.single_process import RenderManager
-from ui.start_menu import StartMenu
-from ui.player_human import HumanPlayer
-from ai.player_rule import RulePlayer
-from ai.player_rule_blue import BluePlayer
-from ai.player_rule_red import RedPlayer
+from ..render.single_process import RenderManager
+from ..ui.start_menu import StartMenu
+from ..ui.player_human import HumanPlayer
+from ..ai.player_rule import RulePlayer
+from ..ai.player_rule_blue import BluePlayer
+from ..ai.player_rule_red import RedPlayer
 from .event_manager import EventManager
 from .communication import CommunicationClient, CommunicationServer
 import time

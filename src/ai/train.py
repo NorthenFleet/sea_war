@@ -1,5 +1,5 @@
 from env import Env
-from init import Map, Weapon, Scenario
+from ..init import Map, Weapon, Scenario
 import numpy as np
 import torch.optim as optim
 from replay_bufer import ReplayBuffer

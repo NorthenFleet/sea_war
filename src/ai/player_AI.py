@@ -1,4 +1,4 @@
-from ui.player import Player
+from ..ui.player import Player
 import torch
 import torch.nn as nn
 import torch.optim as optim
