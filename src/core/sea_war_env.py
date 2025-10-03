@@ -247,3 +247,73 @@ class SeaWarEnv(Env):
                 # 处理接收到的动作，例如通过事件系统传递给其他系统
                 self.event_manager.post(
                     Event('NetworkActionsReceived', self.communication_client.received_actions))
+
+    def get_serialized_state(self):
+        """
+        获取可序列化的游戏状态，用于网络传输
+        """
+        entities_data = []
+        for entity in self.game_data.get_all_entities():
+            # 获取实体的基本信息
+            entity_data = {
+                'id': entity.entity_id if hasattr(entity, 'entity_id') else str(id(entity)),
+                'type': entity.entity_type if hasattr(entity, 'entity_type') else 'unknown',
+                'faction': entity.faction if hasattr(entity, 'faction') else 'neutral'
+            }
+            
+            # 获取位置组件
+            position_component = entity.get_component('PositionComponent')
+            if position_component:
+                pos = position_component.get_position()
+                entity_data['position'] = {
+                    'x': float(pos[0]) if hasattr(pos, '__getitem__') else 0,
+                    'y': float(pos[1]) if hasattr(pos, '__getitem__') and len(pos) > 1 else 0,
+                    'z': float(pos[2]) if hasattr(pos, '__getitem__') and len(pos) > 2 else 0
+                }
+            
+            # 获取移动组件
+            movement_component = entity.get_component('MovementComponent')
+            if movement_component:
+                entity_data['speed'] = float(movement_component.get_param('speed', 0))
+                direction = movement_component.get_param('direction', [0, 0, 0])
+                entity_data['direction'] = {
+                    'x': float(direction[0]) if hasattr(direction, '__getitem__') else 0,
+                    'y': float(direction[1]) if hasattr(direction, '__getitem__') and len(direction) > 1 else 0,
+                    'z': float(direction[2]) if hasattr(direction, '__getitem__') and len(direction) > 2 else 0
+                }
+            
+            # 获取生命值组件
+            health_component = entity.get_component('HealthComponent')
+            if health_component:
+                entity_data['hp'] = float(health_component.get_health())
+                entity_data['max_hp'] = float(health_component.get_max_health())
+                entity_data['alive'] = health_component.is_alive()
+            
+            # 获取武器组件
+            weapon_component = entity.get_component('WeaponComponent')
+            if weapon_component:
+                weapons = weapon_component.get_weapons()
+                entity_data['weapons'] = [{
+                    'id': w.id if hasattr(w, 'id') else str(id(w)),
+                    'type': w.type if hasattr(w, 'type') else 'unknown',
+                    'ammo': w.ammo if hasattr(w, 'ammo') else 0
+                } for w in weapons]
+            
+            entities_data.append(entity_data)
+        
+        # 地图数据
+        map_data = {
+            'width': self.map.width if hasattr(self.map, 'width') else 0,
+            'height': self.map.height if hasattr(self.map, 'height') else 0,
+            # 可以添加更多地图相关数据
+        }
+        
+        # 游戏状态
+        game_state = {
+            'entities': entities_data,
+            'map': map_data,
+            'current_step': self.current_step,
+            'game_over': self.game_over
+        }
+        
+        return game_state

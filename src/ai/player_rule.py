@@ -12,3 +12,7 @@ class RulePlayer(Player):
     def choose_action(self, side):
         self.units = side
         print("我是规则智能体")
+
+        cmd = []
+
+        return cmd
