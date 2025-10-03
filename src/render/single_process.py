@@ -3,7 +3,7 @@ import os, sys
 from ..ui.font_loader import load_cn_font
 from ..core.entities.entity import *
 from ..init import Map
-from ..ui.player import CommandList, Command, MoveCommand
+from ..ui.player import CommandList, Command, MoveCommand, AttackCommand, StopCommand
 
 
 class RenderManager:
@@ -34,6 +34,7 @@ class RenderManager:
         self.selecting = False
         self.selection_start = None
         self.selection_rect = None
+        self.attack_mode = False
 
         # 指令与UI动作
         self.command_list = CommandList()
@@ -44,7 +45,9 @@ class RenderManager:
         self.buttons = [
             {"label": "暂停/继续", "action": "pause_toggle", "rect": pygame.Rect(10, 10, 90, 24)},
             {"label": "+ 速度", "action": "speed_up", "rect": pygame.Rect(110, 10, 70, 24)},
-            {"label": "- 速度", "action": "speed_down", "rect": pygame.Rect(190, 10, 70, 24)}
+            {"label": "- 速度", "action": "speed_down", "rect": pygame.Rect(190, 10, 70, 24)},
+            {"label": "攻击模式", "action": "attack_mode_toggle", "rect": pygame.Rect(270, 10, 90, 24)},
+            {"label": "停止", "action": "issue_stop", "rect": pygame.Rect(370, 10, 60, 24)}
         ]
         # 记录所用地图文件名（用于调试显示）
         try:
@@ -242,6 +245,22 @@ class RenderManager:
                 if entity.entity_id in self.selected_ids:
                     pygame.draw.rect(self.screen, (0, 255, 0), rect, 2)
 
+                # 绘制血量条
+                hp_comp = entity.get_component(HealthComponent)
+                if hp_comp:
+                    max_hp = hp_comp.get_param('max_health')
+                    cur_hp = hp_comp.get_param('current_health')
+                    if max_hp and max_hp > 0:
+                        ratio = max(0.0, min(1.0, cur_hp / max_hp))
+                        bar_w = rect.width
+                        bar_h = 4
+                        bar_x = rect.left
+                        bar_y = rect.top - 6
+                        pygame.draw.rect(self.screen, (60, 60, 60), (bar_x, bar_y, bar_w, bar_h))
+                        fg_w = int(bar_w * ratio)
+                        color = (40, 200, 40) if ratio > 0.5 else (200, 180, 40) if ratio > 0.2 else (200, 40, 40)
+                        pygame.draw.rect(self.screen, color, (bar_x, bar_y, fg_w, bar_h))
+
         # 框选矩形可视化
         if self.selection_rect:
             pygame.draw.rect(self.screen, (0, 200, 0), self.selection_rect, 1)
@@ -319,21 +338,43 @@ class RenderManager:
                     # 按钮点击检测
                     for b in self.buttons:
                         if b["rect"].collidepoint(mx, my):
-                            self.ui_actions.append(b["action"])  # 推入动作队列
+                            act = b["action"]
+                            if act == "attack_mode_toggle":
+                                self.attack_mode = not self.attack_mode
+                            elif act == "issue_stop":
+                                for entity in self.game_data.get_all_entities():
+                                    if entity.entity_id in self.selected_ids:
+                                        StopCommand(entity.entity_id)
+                            else:
+                                self.ui_actions.append(act)
                             break
                     else:
                         self.selecting = True
                         self.selection_start = (mx, my)
                         self.selection_rect = pygame.Rect(mx, my, 0, 0)
-                elif event.button == 3:  # 右键移动
-                    # 将鼠标位置转为地图坐标
-                    target_x = int((mx - self.camera_offset[0]) / max(1e-6, self.scale_x))
-                    target_y = int((my - self.camera_offset[1]) / max(1e-6, self.scale_y))
-                    for entity in self.game_data.get_all_entities():
-                        if entity.entity_id in self.selected_ids:
-                            mv = entity.get_component(MovementComponent)
-                            speed = mv.get_param('speed') if mv else 1
-                            MoveCommand(entity.entity_id, target_position=(target_x, target_y), speed=speed)
+                elif event.button == 3:  # 右键移动/攻击
+                    if self.attack_mode:
+                        # 右键点击实体则发起攻击
+                        target_eid = None
+                        for eid, rect in self.entity_screen_rects.items():
+                            if rect.collidepoint(mx, my):
+                                target_eid = eid
+                                break
+                        if target_eid is not None:
+                            for entity in self.game_data.get_all_entities():
+                                if entity.entity_id in self.selected_ids:
+                                    launcher = entity.get_component(LauncherComponent)
+                                    weapon_type = launcher.get_param('weapon_type') if launcher else None
+                                    AttackCommand(entity.entity_id, target_eid, weapon=weapon_type)
+                    else:
+                        # 将鼠标位置转为地图坐标
+                        target_x = int((mx - self.camera_offset[0]) / max(1e-6, self.scale_x))
+                        target_y = int((my - self.camera_offset[1]) / max(1e-6, self.scale_y))
+                        for entity in self.game_data.get_all_entities():
+                            if entity.entity_id in self.selected_ids:
+                                mv = entity.get_component(MovementComponent)
+                                speed = mv.get_param('speed') if mv else 1
+                                MoveCommand(entity.entity_id, target_position=(target_x, target_y), speed=speed)
             elif event.type == pygame.MOUSEMOTION:
                 if self.selecting and self.selection_start:
                     sx, sy = self.selection_start

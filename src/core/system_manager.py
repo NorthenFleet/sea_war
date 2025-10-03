@@ -413,16 +413,16 @@ class AttackSystem(System):
         for entity in entities:
             weapon = entity.get_component(LauncherComponent)
             if weapon:  # 这个实体有武器，可以攻击
-                target = self.find_target_in_range(entity)  # 假设有一个找到目标的函数
+                target = self.find_target_in_range(entity)  # 简化：目前不主动攻击，等待玩家指令
                 if target:
                     # 触发攻击事件
                     event = Event('AttackEvent', source=entity,
                                   target=target, data=weapon.damage)
                     self.event_manager.post(event)
 
-    def find_target_in_range(self, entity, target_list):
-        # 找到在射程内的目标（假设实现）
-        return target_list  # 返回目标实体
+    def find_target_in_range(self, entity):
+        # TODO: 主动攻击逻辑尚未设计；返回 None 以避免误触发
+        return None
 
 
 class DamageSystem:

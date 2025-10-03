@@ -217,10 +217,35 @@ class SeaWarEnv(Env):
                             self.pathfinding_system.handle_path_request(
                                 actor, movement.get_param("target_position"))
 
-                # elif command.command_type == 'attack':
-                #     # 调用攻击系统执行攻击操作
-                #     self.attack_system.process_attack(
-                #         command.actor, command.target, command.params['weapon'])
+                elif command.command_type == 'attack':
+                    # 简化的攻击：判距并调用攻击系统或直接施加伤害
+                    attacker = actor
+                    target = self.game_data.get_entity(command.target)
+                    if attacker is None or target is None:
+                        continue
+                    pos_a = attacker.get_component(PositionComponent)
+                    pos_t = target.get_component(PositionComponent)
+                    if not pos_a or not pos_t:
+                        continue
+                    pa = pos_a.get_param('position')[:DD]
+                    pt = pos_t.get_param('position')[:DD]
+                    dist = np.linalg.norm(pa - pt)
+                    launcher = attacker.get_component(LauncherComponent)
+                    if launcher:
+                        # 目前未集成设备表的射程，先直接允许攻击
+                        health = target.get_component(HealthComponent)
+                        if health:
+                            # 简化：固定伤害或依据设备表后续扩展
+                            dmg = 10
+                            health.take_damage(dmg)
+                elif command.command_type == 'stop':
+                    # 停止：清除移动目标并重置路径规划
+                    pathfinding = actor.get_component(PathfindingComponent)
+                    movement = actor.get_component(MovementComponent)
+                    if movement:
+                        movement.set_param("target_position", None)
+                    if pathfinding:
+                        pathfinding.current_goal = None
 
     def update(self, delta_time):
         """更新所有系统的状态"""

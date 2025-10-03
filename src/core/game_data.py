@@ -106,6 +106,22 @@ class GameData:
         if entity_info.health:
             entity.add_component(HealthComponent(entity_info.health))
 
+        # 武器信息：目前选择第一个武器类型作为发射装置组件
+        if entity_info.weapons:
+            try:
+                w0 = entity_info.weapons[0]
+                if isinstance(w0, dict):
+                    weapon_type = w0.get('weapon_type') or w0.get('type')
+                    ammo = w0.get('count', 0)
+                else:
+                    weapon_type = w0
+                    ammo = 0
+                if weapon_type:
+                    entity.add_component(LauncherComponent(weapon_type, ammo))
+            except Exception:
+                # 忽略异常以保证实体创建不中断
+                pass
+
         # 映射玩家到该实体
         if player_id not in self.player_units:
             self.player_units[player_id] = set()
