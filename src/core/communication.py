@@ -33,30 +33,34 @@ class CommunicationServer():
         self.clients = {}
         self.actions = {}
         self.max_clients = max_clients
+        self.running = True
 
     def start(self):
         print("Server started, waiting for connections...")
-        threading.Thread(target=self.receive_loop).start()
-        threading.Thread(target=self.broadcast_loop).start()
+        threading.Thread(target=self.receive_loop, daemon=True).start()
+        threading.Thread(target=self.broadcast_loop, daemon=True).start()
 
     def receive_loop(self):
-        while True:
-            data, addr = self.communication.receive()
+        while self.running:
+            try:
+                data, addr = self.communication.receive()
+            except OSError:
+                break
             if addr not in self.clients and len(self.clients) < self.max_clients:
                 self.clients[addr] = threading.Thread(
-                    target=self.handle_client, args=(addr,))
+                    target=self.handle_client, args=(addr,), daemon=True)
                 self.clients[addr].start()
             self.actions[addr] = data
 
     def handle_client(self, addr):
         print(f"New connection from {addr}")
-        while True:
+        while self.running:
             if addr in self.actions:
                 action = self.actions[addr]
                 # Placeholder for any client-specific handling
 
     def broadcast_loop(self):
-        while True:
+        while self.running:
             if len(self.actions) >= self.max_clients:
                 collected_actions = self.collect_actions()
                 for client_addr in self.clients:
@@ -68,6 +72,13 @@ class CommunicationServer():
         # Convert actions to a suitable format for sending
         return self.actions
 
+    def stop(self):
+        self.running = False
+        try:
+            self.communication.close()
+        except Exception:
+            pass
+
 
 class CommunicationClient:
     def __init__(self, server_host, server_port):
@@ -75,19 +86,31 @@ class CommunicationClient:
         self.server_address = (server_host, server_port)
         self.action = None
         self.received_actions = {}
+        self.running = True
 
     def start(self):
-        threading.Thread(target=self.receive_data).start()
-        while True:
+        threading.Thread(target=self.receive_data, daemon=True).start()
+        while self.running:
             if self.action is not None:
                 self.communication.send(self.action, self.server_address)
                 self.action = None
+            time.sleep(0.01)
 
     def receive_data(self):
-        while True:
-            data, _ = self.communication.receive()
+        while self.running:
+            try:
+                data, _ = self.communication.receive()
+            except OSError:
+                break
             if data:
                 self.received_actions.update(data)  # 合并接收到的动作数据
 
     def send_action(self, action):
         self.action = action
+
+    def stop(self):
+        self.running = False
+        try:
+            self.communication.close()
+        except Exception:
+            pass

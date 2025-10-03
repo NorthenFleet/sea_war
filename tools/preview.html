@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sea War 预览与中文字体校验</title>
+  <style>
+    body { background:#1e293b; color:#fff; font-family:-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', Arial, sans-serif; }
+    .wrap { max-width:900px; margin:24px auto; padding:16px; }
+    h1 { font-size:28px; margin:0 0 12px; }
+    .card { background:#0f172a; border:1px solid #475569; border-radius:8px; padding:16px; margin-top:16px; }
+    .hint { color:#cbd5e1; font-size:14px; }
+    img { max-width:100%; border:1px solid #64748b; }
+    code { background:#0b1220; padding:2px 6px; border-radius:4px; }
+  </style>
+  </head>
+<body>
+  <div class="wrap">
+    <h1>Sea War 中文显示与地图文件名预览</h1>
+    <div class="card">
+      <p>校验文本：<strong>中文字体预览：海战 游戏 地图 显示</strong></p>
+      <p class="hint">如果你能看到以上中文正常显示，当前系统已具备中文字体。</p>
+    </div>
+    <div class="card">
+      <p>字体渲染示例图片（如果存在）：</p>
+      <img src="probe.png" alt="中文字体渲染示例" />
+      <p class="hint">该图片由 <code>tools/font_probe.py</code> 生成，若未显示，可在 IDE 终端运行：<code>python tools/font_probe.py</code></p>
+    </div>
+    <div class="card">
+      <p>本次提交要点：</p>
+      <ul>
+        <li>新增中文字体加载器：<code>src/ui/font_loader.py</code></li>
+        <li>渲染器与启动菜单使用中文兼容字体</li>
+        <li>右下角显示当前地图文件名，便于确认加载的地形图</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,5 +1,7 @@
-from ui.player import *
-from core.entities.entity import *
+from ui.player import Player, CommandList, Command, MoveCommand
+from core.entities.entity import PositionComponent, MovementComponent
+from core.game_data import GameData
+import numpy as np
 
 
 class BluePlayer(Player):
@@ -7,48 +9,41 @@ class BluePlayer(Player):
         super().__init__(name)
         self.name = name
         self.device_table = device_table
-        self.entities = []
-        self.enemies = []
 
     def choose_action(self, side):
-        print("我是蓝方智能体")
-        """智能体根据状态选择动作，返回指令列表"""
+        # 基于规则：每个蓝方单位向最近的敌方单位移动
         command_list = CommandList()
-        Command.set_command_list(command_list)  # 设置命令列表
+        Command.set_command_list(command_list)
 
-        self.detect(side)
-        self.attackCheck(side)
-        self.data_process(side)
-        self.target_distribute()
-        self.attack()
-        self.move()
+        gd = GameData._instance
+        if gd is None:
+            return command_list
 
-        # 返回收集到的所有指令
+        enemies = [e for e in gd.get_all_entities()
+                   if gd.get_unit_owner(e.entity_id) != side.name]
+
+        for entity in side.entities:
+            pos_comp = entity.get_component(PositionComponent)
+            if pos_comp is None:
+                continue
+            my_pos = pos_comp.get_param('position')
+
+            nearest = None
+            min_dist = float('inf')
+            for enemy in enemies:
+                epos = enemy.get_component(PositionComponent)
+                if epos is None:
+                    continue
+                d = np.linalg.norm(epos.get_param('position')[:2] - my_pos[:2])
+                if d < min_dist:
+                    min_dist = d
+                    nearest = epos.get_param('position')
+
+            if nearest is None:
+                continue
+
+            mv = entity.get_component(MovementComponent)
+            speed = mv.get_param('speed') if mv else 1
+            MoveCommand(entity.entity_id, target_position=(int(nearest[0]), int(nearest[1])), speed=speed)
+
         return command_list
-
-    def detect(self, side):
-        self.entities = side.entities
-        self.enemies = side.enemies
-
-    def attackCheck(self, side):
-        # 创建指令（自动加入到 command_list 中）
-        # 创建指令（自动加入到 command_list 中）
-
-        AttackCommand(
-            actor=self.entities[0].entity_id, target="enemy_1", weapon="missile")
-
-    def target_distribute(self):
-        pass
-
-    def attack(self):
-        pass
-
-    def move(self):
-        actor_id = "水面舰S5"
-        MoveCommand(actor_id,
-                    target_position=(20, 20), speed=100)
-
-    def data_process(self, data):
-        for entity in self.entities:
-            entity_type = entity.entity_type
-            position = entity.get_component(PositionComponent)
