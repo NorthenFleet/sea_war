@@ -101,11 +101,13 @@ class Map:
 
     def get_global_position(self, x, y):
         """根据全局坐标计算所属的大格子坐标和局部相对坐标"""
-        block_x = x // self.local_block_size
-        block_y = y // self.local_block_size
-        local_x = x % self.local_block_size
-        local_y = y % self.local_block_size
-        return (block_x, block_y), (local_x, local_y)
+        ix = int(x)
+        iy = int(y)
+        block_x = ix // self.local_block_size
+        block_y = iy // self.local_block_size
+        local_x = ix % self.local_block_size
+        local_y = iy % self.local_block_size
+        return (int(block_x), int(block_y)), (int(local_x), int(local_y))
 
     def is_global_position_within_bounds(self, x, y):
         """检查全局区域块是否在压缩地图边界内"""

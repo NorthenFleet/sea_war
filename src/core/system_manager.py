@@ -41,9 +41,11 @@ class PositionSystem(System):
 
 
 class MovementSystem(System):
-    def __init__(self, game_data, event_manager):
+    def __init__(self, game_data, event_manager, speed_factor=1.0):
         super().__init__(game_data)
         self.event_manager = event_manager
+        # 全局移动速度系数，用于统一调慢或调快单位移动速度
+        self.speed_factor = float(speed_factor)
 
     def update(self, entities, delta_time):
         """更新实体的移动状态"""
@@ -57,25 +59,48 @@ class MovementSystem(System):
                 if pathfinding and pathfinding.current_goal:
                     self.move_towards_goal(
                         entity, position, movement, pathfinding, delta_time)
+                else:
+                    # 兜底：按照 heading 作为速度方向进行移动（无路径规划时）
+                    heading = movement.get_param("heading")
+                    speed = movement.get_param("speed") or 0
+                    if heading is not None and speed > 0:
+                        h = np.array(heading, dtype=np.float64)
+                        # 仅取前两个分量作为平面运动
+                        if h.shape[0] >= 2:
+                            vx, vy = float(h[0]), float(h[1])
+                        else:
+                            vx, vy = 0.0, 0.0
+                        # 若 heading 非归一化，则按其向量大小进行速度缩放
+                        norm = np.linalg.norm([vx, vy])
+                        if norm > 1e-6:
+                            vx /= norm
+                            vy /= norm
+                        dx = vx * speed * delta_time * self.speed_factor
+                        dy = vy * speed * delta_time * self.speed_factor
+                        px, py, pz = position.get_param("position")
+                        position.set_param("position", [px + dx, py + dy, pz])
 
     def move_towards_goal(self, entity, position, movement, pathfinding, delta_time):
         """执行移动逻辑，处理路径中的当前目标点"""
-        direction = pathfinding.current_goal - \
-            np.array(position.get_param("position")[:2])
-        distance = np.linalg.norm(direction)
+        goal_xy = np.array(pathfinding.current_goal[:2], dtype=np.float64)
+        pos_xy = np.array(position.get_param("position")[:2], dtype=np.float64)
+        direction = goal_xy - pos_xy
+        distance = float(np.linalg.norm(direction))
 
         if distance > 0:
-            direction = direction.astype(np.float64) / distance  # 归一化方向向量
+            direction = direction / distance  # 归一化方向向量
 
-        step_distance = min(distance, movement.get_param("speed") * delta_time)
-        position.set_param("position", [
-            position.get_param("position")[0] + direction[0] * step_distance,
-            position.get_param("position")[1] + direction[1] * step_distance,
-            position.get_param("position")[2]  # 保持 z 轴不变
-        ])
+        step_distance = min(
+            distance,
+            float(movement.get_param("speed") or 0) * float(delta_time) * self.speed_factor,
+        )
+        new_pos = np.array(position.get_param("position"), dtype=np.float64)
+        new_pos[0] += direction[0] * step_distance
+        new_pos[1] += direction[1] * step_distance
+        position.set_param("position", [float(new_pos[0]), float(new_pos[1]), float(new_pos[2])])
 
         # 检查是否到达当前目标点
-        if np.linalg.norm(position.get_param("position")[:2] - pathfinding.current_goal) < 0.1:
+        if float(np.linalg.norm(np.array(position.get_param("position")[:2], dtype=np.float64) - goal_xy)) < 0.1:
             if pathfinding.path:  # 还有更多路径点
                 pathfinding.current_goal = pathfinding.path.pop(0)
             else:  # 路径结束，完成移动

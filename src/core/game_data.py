@@ -63,7 +63,9 @@ class GameData:
                 entity2 = entity_list[j]
                 pos2 = entity2.get_component(
                     PositionComponent).get_param("position")[:DD]
-                distance = np.linalg.norm(pos1 - pos2)  # 计算欧几里得距离
+                a1 = np.array(pos1, dtype=np.float64)
+                a2 = np.array(pos2, dtype=np.float64)
+                distance = float(np.linalg.norm(a1 - a2))  # 计算欧几里得距离
 
                 # 存储到distance_table中
                 if entity1.entity_id not in self.distance_table:
