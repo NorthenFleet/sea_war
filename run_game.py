@@ -95,8 +95,14 @@ if __name__ == '__main__':
                 print(f'正在启动游戏... 地形: {selected_map}')
                 game.run(terrain_override=selected_map)
             else:
-                # 回到菜单或等待用户以 CLI 传地图
-                print('未选择地图，保持菜单/退出。')
+                # 尝试使用场景绑定的地图图片
+                bound = getattr(game.env, 'default_map_image', None)
+                if bound:
+                    print(f'检测到场景绑定地图: {bound}，自动启动。')
+                    game.run(terrain_override=bound)
+                else:
+                    # 回到菜单或等待用户以 CLI 传地图
+                    print('未选择地图，保持菜单/退出。')
         elif selected_action == 'load_save' and selected_save:
             save_path = os.path.join(current_dir, 'saves', selected_save)
             # 在读取存档前确保已有实体

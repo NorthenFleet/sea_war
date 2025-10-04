@@ -21,8 +21,14 @@ class RenderManager:
         self.should_close = False
         self.terrain_override = terrain_override  # 指定地图文件名（在 images 目录下）
         self.sprites = self.load_sprites()  # 加载图片
-        # 加载地图并计算缩放比例
-        self.map = Map('core/data/map.json')
+        # 加载地图并计算缩放比例：优先使用环境中的地图对象
+        try:
+            if getattr(env, 'game_map', None):
+                self.map = env.game_map
+            else:
+                self.map = Map('core/data/map.json')
+        except Exception:
+            self.map = Map('core/data/map.json')
         self.scale_x = self.screen_width / max(1, self.map.global_width)
         self.scale_y = self.screen_height / max(1, self.map.global_height)
         # 使用中文兼容字体

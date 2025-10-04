@@ -19,6 +19,8 @@ class SeaWarEnv(Env):
         self.name = game_config["name"]
         self.map = None
         self.scenario = None
+        self.default_map_image = None
+        self.default_map_json = None
 
         self.sides = {}
         self.actions = {}
@@ -30,6 +32,7 @@ class SeaWarEnv(Env):
             low=0, high=1, shape=(1,), dtype=np.float32)
 
         self.game_map = Map(game_config['map_path'])
+        self.default_map_json = game_config.get('map_path')
         # self.game_map = self.map_process(self.map, (1000, 1000))  # 地图扩充
 
         self.device_table = DeviceTableDict(game_config['device_path'])
@@ -94,7 +97,21 @@ class SeaWarEnv(Env):
         """
         从想定文件中加载场景，并初始化 ECS 实体和组件系统。
         """
+        # 绑定场景中的地图信息（如果提供）
+        try:
+            map_image = scenario.data.get('map_image') or scenario.data.get('map_png') or scenario.data.get('map')
+            map_json = scenario.data.get('map_json')
+            if isinstance(map_image, str) and map_image.strip():
+                self.default_map_image = map_image.strip()
+            if isinstance(map_json, str) and map_json.strip():
+                self.default_map_json = map_json.strip()
+                self.game_map = Map(self.default_map_json)
+        except Exception:
+            pass
+
         for color, units in scenario.data.items():
+            if color not in ('red', 'blue'):
+                continue
             entities = []
             for unit_id, unit_info in units.items():
                 # 根据想定文件构造 EntityInfo
@@ -255,6 +272,33 @@ class SeaWarEnv(Env):
         images_dir = os.path.normpath(os.path.join(render_dir, 'images'))
         if not os.path.isdir(images_dir):
             return False
+
+        # 选择默认地图图片（如存在）
+        try:
+            map_dir = os.path.normpath(os.path.join(render_dir, 'map'))
+            terrain_candidates = [
+                'map.png', 'map.jpg', 'map.jpeg', 'map.bmp',
+                'terrain.png', 'terrain.jpg', 'terrain.jpeg', 'terrain.bmp',
+                'ground.png', 'ground.jpg', 'ground.jpeg', 'ground.bmp',
+                '地图.png', '地图.jpg', '地图.jpeg', '地图.bmp'
+            ]
+            chosen = None
+            if os.path.isdir(map_dir):
+                for name in terrain_candidates:
+                    p = os.path.join(map_dir, name)
+                    if os.path.exists(p):
+                        chosen = name
+                        break
+                if chosen is None:
+                    for f in os.listdir(map_dir):
+                        ext = os.path.splitext(f)[1].lower()
+                        if ext in ('.png', '.jpg', '.jpeg', '.bmp'):
+                            chosen = f
+                            break
+            if chosen:
+                self.default_map_image = chosen
+        except Exception:
+            pass
 
         # 识别的单位类型（需与渲染器的 key 一致）
         known_types = {

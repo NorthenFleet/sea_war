@@ -61,8 +61,14 @@ class Game:
         self.current_step = 0
 
         # 在运行前创建渲染器（携带地图选择）
+        # 优先使用传入的地形覆盖，其次使用环境绑定的默认地图图片
+        effective_terrain = terrain_override
+        if effective_terrain is None and hasattr(self.env, 'default_map_image') and self.env.default_map_image:
+            effective_terrain = self.env.default_map_image
+            print(f'使用场景绑定的地图图片: {effective_terrain}')
+        
         if self.render_manager is None:
-            self.render_manager = RenderManager(self.env, self.screen_size, terrain_override=terrain_override)
+            self.render_manager = RenderManager(self.env, self.screen_size, terrain_override=effective_terrain)
 
         while not game_over:
             start_time = time.time()
