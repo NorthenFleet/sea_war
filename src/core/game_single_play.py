@@ -68,7 +68,9 @@ class Game:
             print(f'使用场景绑定的地图图片: {effective_terrain}')
         
         if self.render_manager is None:
-            self.render_manager = RenderManager(self.env, self.screen_size, terrain_override=effective_terrain)
+            # 若使用图片地图且未绑定 map_json，则关闭障碍绿色方块叠加
+            show_obstacles = bool(getattr(self.env, 'default_map_json', None))
+            self.render_manager = RenderManager(self.env, self.screen_size, terrain_override=effective_terrain, show_obstacles=show_obstacles)
 
         while not game_over:
             start_time = time.time()

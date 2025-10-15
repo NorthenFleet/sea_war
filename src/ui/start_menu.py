@@ -31,7 +31,40 @@ class StartMenu:
         # 优先常用命名靠前
         priority = ['地图.png', 'map.png', 'terrain.png']
         names.sort(key=lambda n: (0 if n in priority else 1, n))
+        # 追加内置纯色背景预设，作为可选“地图”
+        color_presets = [
+            'color:#1E90FF',  # 深海蓝
+            'color:#2E8B57',  # 海绿色
+            'color:#87CEEB',  # 天空蓝
+            'color:#808080',  # 中性灰
+            'color:#000000',  # 纯黑
+        ]
+        for c in color_presets:
+            if c not in names:
+                names.append(c)
         return names
+
+    def _parse_color_value(self, value):
+        """解析字符串形式的颜色，如 color:#RRGGBB 或 color:R,G,B。返回 (r,g,b) 或 None。"""
+        try:
+            if not isinstance(value, str):
+                return None
+            if not value.lower().startswith('color:'):
+                return None
+            raw = value.split(':', 1)[1].strip()
+            if raw.startswith('#') and len(raw) == 7:
+                r = int(raw[1:3], 16)
+                g = int(raw[3:5], 16)
+                b = int(raw[5:7], 16)
+                return (r, g, b)
+            # 逗号分隔的数字
+            parts = raw.split(',')
+            if len(parts) == 3:
+                r, g, b = [max(0, min(255, int(p.strip()))) for p in parts]
+                return (r, g, b)
+        except Exception:
+            return None
+        return None
 
     def run(self, screen_size=(1280, 800), auto_select_timeout=None):
         screen = pygame.display.set_mode(screen_size)
@@ -55,6 +88,12 @@ class StartMenu:
         save_files = self._find_saves()
         list_selected_index = 0
 
+        # 列表区域点击判定参数
+        list_start_y = 200
+        item_h = 28
+        list_left_x = screen_size[0]//2 - 260
+        list_width = 520
+
         while True:
             try:
                 for event in pygame.event.get():
@@ -66,6 +105,27 @@ class StartMenu:
                         except Exception:
                             pass
                         return None
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        mx, my = event.pos
+                        # 根据当前模式，点击列表区域可选择条目；双击可直接开始/打开
+                        list_height = 0
+                        items = []
+                        if list_mode == 'map':
+                            items = self.candidates[:10]
+                        elif list_mode == 'scenario':
+                            items = scenario_files[:10]
+                        elif list_mode == 'saves':
+                            items = save_files[:10]
+                        list_height = item_h * len(items)
+                        list_rect = pygame.Rect(list_left_x, list_start_y, list_width, list_height)
+                        if list_rect.collidepoint(mx, my):
+                            idx = (my - list_start_y) // item_h
+                            if 0 <= idx < len(items):
+                                if list_mode == 'map':
+                                    self.selected_index = idx
+                                else:
+                                    list_selected_index = idx
+                        # 点击主按钮区域同原逻辑
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             try:
@@ -167,7 +227,7 @@ class StartMenu:
                 title = self.font_big.render('海战模拟 - 启动菜单', True, (230, 230, 230))
                 screen.blit(title, (screen_size[0]//2 - title.get_width()//2, 80))
 
-                hint = self.font_small.render('方向键选择地图，点击下方“开始游戏”进入；左侧有更多操作', True, (200, 200, 200))
+                hint = self.font_small.render('方向键或鼠标点击列表选择；点击下方“开始游戏”进入', True, (200, 200, 200))
                 screen.blit(hint, (screen_size[0]//2 - hint.get_width()//2, 140))
 
                 # 绘制“开始游戏”按钮
@@ -223,11 +283,18 @@ class StartMenu:
                 # 预览选中地图（右侧缩略图）
                 if self.candidates and 0 <= self.selected_index < len(self.candidates):
                     try:
-                        path = os.path.join(self.images_dir, self.candidates[self.selected_index])
-                        image = pygame.image.load(path)
+                        cand = self.candidates[self.selected_index]
                         preview_w, preview_h = 360, 220
-                        image = pygame.transform.smoothscale(image, (preview_w, preview_h))
-                        screen.blit(image, (screen_size[0]//2 + 140, 200))
+                        color = self._parse_color_value(cand)
+                        if color is not None:
+                            surf = pygame.Surface((preview_w, preview_h))
+                            surf.fill(color)
+                            screen.blit(surf, (screen_size[0]//2 + 140, 200))
+                        else:
+                            path = os.path.join(self.images_dir, cand)
+                            image = pygame.image.load(path)
+                            image = pygame.transform.smoothscale(image, (preview_w, preview_h))
+                            screen.blit(image, (screen_size[0]//2 + 140, 200))
                         border = pygame.Rect(screen_size[0]//2 + 140, 200, preview_w, preview_h)
                         pygame.draw.rect(screen, (180, 180, 180), border, 1)
                     except Exception:
@@ -286,6 +353,28 @@ class StartMenu:
                         except Exception:
                             pass
                         return {'action': 'exit'}
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        mx, my = event.pos
+                        # 列表区域点击选择索引
+                        list_start_y = 200
+                        item_h = 28
+                        list_left_x = screen_size[0]//2 - 260
+                        list_width = 520
+                        items = []
+                        if list_mode == 'map':
+                            items = self.candidates[:10]
+                        elif list_mode == 'scenario':
+                            items = scenario_files[:10]
+                        elif list_mode == 'saves':
+                            items = save_files[:10]
+                        list_rect = pygame.Rect(list_left_x, list_start_y, list_width, item_h * len(items))
+                        if list_rect.collidepoint(mx, my):
+                            idx = (my - list_start_y) // item_h
+                            if 0 <= idx < len(items):
+                                if list_mode == 'map':
+                                    sel_map = idx
+                                else:
+                                    sel_other = idx
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             try:
@@ -388,6 +477,7 @@ class StartMenu:
                 title = self.font_big.render('海战模拟 - 启动菜单（扩展）', True, (230, 230, 230))
                 screen.blit(title, (screen_size[0]//2 - title.get_width()//2, 80))
                 hint = self.font_small.render('1 地图  2 想定  3 存档  回车选择', True, (200, 200, 200))
+                # 鼠标也可点击列表选择；下方按钮可开始/打开
                 screen.blit(hint, (screen_size[0]//2 - hint.get_width()//2, 140))
 
                 # 主按钮与左侧按钮
@@ -446,11 +536,18 @@ class StartMenu:
                 # 地图预览
                 if list_mode == 'map' and sel_map >= 0:
                     try:
-                        path = os.path.join(self.images_dir, self.candidates[sel_map])
-                        image = pygame.image.load(path)
+                        cand = self.candidates[sel_map]
                         preview_w, preview_h = 360, 220
-                        image = pygame.transform.smoothscale(image, (preview_w, preview_h))
-                        screen.blit(image, (screen_size[0]//2 + 140, 200))
+                        color = self._parse_color_value(cand)
+                        if color is not None:
+                            surf = pygame.Surface((preview_w, preview_h))
+                            surf.fill(color)
+                            screen.blit(surf, (screen_size[0]//2 + 140, 200))
+                        else:
+                            path = os.path.join(self.images_dir, cand)
+                            image = pygame.image.load(path)
+                            image = pygame.transform.smoothscale(image, (preview_w, preview_h))
+                            screen.blit(image, (screen_size[0]//2 + 140, 200))
                         border = pygame.Rect(screen_size[0]//2 + 140, 200, preview_w, preview_h)
                         pygame.draw.rect(screen, (180, 180, 180), border, 1)
                     except Exception:

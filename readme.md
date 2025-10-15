@@ -1,0 +1,1 @@
+python3 run_game.py --skip-menu --terrain src/render/map/ground.png

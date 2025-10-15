@@ -39,6 +39,26 @@ class StopCommand(Command):
     def __init__(self, actor):
         super().__init__('stop', actor=actor)
 
+# 设定单位速度（绝对值）
+class SetSpeedCommand(Command):
+    def __init__(self, actor, speed):
+        super().__init__('set_speed', actor=actor, params={'speed': speed})
+
+# 旋转航向（相对角度，度数，顺时针为正）
+class RotateHeadingCommand(Command):
+    def __init__(self, actor, delta_deg):
+        super().__init__('rotate_heading', actor=actor, params={'delta_deg': float(delta_deg)})
+
+# 传感器开关切换（若未携带 enabled，则在环境中取反）
+class ToggleSensorCommand(Command):
+    def __init__(self, actor, enabled=None):
+        super().__init__('sensor_toggle', actor=actor, params={'enabled': enabled})
+
+# 攻击最近的敌方单位（无需事先点选目标）
+class AttackNearestCommand(Command):
+    def __init__(self, actor):
+        super().__init__('attack_nearest', actor=actor)
+
 # 指令列表，用于管理智能体生成的所有指令
 
 

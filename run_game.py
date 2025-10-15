@@ -29,7 +29,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='海战游戏单人模式（单一入口）')
     parser.add_argument('--skip-menu', action='store_true', help='跳过启动菜单，直接进入游戏')
-    parser.add_argument('--terrain', type=str, default=None, help='指定地形图片文件名（位于 src/render/map/）')
+    parser.add_argument('--terrain', type=str, default=None, help='指定地形图片（src/render/map/）或纯色，如 color:#1E90FF 或 color:0,0,255')
     parser.add_argument('--auto-select-timeout', type=float, default=None, help='启动菜单自动选择/跳过的超时时间（秒）；默认禁用自动开始')
     parser.add_argument('--speed-factor', type=float, default=None, help='全局移动速度系数（例如 0.5 降速，1.0 正常）')
     parser.add_argument('--scenario', type=str, default=None, help='指定想定 JSON 文件（位于 src/core/data/）')

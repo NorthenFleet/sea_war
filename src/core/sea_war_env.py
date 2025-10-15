@@ -550,6 +550,71 @@ class SeaWarEnv(Env):
                             # 简化：固定伤害或依据设备表后续扩展
                             dmg = 10
                             health.take_damage(dmg)
+                elif command.command_type == 'set_speed':
+                    mv = actor.get_component(MovementComponent)
+                    if mv is not None:
+                        spd = float(command.params.get('speed', mv.get_param('speed') or 0))
+                        # 简单约束，避免过大或负值
+                        spd = max(0.0, min(spd, 100.0))
+                        mv.set_param('speed', spd)
+                elif command.command_type == 'rotate_heading':
+                    mv = actor.get_component(MovementComponent)
+                    if mv is not None:
+                        hv = np.array(mv.get_param('heading') or [1.0, 0.0, 0.0], dtype=np.float64)
+                        ang = float(command.params.get('delta_deg', 0.0)) * np.pi / 180.0
+                        # 当前朝向角（基于 XY 平面）
+                        cur = np.array(hv[:2], dtype=np.float64)
+                        nrm = np.linalg.norm(cur)
+                        if nrm <= 1e-6:
+                            cur = np.array([1.0, 0.0], dtype=np.float64)
+                            nrm = 1.0
+                        cur = cur / nrm
+                        c, s = np.cos(ang), np.sin(ang)
+                        rot = np.array([c*cur[0] - s*cur[1], s*cur[0] + c*cur[1]], dtype=np.float64)
+                        mv.set_param('heading', np.array([float(rot[0]), float(rot[1]), float(hv[2] if hv.shape[0] > 2 else 0.0)]))
+                elif command.command_type == 'sensor_toggle':
+                    sensor = actor.get_component(SensorComponent)
+                    if sensor is not None:
+                        if 'enabled' in sensor.params:
+                            # 若携带参数则按参数设置，否则取反
+                            if command.params.get('enabled') is None:
+                                sensor.set_param('enabled', not bool(sensor.get_param('enabled')))
+                            else:
+                                sensor.set_param('enabled', bool(command.params.get('enabled')))
+                        else:
+                            # 默认开启，第一次切换置为 False
+                            default_on = True
+                            en = command.params.get('enabled', None)
+                            sensor.set_param('enabled', default_on if en is None else bool(en))
+                elif command.command_type == 'attack_nearest':
+                    # 找到距离最近的敌方实体并施加简化伤害
+                    # 基于 unit_owner 映射确定敌我
+                    owner = self.game_data.unit_owner.get(actor.entity_id, None)
+                    pos_a = actor.get_component(PositionComponent)
+                    if owner is None or pos_a is None:
+                        continue
+                    pa = np.array(pos_a.get_param('position')[:DD], dtype=np.float64)
+                    nearest = None
+                    nearest_dist = 1e9
+                    for e in self.game_data.get_all_entities():
+                        if e.entity_id == actor.entity_id:
+                            continue
+                        other_owner = self.game_data.unit_owner.get(e.entity_id, None)
+                        if other_owner is None or other_owner == owner:
+                            continue
+                        hp = e.get_component(HealthComponent)
+                        pos_t = e.get_component(PositionComponent)
+                        if hp is None or pos_t is None:
+                            continue
+                        pt = np.array(pos_t.get_param('position')[:DD], dtype=np.float64)
+                        d = float(np.linalg.norm(pt - pa))
+                        if d < nearest_dist:
+                            nearest_dist = d
+                            nearest = e
+                    if nearest is not None:
+                        hp = nearest.get_component(HealthComponent)
+                        if hp:
+                            hp.take_damage(10)
                 elif command.command_type == 'stop':
                     # 停止：清除移动目标并重置路径规划
                     pathfinding = actor.get_component(PathfindingComponent)
