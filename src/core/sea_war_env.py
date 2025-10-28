@@ -48,8 +48,10 @@ class SeaWarEnv(Env):
 
         # 初始化系统：移动速度系数可从 game_config 配置，默认 0.5（整体调慢）
         self.movement_speed_factor = float(game_config.get('movement_speed_factor', 0.5))
+        # 获取地图边界，默认为1000x1000
+        map_bounds = (self.game_map.global_width, self.game_map.global_height) if hasattr(self.game_map, 'global_width') else (1000, 1000)
         self.movement_system = MovementSystem(
-            self.game_data, self.event_manager, speed_factor=self.movement_speed_factor)
+            self.game_data, self.event_manager, speed_factor=self.movement_speed_factor, map_bounds=map_bounds)
         self.attack_system = AttackSystem(self.game_data, self.event_manager)
         self.detection_system = DetectionSystem(self.game_data,
                                                 self.event_manager, self.device_table, self.quad_tree, self.grid)

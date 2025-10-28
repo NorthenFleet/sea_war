@@ -41,11 +41,24 @@ class PositionSystem(System):
 
 
 class MovementSystem(System):
-    def __init__(self, game_data, event_manager, speed_factor=1.0):
+    def __init__(self, game_data, event_manager, speed_factor=1.0, map_bounds=None):
         super().__init__(game_data)
         self.event_manager = event_manager
         # 全局移动速度系数，用于统一调慢或调快单位移动速度
         self.speed_factor = float(speed_factor)
+        # 地图边界约束，默认为1000x1000
+        self.map_bounds = map_bounds or (1000, 1000)
+
+    def clamp_position_to_bounds(self, position):
+        """将位置限制在地图边界内"""
+        x, y, z = position
+        max_x, max_y = self.map_bounds
+        
+        # 确保位置在边界内
+        x = max(0, min(x, max_x - 1))
+        y = max(0, min(y, max_y - 1))
+        
+        return [x, y, z]
 
     def update(self, entities, delta_time):
         """更新实体的移动状态"""
@@ -78,7 +91,10 @@ class MovementSystem(System):
                         dx = vx * speed * delta_time * self.speed_factor
                         dy = vy * speed * delta_time * self.speed_factor
                         px, py, pz = position.get_param("position")
-                        position.set_param("position", [px + dx, py + dy, pz])
+                        new_position = [px + dx, py + dy, pz]
+                        # 应用边界约束
+                        clamped_position = self.clamp_position_to_bounds(new_position)
+                        position.set_param("position", clamped_position)
 
     def move_towards_goal(self, entity, position, movement, pathfinding, delta_time):
         """执行移动逻辑，处理路径中的当前目标点"""
@@ -97,7 +113,10 @@ class MovementSystem(System):
         new_pos = np.array(position.get_param("position"), dtype=np.float64)
         new_pos[0] += direction[0] * step_distance
         new_pos[1] += direction[1] * step_distance
-        position.set_param("position", [float(new_pos[0]), float(new_pos[1]), float(new_pos[2])])
+        
+        # 应用边界约束
+        clamped_position = self.clamp_position_to_bounds([float(new_pos[0]), float(new_pos[1]), float(new_pos[2])])
+        position.set_param("position", clamped_position)
 
         # 检查是否到达当前目标点
         if float(np.linalg.norm(np.array(position.get_param("position")[:2], dtype=np.float64) - goal_xy)) < 0.1:
