@@ -1129,3 +1129,10 @@ class RenderManager:
         else:
             # 其它交由外层处理（暂停/加速/减速等）
             self.ui_actions.append(act)
+    
+    def cleanup(self):
+        """清理渲染资源"""
+        try:
+            pygame.quit()
+        except Exception:
+            pass

@@ -35,6 +35,8 @@ if __name__ == '__main__':
     parser.add_argument('--scenario', type=str, default=None, help='指定想定 JSON 文件（位于 src/core/data/）')
     parser.add_argument('--load-save', type=str, default=None, help='指定存档 JSON 文件（位于 saves/）')
     parser.add_argument('--save-on-exit', action='store_true', help='退出时自动保存当前状态到 saves/auto_last.json')
+    parser.add_argument('--layered-rendering', action='store_true', help='启用分层渲染系统（优化性能和视觉效果）')
+    parser.add_argument('--debug-rendering', action='store_true', help='启用渲染调试模式（显示性能统计和调试信息）')
     args = parser.parse_args()
 
     # 定义全局配置字典
@@ -51,9 +53,14 @@ if __name__ == '__main__':
         "blue": 'Blue'
     }
 
-    # 覆盖速度系数
+    # 如果指定了速度因子，更新配置
     if args.speed_factor is not None:
         game_config['movement_speed_factor'] = float(args.speed_factor)
+    
+    # 添加渲染配置
+    game_config['use_layered_rendering'] = args.layered_rendering
+    game_config['debug_rendering'] = args.debug_rendering
+    
     game = Game(game_config, players)
 
     selected_map = None

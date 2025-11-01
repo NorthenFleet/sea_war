@@ -1,0 +1,12 @@
+{
+  "traditional": null,
+  "layered": null,
+  "test_info": {
+    "timestamp": "2025-11-01T00:22:42.789963",
+    "system_info": {
+      "cpu_count": 14,
+      "memory_total": 48.0,
+      "python_version": "3.10.0 (default, Mar  3 2022, 03:54:28) [Clang 12.0.0 ]"
+    }
+  }
+}

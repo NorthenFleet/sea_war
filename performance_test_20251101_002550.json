@@ -1,0 +1,31 @@
+{
+  "traditional": {
+    "duration": 10.016296863555908,
+    "fps": {
+      "avg": 57.895665288616364,
+      "min": 55.8867156847116,
+      "max": 59.18741039274788,
+      "samples": 9
+    },
+    "memory": {
+      "avg": 220.70328608247422,
+      "min": 187.515625,
+      "max": 225.5,
+      "peak": 225.5
+    },
+    "cpu": {
+      "avg": 28.018556701030917,
+      "min": 0.0,
+      "max": 57.4
+    }
+  },
+  "layered": null,
+  "test_info": {
+    "timestamp": "2025-11-01T00:25:50.544740",
+    "system_info": {
+      "cpu_count": 14,
+      "memory_total": 48.0,
+      "python_version": "3.10.0 (default, Mar  3 2022, 03:54:28) [Clang 12.0.0 ]"
+    }
+  }
+}

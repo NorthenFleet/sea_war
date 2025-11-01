@@ -1,5 +1,6 @@
 from .sea_war_env import SeaWarEnv
 from ..render.single_process import RenderManager
+from ..render.integrated_renderer import IntegratedRenderManager
 from ..ui.start_menu import StartMenu
 from ..ui.player_human import HumanPlayer
 from ..ai.player_rule import RulePlayer
@@ -13,7 +14,7 @@ import argparse
 
 
 class Game:
-    def __init__(self, game_config, players, is_server=False):
+    def __init__(self, game_config, players, is_server=False, use_layered_rendering=None, debug_rendering=False):
         self.env = SeaWarEnv(game_config)
         self.current_time = 0.0
         self.fixed_time_step = 1 / 60  # 固定时间步长
@@ -23,6 +24,17 @@ class Game:
         self.screen_size = (1280, 800)
         self.render_manager = None
         self.players = {}
+        
+        # 渲染系统配置 - 从game_config中获取，如果没有则使用传入的参数
+        if use_layered_rendering is None:
+            self.use_layered_rendering = game_config.get('use_layered_rendering', True)
+        else:
+            self.use_layered_rendering = use_layered_rendering
+        
+        self.debug_rendering = game_config.get('debug_rendering', debug_rendering)
+        print(f"渲染系统: {'分层渲染' if self.use_layered_rendering else '传统渲染'}")
+        if self.debug_rendering:
+            print("调试模式: 已启用渲染调试")
 
         # 注册系统事件
         self.event_manager = EventManager()
@@ -70,7 +82,24 @@ class Game:
         if self.render_manager is None:
             # 若使用图片地图且未绑定 map_json，则关闭障碍绿色方块叠加
             show_obstacles = bool(getattr(self.env, 'default_map_json', None))
-            self.render_manager = RenderManager(self.env, self.screen_size, terrain_override=effective_terrain, show_obstacles=show_obstacles)
+            
+            # 根据配置选择渲染系统
+            if self.use_layered_rendering:
+                self.render_manager = IntegratedRenderManager(
+                    self.env, self.screen_size, 
+                    terrain_override=effective_terrain, 
+                    show_obstacles=show_obstacles,
+                    use_layered_rendering=True,
+                    debug_mode=self.debug_rendering
+                )
+                print("已启用分层渲染系统")
+            else:
+                self.render_manager = RenderManager(
+                    self.env, self.screen_size, 
+                    terrain_override=effective_terrain, 
+                    show_obstacles=show_obstacles
+                )
+                print("使用传统渲染系统")
 
         while not game_over:
             start_time = time.time()
