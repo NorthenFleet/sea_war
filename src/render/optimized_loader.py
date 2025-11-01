@@ -7,6 +7,8 @@
 import pygame
 import os
 import json
+import subprocess
+import tempfile
 from typing import Dict, Optional, Tuple, Any
 from pathlib import Path
 
@@ -60,8 +62,8 @@ class OptimizedSpriteLoader:
             'bomber': (255, 140, 0)
         }
         
-        # 支持的图像格式
-        self.supported_formats = {'.png', '.jpg', '.jpeg', '.bmp', '.tga', '.gif'}
+        # 支持的图像格式（包括SVG）
+        self.supported_formats = {'.png', '.jpg', '.jpeg', '.bmp', '.tga', '.gif', '.svg'}
         
         # 性能统计
         self.load_stats = {
@@ -152,6 +154,10 @@ class OptimizedSpriteLoader:
                                 target_size: Optional[Tuple[int, int]] = None) -> pygame.Surface:
         """加载并优化图像"""
         try:
+            # 处理SVG文件
+            if image_path.suffix.lower() == '.svg':
+                return self._load_svg_image(image_path, target_size)
+            
             # 加载原始图像
             surface = pygame.image.load(str(image_path))
             
@@ -188,6 +194,126 @@ class OptimizedSpriteLoader:
             # 返回占位图像
             sprite_name = image_path.stem
             return self._create_optimized_placeholder(sprite_name, target_size)
+    
+    def _load_svg_image(self, svg_path: Path, target_size: Optional[Tuple[int, int]] = None) -> pygame.Surface:
+        """加载SVG图像并转换为pygame Surface"""
+        try:
+            # 确定目标尺寸
+            if target_size is None and svg_path.stem in self.default_sizes:
+                target_size = self.default_sizes[svg_path.stem]
+            elif target_size is None:
+                target_size = (32, 32)  # 默认尺寸
+            
+            # 尝试使用cairosvg（如果可用）
+            try:
+                import cairosvg
+                import io
+                from PIL import Image
+                
+                # 将SVG转换为PNG字节流
+                png_data = cairosvg.svg2png(
+                    url=str(svg_path),
+                    output_width=target_size[0],
+                    output_height=target_size[1]
+                )
+                
+                # 使用PIL加载PNG数据
+                pil_image = Image.open(io.BytesIO(png_data))
+                
+                # 转换为pygame Surface
+                mode = pil_image.mode
+                size = pil_image.size
+                raw = pil_image.tobytes()
+                
+                surface = pygame.image.fromstring(raw, size, mode)
+                if self.memory_optimization:
+                    surface = surface.convert_alpha()
+                else:
+                    surface = surface.convert_alpha()
+                
+                return surface
+                
+            except ImportError:
+                # 如果cairosvg不可用，尝试使用系统命令
+                return self._load_svg_with_system_command(svg_path, target_size)
+                
+        except Exception as e:
+            print(f"Failed to load SVG {svg_path}: {e}")
+            # 返回占位图像
+            return self._create_optimized_placeholder(svg_path.stem, target_size)
+    
+    def _load_svg_with_system_command(self, svg_path: Path, target_size: Tuple[int, int]) -> pygame.Surface:
+        """使用系统命令加载SVG（备用方法）"""
+        try:
+            # 创建临时PNG文件
+            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+                temp_png_path = temp_file.name
+            
+            # 尝试使用rsvg-convert（如果可用）
+            try:
+                subprocess.run([
+                    'rsvg-convert',
+                    '-w', str(target_size[0]),
+                    '-h', str(target_size[1]),
+                    '-o', temp_png_path,
+                    str(svg_path)
+                ], check=True, capture_output=True)
+                
+                # 加载转换后的PNG
+                surface = pygame.image.load(temp_png_path)
+                surface = surface.convert_alpha()
+                
+                # 清理临时文件
+                os.unlink(temp_png_path)
+                
+                return surface
+                
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                # 如果rsvg-convert不可用，创建简单的占位图像
+                os.unlink(temp_png_path)  # 清理临时文件
+                return self._create_svg_placeholder(svg_path.stem, target_size)
+                
+        except Exception as e:
+            print(f"System command SVG loading failed for {svg_path}: {e}")
+            return self._create_svg_placeholder(svg_path.stem, target_size)
+    
+    def _create_svg_placeholder(self, sprite_name: str, target_size: Tuple[int, int]) -> pygame.Surface:
+        """为SVG文件创建占位图像"""
+        surface = pygame.Surface(target_size, pygame.SRCALPHA)
+        surface.fill((0, 0, 0, 0))  # 透明背景
+        
+        # 根据精灵类型创建简单的形状
+        color = self.default_colors.get(sprite_name, (128, 128, 128))
+        
+        if 'ship' in sprite_name:
+            # 绘制船形
+            points = [
+                (target_size[0] * 0.1, target_size[1] * 0.7),
+                (target_size[0] * 0.9, target_size[1] * 0.7),
+                (target_size[0] * 0.8, target_size[1] * 0.3),
+                (target_size[0] * 0.2, target_size[1] * 0.3)
+            ]
+            pygame.draw.polygon(surface, color, points)
+        elif 'submarine' in sprite_name:
+            # 绘制潜艇形
+            pygame.draw.ellipse(surface, color, (
+                target_size[0] * 0.1, target_size[1] * 0.3,
+                target_size[0] * 0.8, target_size[1] * 0.4
+            ))
+        elif 'missile' in sprite_name:
+            # 绘制导弹形
+            pygame.draw.rect(surface, color, (
+                target_size[0] * 0.3, target_size[1] * 0.1,
+                target_size[0] * 0.4, target_size[1] * 0.8
+            ))
+        else:
+            # 默认矩形
+            pygame.draw.rect(surface, color, (
+                target_size[0] * 0.2, target_size[1] * 0.2,
+                target_size[0] * 0.6, target_size[1] * 0.6
+            ))
+        
+        return surface
     
     def _create_optimized_placeholder(self, sprite_name: str, 
                                     target_size: Optional[Tuple[int, int]] = None) -> pygame.Surface:

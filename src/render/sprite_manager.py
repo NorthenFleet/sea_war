@@ -5,8 +5,9 @@ pygame精灵组管理系统
 
 import pygame
 from .entity_sprite import EntitySprite, SpriteFactory
+from .visual_effects import VisualEffectsManager
 from collections import defaultdict
-
+import time
 
 class LayeredSpriteManager:
     """
@@ -69,6 +70,9 @@ class LayeredSpriteManager:
         self.last_update_time = 0
         self.update_interval = 1.0 / 60.0  # 60 FPS更新频率
         self.dirty_sprites = set()  # 需要更新的精灵
+        
+        # 视觉效果管理器
+        self.visual_effects = VisualEffectsManager()
     
     def add_entity(self, entity, scale_factor=1.0):
         """添加实体精灵"""
@@ -185,8 +189,11 @@ class LayeredSpriteManager:
             # 如果有添加或移除操作，更新所有精灵
             self.all_sprites.update()
     
-    def render(self, surface, camera_offset=(0, 0)):
-        """渲染所有精灵"""
+    def render(self, surface, camera_offset=(0, 0), dt=0.016):
+        """渲染所有精灵和视觉效果"""
+        # 更新视觉效果
+        self.visual_effects.update(dt)
+        
         # 如果有摄像机偏移，需要调整精灵位置
         if camera_offset != (0, 0):
             self._apply_camera_offset(camera_offset)
@@ -196,6 +203,9 @@ class LayeredSpriteManager:
         
         # 绘制额外的UI元素（血量条、选中指示器等）
         self._render_ui_elements(surface, camera_offset)
+        
+        # 渲染视觉效果
+        self.visual_effects.render(surface, camera_offset)
         
         # 恢复精灵位置
         if camera_offset != (0, 0):
@@ -216,11 +226,15 @@ class LayeredSpriteManager:
     def _render_ui_elements(self, surface, camera_offset):
         """渲染UI元素（血量条、选中指示器等）"""
         for sprite in self.all_sprites:
-            # 绘制血量条
-            sprite.draw_health_bar(surface, camera_offset)
-            
-            # 绘制选中指示器
-            sprite.draw_selection_indicator(surface, camera_offset)
+            if hasattr(sprite, 'draw_enhanced_effects'):
+                # 使用增强的视觉效果
+                sprite.draw_enhanced_effects(surface, camera_offset)
+            else:
+                # 兼容旧版本的绘制方法
+                if hasattr(sprite, 'draw_health_bar'):
+                    sprite.draw_health_bar(surface, camera_offset)
+                if hasattr(sprite, 'draw_selection_indicator'):
+                    sprite.draw_selection_indicator(surface, camera_offset)
     
     def get_sprites_at_position(self, pos, radius=5):
         """获取指定位置附近的精灵"""
@@ -329,4 +343,33 @@ class LayeredSpriteManager:
             'friendly': len(self.collision_groups['friendly']),
             'enemy': len(self.collision_groups['enemy']),
             'neutral': len(self.collision_groups['neutral']),
+            'visual_effects_count': self.visual_effects.get_effect_count()
         }
+    
+    # 视觉效果便捷方法
+    def add_explosion_at_entity(self, entity_id, size=50.0):
+        """在指定实体位置添加爆炸效果"""
+        if entity_id in self.entity_sprite_map:
+            sprite = self.entity_sprite_map[entity_id]
+            position = sprite.rect.center
+            self.visual_effects.add_explosion(position, size)
+    
+    def add_trail_between_entities(self, start_entity_id, end_entity_id, color=(100, 150, 255)):
+        """在两个实体之间添加轨迹效果"""
+        if start_entity_id in self.entity_sprite_map and end_entity_id in self.entity_sprite_map:
+            start_sprite = self.entity_sprite_map[start_entity_id]
+            end_sprite = self.entity_sprite_map[end_entity_id]
+            start_pos = start_sprite.rect.center
+            end_pos = end_sprite.rect.center
+            self.visual_effects.add_trail(start_pos, end_pos, color)
+    
+    def add_muzzle_flash_at_entity(self, entity_id, direction=0):
+        """在指定实体位置添加炮口闪光效果"""
+        if entity_id in self.entity_sprite_map:
+            sprite = self.entity_sprite_map[entity_id]
+            position = sprite.rect.center
+            self.visual_effects.add_muzzle_flash(position, direction)
+    
+    def clear_visual_effects(self):
+        """清除所有视觉效果"""
+        self.visual_effects.clear_all()

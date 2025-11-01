@@ -89,10 +89,11 @@ class Game:
                     self.env, self.screen_size, 
                     terrain_override=effective_terrain, 
                     show_obstacles=show_obstacles,
-                    use_layered_rendering=True,
-                    debug_mode=self.debug_rendering
+                    use_layered_rendering=True
                 )
                 print("已启用分层渲染系统")
+                if self.debug_rendering:
+                    print("调试模式将在渲染器中启用")
             else:
                 self.render_manager = RenderManager(
                     self.env, self.screen_size, 

@@ -47,6 +47,20 @@ class EntitySprite(pygame.sprite.Sprite):
         self.last_heading = None
         self.rotation_angle = 0
         
+        # 视觉增强
+        self.show_direction_indicator = True
+        self.show_status_effects = True
+        self.trail_points = []  # 轨迹点
+        self.max_trail_length = 10
+        
+        # 状态效果
+        self.status_effects = {
+            'damaged': False,
+            'moving': False,
+            'attacking': False,
+            'low_health': False
+        }
+        
         # 初始化位置
         self._update_position()
     
@@ -120,12 +134,58 @@ class EntitySprite(pygame.sprite.Sprite):
                     self.rect = self.image.get_rect()
                     self.rect.center = old_center
     
+    def _update_trail(self):
+        """更新轨迹点"""
+        if self._position_component:
+            current_pos = (
+                self._position_component.get_param('x', 0),
+                self._position_component.get_param('y', 0)
+            )
+            
+            # 只有位置发生变化时才添加轨迹点
+            if self.last_position and current_pos != self.last_position:
+                self.trail_points.append(current_pos)
+                
+                # 限制轨迹长度
+                if len(self.trail_points) > self.max_trail_length:
+                    self.trail_points.pop(0)
+    
+    def _update_status_effects(self):
+        """更新状态效果"""
+        # 检查生命值状态
+        if self._health_component:
+            max_hp = self._health_component.get_param('max_health', 100)
+            cur_hp = self._health_component.get_param('current_health', 100)
+            
+            if max_hp > 0:
+                health_ratio = cur_hp / max_hp
+                self.status_effects['low_health'] = health_ratio < 0.3
+                self.status_effects['damaged'] = health_ratio < 0.8
+        
+        # 检查移动状态
+        if self._movement_component:
+            speed = self._movement_component.get_param('speed', 0)
+            self.status_effects['moving'] = speed > 0.1
+        
+        # 检查攻击状态（可以根据实际游戏逻辑扩展）
+        # 这里简化处理，可以根据实体的其他组件来判断
+        self.status_effects['attacking'] = False
+    
     def update(self, *args, **kwargs):
         """pygame精灵的标准更新方法"""
         # 检查实体是否仍然存在
         if not hasattr(self.entity, 'entity_id'):
             self.kill()
             return
+        
+        # 更新组件缓存
+        self._update_component_cache()
+        
+        # 记录轨迹点
+        self._update_trail()
+        
+        # 更新状态效果
+        self._update_status_effects()
         
         # 更新位置
         self._update_position()
@@ -179,7 +239,112 @@ class EntitySprite(pygame.sprite.Sprite):
             rect = self.rect.copy()
             rect.x += offset[0]
             rect.y += offset[1]
-            pygame.draw.rect(surface, (0, 255, 0), rect, 2)
+            pygame.draw.rect(surface, (255, 255, 0), rect, 2)
+    
+    def draw_direction_indicator(self, surface, offset=(0, 0)):
+        """绘制方向指示器"""
+        if not self.show_direction_indicator or not self._movement_component:
+            return
+        
+        heading = self._movement_component.get_param('heading', 0)
+        speed = self._movement_component.get_param('speed', 0)
+        
+        if speed > 0.1:  # 只有在移动时才显示方向
+            center_x = self.rect.centerx + offset[0]
+            center_y = self.rect.centery + offset[1]
+            
+            # 计算箭头终点
+            arrow_length = 30
+            end_x = center_x + math.cos(math.radians(heading)) * arrow_length
+            end_y = center_y + math.sin(math.radians(heading)) * arrow_length
+            
+            # 绘制方向箭头
+            pygame.draw.line(surface, (0, 255, 255), 
+                           (center_x, center_y), (end_x, end_y), 2)
+            
+            # 绘制箭头头部
+            arrow_head_length = 8
+            arrow_angle = 30
+            
+            # 左侧箭头
+            left_angle = heading + 180 - arrow_angle
+            left_x = end_x + math.cos(math.radians(left_angle)) * arrow_head_length
+            left_y = end_y + math.sin(math.radians(left_angle)) * arrow_head_length
+            pygame.draw.line(surface, (0, 255, 255), (end_x, end_y), (left_x, left_y), 2)
+            
+            # 右侧箭头
+            right_angle = heading + 180 + arrow_angle
+            right_x = end_x + math.cos(math.radians(right_angle)) * arrow_head_length
+            right_y = end_y + math.sin(math.radians(right_angle)) * arrow_head_length
+            pygame.draw.line(surface, (0, 255, 255), (end_x, end_y), (right_x, right_y), 2)
+    
+    def draw_trail(self, surface, offset=(0, 0)):
+        """绘制移动轨迹"""
+        if len(self.trail_points) < 2:
+            return
+        
+        # 绘制轨迹线
+        for i in range(1, len(self.trail_points)):
+            start_pos = (
+                self.trail_points[i-1][0] + offset[0],
+                self.trail_points[i-1][1] + offset[1]
+            )
+            end_pos = (
+                self.trail_points[i][0] + offset[0],
+                self.trail_points[i][1] + offset[1]
+            )
+            
+            # 轨迹透明度随时间衰减
+            alpha = int(255 * (i / len(self.trail_points)) * 0.5)
+            color = (100, 150, 255, alpha)
+            
+            # 创建临时surface来支持alpha
+            temp_surface = pygame.Surface((2, 2), pygame.SRCALPHA)
+            temp_surface.fill(color)
+            
+            pygame.draw.line(surface, color[:3], start_pos, end_pos, 1)
+    
+    def draw_status_effects(self, surface, offset=(0, 0)):
+        """绘制状态效果"""
+        if not self.show_status_effects:
+            return
+        
+        effect_y = self.rect.y + offset[1] - 20
+        effect_x = self.rect.x + offset[0]
+        
+        # 低血量警告
+        if self.status_effects['low_health']:
+            pygame.draw.circle(surface, (255, 0, 0), 
+                             (effect_x + 5, effect_y), 3)
+            effect_x += 12
+        
+        # 受损状态
+        if self.status_effects['damaged'] and not self.status_effects['low_health']:
+            pygame.draw.circle(surface, (255, 165, 0), 
+                             (effect_x + 5, effect_y), 3)
+            effect_x += 12
+        
+        # 移动状态
+        if self.status_effects['moving']:
+            pygame.draw.polygon(surface, (0, 255, 0), [
+                (effect_x + 2, effect_y + 3),
+                (effect_x + 8, effect_y),
+                (effect_x + 8, effect_y + 6)
+            ])
+            effect_x += 12
+        
+        # 攻击状态
+        if self.status_effects['attacking']:
+            pygame.draw.circle(surface, (255, 255, 0), 
+                             (effect_x + 5, effect_y), 3)
+    
+    def draw_enhanced_effects(self, surface, offset=(0, 0)):
+        """绘制所有增强视觉效果"""
+        self.draw_trail(surface, offset)
+        self.draw_direction_indicator(surface, offset)
+        self.draw_status_effects(surface, offset)
+        self.draw_health_bar(surface, offset)
+        self.draw_selection_indicator(surface, offset)
     
     def get_collision_rect(self):
         """获取碰撞检测矩形"""

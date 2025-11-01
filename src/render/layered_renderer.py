@@ -221,10 +221,14 @@ class LayeredRenderManager:
         # 更新特效
         self.effects = [effect for effect in self.effects if effect.update(delta_time)]
     
-    def render(self, target_surface: pygame.Surface = None):
+    def render(self, target_surface: pygame.Surface = None, dt: float = 0.0):
         """执行分层渲染"""
         if target_surface is None:
             target_surface = self.screen
+        
+        # 如果提供了delta_time，先更新特效
+        if dt > 0.0:
+            self.update(dt)
         
         # 按层级顺序渲染
         for layer in sorted(RenderLayer, key=lambda x: x.value):

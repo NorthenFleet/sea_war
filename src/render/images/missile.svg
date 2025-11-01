@@ -1,0 +1,19 @@
+<svg width="8" height="20" viewBox="0 0 8 20" xmlns="http://www.w3.org/2000/svg">
+  <!-- 导弹主体 -->
+  <rect x="2" y="4" width="4" height="12" fill="#E74C3C" stroke="#C0392B" stroke-width="1"/>
+  
+  <!-- 导弹头部 -->
+  <polygon points="4,0 2,4 6,4" fill="#F39C12" stroke="#E67E22" stroke-width="1"/>
+  
+  <!-- 导弹尾翼 -->
+  <polygon points="1,16 2,14 2,18" fill="#95A5A6" stroke="#7F8C8D" stroke-width="1"/>
+  <polygon points="7,16 6,14 6,18" fill="#95A5A6" stroke="#7F8C8D" stroke-width="1"/>
+  <polygon points="4,17 2,16 6,16" fill="#95A5A6" stroke="#7F8C8D" stroke-width="1"/>
+  
+  <!-- 推进器火焰效果 -->
+  <ellipse cx="4" cy="19" rx="1.5" ry="1" fill="#FF6B35" opacity="0.8"/>
+  
+  <!-- 导弹标识 -->
+  <rect x="2.5" y="8" width="3" height="1" fill="#FFD93D"/>
+  <rect x="2.5" y="10" width="3" height="1" fill="#FFD93D"/>
+</svg>

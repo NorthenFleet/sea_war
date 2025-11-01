@@ -110,19 +110,17 @@ class IntegratedRenderManager(RenderManager):
         self.layered_renderer.layered_group.empty()
         
         # 重新添加所有实体
-        for player in self.env.players:
-            for entity in player.entities:
-                self.layered_renderer.add_entity(entity)
+        for entity in self.game_data.get_all_entities():
+            self.layered_renderer.add_entity(entity)
         
         # 更新同步缓存
         self.entity_sync_cache.clear()
-        for player in self.env.players:
-            for entity in player.entities:
-                self.entity_sync_cache[entity.entity_id] = {
-                    'position': getattr(entity, 'position', (0, 0)),
-                    'rotation': getattr(entity, 'rotation', 0),
-                    'health': getattr(entity, 'health', 100)
-                }
+        for entity in self.game_data.get_all_entities():
+            self.entity_sync_cache[entity.entity_id] = {
+                'position': getattr(entity, 'position', (0, 0)),
+                'rotation': getattr(entity, 'rotation', 0),
+                'health': getattr(entity, 'health', 100)
+            }
     
     def _sync_entities_incremental(self):
         """增量同步实体变化"""
@@ -132,9 +130,8 @@ class IntegratedRenderManager(RenderManager):
         current_entities = {}
         
         # 收集当前所有实体
-        for player in self.env.players:
-            for entity in player.entities:
-                current_entities[entity.entity_id] = entity
+        for entity in self.game_data.get_all_entities():
+            current_entities[entity.entity_id] = entity
         
         # 检查新增实体
         for entity_id, entity in current_entities.items():
@@ -230,8 +227,11 @@ class IntegratedRenderManager(RenderManager):
         # 创建主视图表面
         main_view_surface = pygame.Surface((self.main_view_width, self.main_view_height))
         
-        # 渲染分层内容到主视图表面
-        self.layered_renderer.render(main_view_surface)
+        # 计算delta_time
+        delta_time = self.clock.get_time() / 1000.0
+        
+        # 渲染分层内容到主视图表面（传递delta_time用于视觉效果）
+        self.layered_renderer.render(main_view_surface, dt=delta_time)
         
         # 将主视图表面绘制到屏幕
         self.screen.blit(main_view_surface, (self.main_view_x, self.main_view_y))

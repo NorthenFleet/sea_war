@@ -1,0 +1,39 @@
+<svg width="48" height="32" viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- 跑道 -->
+  <rect x="4" y="12" width="40" height="8" fill="#5D6D7E" stroke="#34495E" stroke-width="1"/>
+  
+  <!-- 跑道标线 -->
+  <rect x="8" y="15" width="4" height="2" fill="#F8C471"/>
+  <rect x="16" y="15" width="4" height="2" fill="#F8C471"/>
+  <rect x="24" y="15" width="4" height="2" fill="#F8C471"/>
+  <rect x="32" y="15" width="4" height="2" fill="#F8C471"/>
+  
+  <!-- 控制塔 -->
+  <rect x="20" y="4" width="8" height="12" fill="#85929E" stroke="#5D6D7E" stroke-width="1"/>
+  <rect x="22" y="2" width="4" height="4" fill="#AEB6BF" stroke="#85929E" stroke-width="1"/>
+  
+  <!-- 机库 -->
+  <rect x="6" y="22" width="12" height="8" fill="#BDC3C7" stroke="#95A5A6" stroke-width="1"/>
+  <rect x="30" y="22" width="12" height="8" fill="#BDC3C7" stroke="#95A5A6" stroke-width="1"/>
+  
+  <!-- 飞机 -->
+  <g transform="translate(10,16)">
+    <!-- 机身 -->
+    <ellipse cx="6" cy="2" rx="5" ry="1.5" fill="#3498DB" stroke="#2980B9" stroke-width="1"/>
+    <!-- 机翼 -->
+    <rect x="3" y="1" width="6" height="0.5" fill="#85C1E9"/>
+    <rect x="1" y="1.5" width="10" height="0.5" fill="#85C1E9"/>
+  </g>
+  
+  <g transform="translate(32,16)">
+    <!-- 机身 -->
+    <ellipse cx="6" cy="2" rx="5" ry="1.5" fill="#E74C3C" stroke="#C0392B" stroke-width="1"/>
+    <!-- 机翼 -->
+    <rect x="3" y="1" width="6" height="0.5" fill="#F1948A"/>
+    <rect x="1" y="1.5" width="10" height="0.5" fill="#F1948A"/>
+  </g>
+  
+  <!-- 导航灯 -->
+  <circle cx="12" cy="8" r="1" fill="#2ECC71"/>
+  <circle cx="36" cy="8" r="1" fill="#E74C3C"/>
+</svg>
