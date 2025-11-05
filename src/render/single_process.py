@@ -1,6 +1,7 @@
 import pygame
 import os, sys
 import time
+import math
 from ..ui.font_loader import load_cn_font
 from ..core.entities.entity import *
 from ..init import Map
@@ -8,7 +9,7 @@ from ..ui.player import CommandList, Command, MoveCommand, AttackCommand, StopCo
 
 
 class RenderManager:
-    def __init__(self, env, screen_size, tile_size=64, terrain_override=None, show_obstacles=None):
+    def __init__(self, env, screen_size, tile_size=64, terrain_override=None, show_obstacles=None, grid_mode: str = 'square'):
         pygame.init()
         self.screen = pygame.display.set_mode(screen_size)
         pygame.display.set_caption('海战指挥系统')
@@ -27,6 +28,8 @@ class RenderManager:
             self.show_obstacles = bool(getattr(env, 'default_map_json', None))
         else:
             self.show_obstacles = bool(show_obstacles)
+        # 网格显示模式：'square' | 'hex' | 'none'
+        self.grid_mode = grid_mode or 'square'
         self.sprites = self.load_sprites()  # 加载图片
         
         # 加载地图并计算缩放比例：优先使用环境中的地图对象
@@ -465,13 +468,51 @@ class RenderManager:
         self.screen.blit(overlay, (self.camera_offset[0], self.camera_offset[1]))
 
         # 网格线（可选，弱化显示）
-        grid_color = (0, 80, 0)
-        for by in range(small_height + 1):
-            y = int(by * block_pixel_h) + self.camera_offset[1]
-            pygame.draw.line(self.screen, grid_color, (self.camera_offset[0], y), (self.camera_offset[0] + small_width * block_pixel_w, y), 1)
-        for bx in range(small_width + 1):
-            x = int(bx * block_pixel_w) + self.camera_offset[0]
-            pygame.draw.line(self.screen, grid_color, (x, self.camera_offset[1]), (x, self.camera_offset[1] + small_height * block_pixel_h), 1)
+        if self.grid_mode == 'square':
+            grid_color = (0, 80, 0)
+            for by in range(small_height + 1):
+                y = int(by * block_pixel_h) + self.camera_offset[1]
+                pygame.draw.line(self.screen, grid_color, (self.camera_offset[0], y), (self.camera_offset[0] + small_width * block_pixel_w, y), 1)
+            for bx in range(small_width + 1):
+                x = int(bx * block_pixel_w) + self.camera_offset[0]
+                pygame.draw.line(self.screen, grid_color, (x, self.camera_offset[1]), (x, self.camera_offset[1] + small_height * block_pixel_h), 1)
+        elif self.grid_mode == 'hex':
+            self._draw_hex_grid_overlay(small_width, small_height, block_pixel_w, block_pixel_h)
+        # 'none' 模式不绘制网格
+
+    def _draw_hex_grid_overlay(self, small_width, small_height, block_pixel_w, block_pixel_h):
+        """绘制六角格覆盖层（点顶六角形，弱化显示）"""
+        overlay_w = small_width * block_pixel_w
+        overlay_h = small_height * block_pixel_h
+        if overlay_w <= 0 or overlay_h <= 0:
+            return
+        overlay = pygame.Surface((overlay_w, overlay_h), pygame.SRCALPHA)
+        grid_color = (0, 80, 0, 110)  # 半透明绿色
+        r = max(6, int(min(block_pixel_w, block_pixel_h) / 2))  # 半径
+        w = math.sqrt(3) * r  # 六角宽度（点顶）
+        h = 2 * r              # 六角高度
+        horiz = w              # 水平间距
+        vert = 1.5 * r         # 垂直间距
+        cols = int(overlay_w / horiz) + 2
+        rows = int(overlay_h / vert) + 2
+
+        for row in range(rows):
+            cy = int(r + row * vert)
+            x_offset = (w / 2) if (row % 2 == 1) else 0.0
+            for col in range(cols):
+                cx = int(r + col * horiz + x_offset)
+                # 计算六角形顶点（点顶朝上）
+                pts = []
+                for i in range(6):
+                    ang = math.radians(60 * i - 30)
+                    px = cx + int(r * math.cos(ang))
+                    py = cy + int(r * math.sin(ang))
+                    pts.append((px, py))
+                # 仅在可视区域内绘制
+                if 0 <= cx <= overlay_w and 0 <= cy <= overlay_h:
+                    pygame.draw.polygon(overlay, grid_color, pts, 1)
+        # 叠加到屏幕（考虑摄像机偏移）
+        self.screen.blit(overlay, (self.camera_offset[0], self.camera_offset[1]))
 
     def metric_transform(self, x, y):
         """将地图坐标缩放到屏幕像素坐标（左上为原点）"""

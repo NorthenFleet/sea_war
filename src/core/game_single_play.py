@@ -24,6 +24,7 @@ class Game:
         self.screen_size = (1280, 800)
         self.render_manager = None
         self.players = {}
+        self.grid_mode = game_config.get('grid_mode', 'square')
         
         # 渲染系统配置 - 从game_config中获取，如果没有则使用传入的参数
         if use_layered_rendering is None:
@@ -89,7 +90,8 @@ class Game:
                     self.env, self.screen_size, 
                     terrain_override=effective_terrain, 
                     show_obstacles=show_obstacles,
-                    use_layered_rendering=True
+                    use_layered_rendering=True,
+                    grid_mode=self.grid_mode
                 )
                 print("已启用分层渲染系统")
                 if self.debug_rendering:
@@ -98,7 +100,8 @@ class Game:
                 self.render_manager = RenderManager(
                     self.env, self.screen_size, 
                     terrain_override=effective_terrain, 
-                    show_obstacles=show_obstacles
+                    show_obstacles=show_obstacles,
+                    grid_mode=self.grid_mode
                 )
                 print("使用传统渲染系统")
 

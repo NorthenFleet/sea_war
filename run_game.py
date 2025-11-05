@@ -37,6 +37,8 @@ if __name__ == '__main__':
     parser.add_argument('--save-on-exit', action='store_true', help='退出时自动保存当前状态到 saves/auto_last.json')
     parser.add_argument('--layered-rendering', action='store_true', help='启用分层渲染系统（优化性能和视觉效果）')
     parser.add_argument('--debug-rendering', action='store_true', help='启用渲染调试模式（显示性能统计和调试信息）')
+    parser.add_argument('--grid-mode', type=str, choices=['square', 'hex', 'none'], default=None,
+                        help='地图网格显示模式：square（默认）、hex（六角格）、none（不显示网格）')
     args = parser.parse_args()
 
     # 定义全局配置字典
@@ -46,6 +48,7 @@ if __name__ == '__main__':
         'scenario_path': 'core/data/skirmish_1.json',
         'map_path': 'core/data/map.json',
         'movement_speed_factor': 0.5,
+        'grid_mode': 'square',
     }
 
     players = {
@@ -60,6 +63,8 @@ if __name__ == '__main__':
     # 添加渲染配置
     game_config['use_layered_rendering'] = args.layered_rendering
     game_config['debug_rendering'] = args.debug_rendering
+    if args.grid_mode:
+        game_config['grid_mode'] = args.grid_mode
     
     game = Game(game_config, players)
 

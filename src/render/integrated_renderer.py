@@ -20,9 +20,9 @@ class IntegratedRenderManager(RenderManager):
     """
     
     def __init__(self, env, screen_size, tile_size=64, terrain_override=None, 
-                 show_obstacles=None, use_layered_rendering=True):
+                 show_obstacles=None, use_layered_rendering=True, grid_mode: str = 'square'):
         # 初始化基础渲染管理器
-        super().__init__(env, screen_size, tile_size, terrain_override, show_obstacles)
+        super().__init__(env, screen_size, tile_size, terrain_override, show_obstacles, grid_mode)
         
         # 分层渲染配置
         self.use_layered_rendering = use_layered_rendering

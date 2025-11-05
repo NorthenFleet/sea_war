@@ -18,6 +18,42 @@
   <div class="wrap">
     <h1>Sea War 中文显示与地图文件名预览</h1>
     <div class="card">
+      <h2>六角格显示示例（预览）</h2>
+      <p class="hint">游戏支持在主视图使用六角格显示模式。下方为点顶六角格的SVG示例预览。</p>
+      <svg width="480" height="240" xmlns="http://www.w3.org/2000/svg" style="background:#0b1526;border:1px solid #334155">
+        <defs>
+          <g id="hex" fill="none" stroke="#0ea5e9" stroke-width="1" opacity="0.6">
+            <polygon points="17.32,0 34.64,10 34.64,30 17.32,40 0,30 0,10" />
+          </g>
+        </defs>
+        <g transform="translate(20,20)">
+          <!-- 绘制点顶六角格：水平间距sqrt(3)*r=34.64，垂直间距1.5*r=30 -->
+          <script type="text/plain">静态SVG网格，示意游戏中的六角格布局</script>
+          <!-- 第一行 -->
+          <use href="#hex" x="0" y="0" />
+          <use href="#hex" x="34.64" y="0" />
+          <use href="#hex" x="69.28" y="0" />
+          <use href="#hex" x="103.92" y="0" />
+          <use href="#hex" x="138.56" y="0" />
+          <use href="#hex" x="173.2" y="0" />
+          <!-- 第二行（错位半格） -->
+          <use href="#hex" x="17.32" y="30" />
+          <use href="#hex" x="51.96" y="30" />
+          <use href="#hex" x="86.6" y="30" />
+          <use href="#hex" x="121.24" y="30" />
+          <use href="#hex" x="155.88" y="30" />
+          <use href="#hex" x="190.52" y="30" />
+          <!-- 第三行 -->
+          <use href="#hex" x="0" y="60" />
+          <use href="#hex" x="34.64" y="60" />
+          <use href="#hex" x="69.28" y="60" />
+          <use href="#hex" x="103.92" y="60" />
+          <use href="#hex" x="138.56" y="60" />
+          <use href="#hex" x="173.2" y="60" />
+        </g>
+      </svg>
+      <p class="hint">在命令行使用 <code>--grid-mode hex</code> 即可启用六角格模式。</p>
+    </div>
       <p>校验文本：<strong>中文字体预览：海战 游戏 地图 显示</strong></p>
       <p class="hint">如果你能看到以上中文正常显示，当前系统已具备中文字体。</p>
     </div>
