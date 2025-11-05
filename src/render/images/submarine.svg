@@ -1,26 +1,6 @@
-<svg width="30" height="14" viewBox="0 0 30 14" xmlns="http://www.w3.org/2000/svg">
-  <!-- 潜艇主体 -->
-  <ellipse cx="15" cy="7" rx="13" ry="5" fill="#2C3E50" stroke="#1A252F" stroke-width="1"/>
-  
-  <!-- 潜艇头部 -->
-  <ellipse cx="4" cy="7" rx="3" ry="4" fill="#34495E" stroke="#1A252F" stroke-width="1"/>
-  
-  <!-- 潜艇尾部 -->
-  <polygon points="28,7 26,4 26,10" fill="#34495E" stroke="#1A252F" stroke-width="1"/>
-  
-  <!-- 指挥塔 -->
-  <rect x="12" y="2" width="6" height="5" fill="#3F5A6A" stroke="#1A252F" stroke-width="1"/>
-  
-  <!-- 潜望镜 -->
-  <line x1="15" y1="2" x2="15" y2="0" stroke="#7F8C8D" stroke-width="2"/>
-  <circle cx="15" cy="0.5" r="0.5" fill="#95A5A6"/>
-  
-  <!-- 鱼雷发射管指示 -->
-  <rect x="6" y="5" width="4" height="2" fill="#E74C3C" stroke="#C0392B" stroke-width="1"/>
-  <rect x="6" y="8" width="4" height="2" fill="#E74C3C" stroke="#C0392B" stroke-width="1"/>
-  
-  <!-- 螺旋桨 -->
-  <circle cx="26" cy="7" r="2" fill="#7F8C8D" stroke="#5D6D7E" stroke-width="1"/>
-  <line x1="24" y1="7" x2="28" y2="7" stroke="#5D6D7E" stroke-width="1"/>
-  <line x1="26" y1="5" x2="26" y2="9" stroke="#5D6D7E" stroke-width="1"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="30" height="14" viewBox="0 0 30 14">
+  <g fill="#483D8B" stroke="#2b2556" stroke-width="1">
+    <ellipse cx="15" cy="7" rx="13" ry="5"/>
+    <rect x="12" y="2" width="6" height="2" fill="#3a316f"/>
+  </g>
 </svg>

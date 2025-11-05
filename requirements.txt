@@ -27,6 +27,8 @@ nvidia-nvjitlink-cu12==12.4.127
 nvidia-nvtx-cu12==12.4.127
 pandas==2.2.3
 pygame==2.6.1
+Pillow==11.0.0
+cairosvg==2.7.1
 python-dateutil==2.9.0.post0
 pytz==2024.2
 six==1.16.0

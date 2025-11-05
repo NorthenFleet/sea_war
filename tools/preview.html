@@ -27,11 +27,42 @@
       <p class="hint">该图片由 <code>tools/font_probe.py</code> 生成，若未显示，可在 IDE 终端运行：<code>python tools/font_probe.py</code></p>
     </div>
     <div class="card">
+      <h2>单位SVG图标预览</h2>
+      <p class="hint">以下为新加入的单位SVG图标，游戏中将按默认尺寸加载并根据朝向自动旋转。</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:center;">
+        <div>
+          <p>ship</p>
+          <img src="../src/render/images/ship.svg" alt="ship" />
+        </div>
+        <div>
+          <p>submarine</p>
+          <img src="../src/render/images/submarine.svg" alt="submarine" />
+        </div>
+        <div>
+          <p>bomber</p>
+          <img src="../src/render/images/bomber.svg" alt="bomber" />
+        </div>
+        <div>
+          <p>missile</p>
+          <img src="../src/render/images/missile.svg" alt="missile" />
+        </div>
+        <div>
+          <p>ground_based_platforms</p>
+          <img src="../src/render/images/ground_based_platforms.svg" alt="ground_based_platforms" />
+        </div>
+        <div>
+          <p>airport</p>
+          <img src="../src/render/images/airport.svg" alt="airport" />
+        </div>
+      </div>
+    </div>
+    <div class="card">
       <p>本次提交要点：</p>
       <ul>
         <li>新增中文字体加载器：<code>src/ui/font_loader.py</code></li>
         <li>渲染器与启动菜单使用中文兼容字体</li>
         <li>右下角显示当前地图文件名，便于确认加载的地形图</li>
+        <li>分层渲染支持单位SVG图标，替换原有方块填充</li>
       </ul>
     </div>
   </div>
