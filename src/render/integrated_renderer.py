@@ -37,6 +37,7 @@ class IntegratedRenderManager(RenderManager):
             # 初始化分层渲染系统
             self.layered_renderer = LayeredRenderManager(
                 self.screen, 
+                self.optimized_loader,  # 传递sprite_loader
                 tuple(self.camera_offset)
             )
             
@@ -182,7 +183,7 @@ class IntegratedRenderManager(RenderManager):
     def update(self):
         """更新渲染系统"""
         # 更新基础系统
-        super().update()
+        result = super().update()
         
         if self.use_layered_rendering and self.render_mode == 'layered':
             # 增量同步实体
@@ -204,6 +205,9 @@ class IntegratedRenderManager(RenderManager):
             
             # 更新性能监控
             self.performance_monitor.update(delta_time)
+        
+        # 返回基类的结果
+        return result
     
     def draw_units(self):
         """绘制单位（支持两种渲染模式）"""

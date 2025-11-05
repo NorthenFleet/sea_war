@@ -35,9 +35,13 @@ class LayeredRenderManager:
     管理多个渲染层，支持高效的Z轴排序和批量渲染
     """
     
-    def __init__(self, screen: pygame.Surface, camera_offset: Tuple[int, int] = (0, 0)):
+    def __init__(self, screen: pygame.Surface, sprite_loader=None, camera_offset: Tuple[int, int] = (0, 0)):
         self.screen = screen
         self.camera_offset = list(camera_offset)
+        
+        # 精灵工厂
+        from .entity_sprite import SpriteFactory
+        self.sprite_factory = SpriteFactory(sprite_loader) if sprite_loader else None
         
         # 分层精灵组
         self.layered_group = pygame.sprite.LayeredUpdates()
@@ -112,7 +116,11 @@ class LayeredRenderManager:
             layer = self._determine_entity_layer(entity)
         
         # 创建精灵
-        sprite = EntitySprite(entity)
+        if self.sprite_factory:
+            sprite = self.sprite_factory.create_sprite(entity)
+        else:
+            # 如果没有sprite_factory，创建默认精灵
+            sprite = EntitySprite(entity, None)
         
         # 添加到分层组
         self.layered_group.add(sprite, layer=layer.value)

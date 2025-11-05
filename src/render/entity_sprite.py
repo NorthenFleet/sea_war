@@ -109,7 +109,7 @@ class EntitySprite(pygame.sprite.Sprite):
         """更新精灵位置"""
         if self._position_component:
             pos = self._position_component.get_param('position')
-            if pos and len(pos) >= 2:
+            if pos is not None and len(pos) >= 2:
                 # 只有位置真正改变时才更新
                 new_pos = (int(pos[0]), int(pos[1]))
                 if self.last_position != new_pos:
@@ -120,9 +120,14 @@ class EntitySprite(pygame.sprite.Sprite):
         """根据移动方向更新精灵旋转"""
         if self._movement_component:
             heading = self._movement_component.get_param('heading')
-            if heading and len(heading) >= 2:
+            if heading is not None and len(heading) >= 2:
                 # 计算旋转角度
                 angle = math.degrees(math.atan2(heading[1], heading[0]))
+                
+                # 初始化last_heading如果为None
+                if self.last_heading is None:
+                    self.last_heading = angle
+                
                 if abs(angle - self.last_heading) > 1:  # 只有角度变化超过1度才更新
                     self.last_heading = angle
                     self.rotation_angle = angle
@@ -137,25 +142,28 @@ class EntitySprite(pygame.sprite.Sprite):
     def _update_trail(self):
         """更新轨迹点"""
         if self._position_component:
-            current_pos = (
-                self._position_component.get_param('x', 0),
-                self._position_component.get_param('y', 0)
-            )
-            
-            # 只有位置发生变化时才添加轨迹点
-            if self.last_position and current_pos != self.last_position:
-                self.trail_points.append(current_pos)
+            position = self._position_component.get_param('position')
+            if position is not None and len(position) >= 2:
+                current_pos = (position[0], position[1])
                 
-                # 限制轨迹长度
-                if len(self.trail_points) > self.max_trail_length:
-                    self.trail_points.pop(0)
+                # 只有位置发生变化时才添加轨迹点
+                if self.last_position and current_pos != self.last_position:
+                    self.trail_points.append(current_pos)
+                    
+                    # 限制轨迹长度
+                    if len(self.trail_points) > self.max_trail_length:
+                        self.trail_points.pop(0)
     
     def _update_status_effects(self):
         """更新状态效果"""
         # 检查生命值状态
         if self._health_component:
-            max_hp = self._health_component.get_param('max_health', 100)
-            cur_hp = self._health_component.get_param('current_health', 100)
+            max_hp = self._health_component.get_param('max_health')
+            cur_hp = self._health_component.get_param('current_health')
+            
+            # 使用默认值处理None情况
+            max_hp = max_hp if max_hp is not None else 100
+            cur_hp = cur_hp if cur_hp is not None else 100
             
             if max_hp > 0:
                 health_ratio = cur_hp / max_hp
@@ -164,7 +172,8 @@ class EntitySprite(pygame.sprite.Sprite):
         
         # 检查移动状态
         if self._movement_component:
-            speed = self._movement_component.get_param('speed', 0)
+            speed = self._movement_component.get_param('speed')
+            speed = speed if speed is not None else 0
             self.status_effects['moving'] = speed > 0.1
         
         # 检查攻击状态（可以根据实际游戏逻辑扩展）
@@ -246,8 +255,12 @@ class EntitySprite(pygame.sprite.Sprite):
         if not self.show_direction_indicator or not self._movement_component:
             return
         
-        heading = self._movement_component.get_param('heading', 0)
-        speed = self._movement_component.get_param('speed', 0)
+        heading = self._movement_component.get_param('heading')
+        speed = self._movement_component.get_param('speed')
+        
+        # 使用默认值处理None情况
+        heading = heading if heading is not None else 0
+        speed = speed if speed is not None else 0
         
         if speed > 0.1:  # 只有在移动时才显示方向
             center_x = self.rect.centerx + offset[0]

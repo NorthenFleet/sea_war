@@ -607,7 +607,7 @@ class RenderManager:
         self.minimap_rect = mini_rect
 
     def handle_events(self):
-        """处理事件"""
+        """处理pygame事件"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.should_close = True
