@@ -3,6 +3,7 @@ import os, sys
 import time
 import math
 from ..ui.font_loader import load_cn_font
+from ..core.hex_grid_service import HexGridService
 from ..core.entities.entity import *
 from ..init import Map
 from ..ui.player import CommandList, Command, MoveCommand, AttackCommand, StopCommand, SetSpeedCommand, RotateHeadingCommand, ToggleSensorCommand, AttackNearestCommand
@@ -56,6 +57,8 @@ class RenderManager:
         # 计算地图缩放比例（基于主视图区域）
         self.scale_x = self.main_view_width / max(1, self.map.global_width)
         self.scale_y = self.main_view_height / max(1, self.map.global_height)
+        # 六角格服务（按需初始化）
+        self.hex_service = None
         
         # 使用中文兼容字体
         self.font = load_cn_font(16)
@@ -731,6 +734,16 @@ class RenderManager:
         # 转换为世界坐标
         world_x = (pos[0] - self.main_view_area.x - self.camera_offset[0]) / self.scale_x
         world_y = (pos[1] - self.main_view_area.y - self.camera_offset[1]) / self.scale_y
+        # 在六角格模式下，对目标进行格中心吸附（世界坐标）
+        if self.grid_mode == 'hex':
+            if self.hex_service is None:
+                # 以地图局部块大小的一半作为六角半径（世界单位），保证与显示一致性
+                try:
+                    size_world = max(6.0, float(self.map.local_block_size) / 2.0)
+                except Exception:
+                    size_world = 12.0
+                self.hex_service = HexGridService(size=size_world)
+            world_x, world_y = self.hex_service.snap_world_to_hex_center(world_x, world_y)
         
         if self.attack_mode:
             # 攻击模式：对选中单位下达攻击指令
@@ -743,7 +756,14 @@ class RenderManager:
             # 移动模式：对选中单位下达移动指令
             for entity in self.game_data.get_all_entities():
                 if entity.entity_id in self.selected_ids:
-                    MoveCommand(entity.entity_id, (world_x, world_y))
+                    # 兼容不同版本的MoveCommand签名（若需要速度，则尝试读取组件）
+                    mv = entity.get_component(MovementComponent)
+                    speed = mv.get_param('speed') if mv else 1
+                    try:
+                        MoveCommand(entity.entity_id, target_position=(world_x, world_y), speed=speed)
+                    except TypeError:
+                        # 回退到通用Command，保证兼容
+                        Command('move', actor=entity.entity_id, target=(world_x, world_y), params={'speed': speed})
 
     def _handle_minimap_click(self, pos):
         """处理小地图点击"""
