@@ -676,6 +676,16 @@ class RenderManager:
                     self._handle_left_click(event.pos)
                 elif event.button == 3:  # 右键
                     self._handle_right_click(event.pos)
+            elif event.type == pygame.MOUSEMOTION:
+                # 更新悬停提示文本
+                self.hover_hint = None
+                for btn_list in [self.top_toolbar_buttons, self.right_panel_buttons, self.bottom_control_buttons]:
+                    for btn in btn_list:
+                        if btn["rect"].collidepoint(event.pos):
+                            self.hover_hint = btn.get("hint")
+                            break
+                    if self.hover_hint:
+                        break
 
     def _handle_left_click(self, pos):
         """处理左键点击"""
@@ -935,10 +945,11 @@ class RenderManager:
         status_items = [
             f"时间: {time.strftime('%H:%M:%S')}",
             f"选中: {len(self.selected_ids)}个单位",
-            f"攻击模式: {'开启' if self.attack_mode else '关闭'}"
+            f"攻击模式: {'开启' if self.attack_mode else '关闭'}",
+            f"网格: {self.grid_mode}"
         ]
         
-        x_offset = self.screen_width - 400
+        x_offset = self.screen_width - 520
         for i, item in enumerate(status_items):
             text = self.font.render(item, True, (200, 200, 200))
             self.screen.blit(text, (x_offset, bar["rect"].y + 8))
@@ -1049,7 +1060,10 @@ class RenderManager:
                 items = [
                     {"label": "叠层开关", "action": "toggle_obstacles"},
                     {"label": "重置视窗", "action": "view_reset"},
-                    {"label": "左侧面板", "action": "toggle_left_panel"}
+                    {"label": "左侧面板", "action": "toggle_left_panel"},
+                    {"label": f"网格: 方格{'' if self.grid_mode!='square' else ' ✓'}", "action": "grid_square"},
+                    {"label": f"网格: 六角{'' if self.grid_mode!='hex' else ' ✓'}", "action": "grid_hex"},
+                    {"label": f"网格: 隐藏{'' if self.grid_mode!='none' else ' ✓'}", "action": "grid_none"}
                 ]
             elif self.open_menu == 'control_menu':
                 items = [
@@ -1187,6 +1201,12 @@ class RenderManager:
             )
         elif act == "help_shortcuts":
             self.show_help_overlay = not self.show_help_overlay
+        elif act == "grid_square":
+            self.grid_mode = 'square'
+        elif act == "grid_hex":
+            self.grid_mode = 'hex'
+        elif act == "grid_none":
+            self.grid_mode = 'none'
         else:
             # 其它交由外层处理（暂停/加速/减速等）
             self.ui_actions.append(act)
