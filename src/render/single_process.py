@@ -832,11 +832,28 @@ class RenderManager:
 
     def _get_entity_at_position(self, pos):
         """获取指定位置的实体"""
+        # 1) 传统模式：使用draw_units阶段缓存的屏幕rect
         for entity_id, rect in self.entity_screen_rects.items():
             if rect.collidepoint(pos):
                 for entity in self.game_data.get_all_entities():
                     if entity.entity_id == entity_id:
                         return entity
+
+        # 2) 分层渲染模式：从layered_renderer的精灵rect推断点击命中
+        try:
+            if hasattr(self, 'layered_renderer') and self.layered_renderer is not None:
+                for eid, sprite in self.layered_renderer.entity_sprites.items():
+                    # 将精灵rect转换到屏幕坐标（考虑主视图位置与摄像机偏移）
+                    adjusted = sprite.rect.copy()
+                    adjusted.x += self.camera_offset[0] + self.main_view_area.x
+                    adjusted.y += self.camera_offset[1] + self.main_view_area.y
+                    if adjusted.collidepoint(pos):
+                        for entity in self.game_data.get_all_entities():
+                            if entity.entity_id == eid:
+                                return entity
+        except Exception:
+            pass
+
         return None
 
     def consume_commands(self):

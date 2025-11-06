@@ -1,0 +1,9 @@
+{
+  "skip_menu": true,
+  "scenario": "skirmish_1.json",
+  "terrain": "default",
+  "grid_mode": "hex",
+  "layered_rendering": true,
+  "debug_rendering": true,
+  "speed_factor": 1.0
+}

@@ -39,6 +39,8 @@ if __name__ == '__main__':
     parser.add_argument('--debug-rendering', action='store_true', help='启用渲染调试模式（显示性能统计和调试信息）')
     parser.add_argument('--grid-mode', type=str, choices=['square', 'hex', 'none'], default=None,
                         help='地图网格显示模式：square（默认）、hex（六角格）、none（不显示网格）')
+    parser.add_argument('--config', type=str, default=None,
+                        help='指定启动配置JSON文件，支持字段：scenario, terrain, grid_mode, layered_rendering, debug_rendering, speed_factor, skip_menu')
     args = parser.parse_args()
 
     # 定义全局配置字典
@@ -66,6 +68,34 @@ if __name__ == '__main__':
     if args.grid_mode:
         game_config['grid_mode'] = args.grid_mode
     
+    # 如果提供了配置文件，则加载并合并
+    if args.config:
+        import json
+        config_path = os.path.abspath(args.config)
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                cfg = json.load(f)
+            # 合并渲染与网格配置
+            if 'grid_mode' in cfg:
+                game_config['grid_mode'] = cfg['grid_mode']
+            if 'layered_rendering' in cfg:
+                game_config['use_layered_rendering'] = bool(cfg['layered_rendering'])
+            if 'debug_rendering' in cfg:
+                game_config['debug_rendering'] = bool(cfg['debug_rendering'])
+            if 'speed_factor' in cfg:
+                game_config['movement_speed_factor'] = float(cfg['speed_factor'])
+            # 基于配置的选择项（跳过菜单）
+            if cfg.get('skip_menu', True):
+                args.skip_menu = True
+            # 场景/地图选择
+            if 'scenario' in cfg:
+                args.scenario = cfg['scenario']
+            if 'terrain' in cfg:
+                args.terrain = cfg['terrain']
+            print(f"已加载配置: {config_path}")
+        except Exception as e:
+            print(f"配置文件加载失败: {e}")
+
     game = Game(game_config, players)
 
     selected_map = None
